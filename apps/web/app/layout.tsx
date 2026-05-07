@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Be_Vietnam_Pro, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({
+const beVietnamPro = Be_Vietnam_Pro({
   variable: '--font-sans',
   subsets: ['latin', 'vietnamese'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 
@@ -26,7 +27,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${inter.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${beVietnamPro.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-stone-50 font-sans text-stone-900">
         {children}
