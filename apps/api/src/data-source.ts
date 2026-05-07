@@ -43,7 +43,7 @@ export const AppDataSource = new DataSource({
   password: process.env.POSTGRES_PASSWORD ?? 'concord',
   database: process.env.POSTGRES_DB ?? 'concord',
   entities,
-  migrations: [path.join(__dirname, 'migrations', '*.{ts,js}')],
+  migrations: [path.join(__dirname, '..', 'migrations', '*.{ts,js}')],
   synchronize: false,
   logging: ['error', 'warn', 'migration', 'schema'],
 });
