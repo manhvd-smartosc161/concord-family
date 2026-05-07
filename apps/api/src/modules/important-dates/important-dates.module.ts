@@ -10,6 +10,6 @@ import { ImportantDatesService } from './important-dates.service';
   imports: [TypeOrmModule.forFeature([ImportantDate]), NotificationsModule],
   controllers: [ImportantDatesController],
   providers: [ImportantDatesService, ImportantDatesCron],
-  exports: [ImportantDatesService],
+  exports: [ImportantDatesService, TypeOrmModule],
 })
 export class ImportantDatesModule {}

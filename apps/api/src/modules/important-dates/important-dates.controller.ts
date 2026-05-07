@@ -5,17 +5,22 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CurrentUser } from '../../shared/auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../shared/auth/guards/jwt-auth.guard';
+import { NotificationsService } from '../../shared/notifications/notifications.service';
 import { User } from '../users/entities/user.entity';
 import { CreateImportantDateDto } from './dto/create-important-date.dto';
 import { UpdateImportantDateDto } from './dto/update-important-date.dto';
+import { ImportantDate } from './entities/important-date.entity';
 import { ImportantDatesCron } from './important-dates.cron';
 import {
   ImportantDatesService,
@@ -28,6 +33,9 @@ export class ImportantDatesController {
   constructor(
     private readonly service: ImportantDatesService,
     private readonly cron: ImportantDatesCron,
+    private readonly notifications: NotificationsService,
+    @InjectRepository(ImportantDate)
+    private readonly repo: Repository<ImportantDate>,
   ) {}
 
   @Get()
@@ -68,5 +76,18 @@ export class ImportantDatesController {
       throw new ForbiddenException('test tick disabled outside development');
     }
     return this.cron.run();
+  }
+
+  @Post(':id/test-notify')
+  async testNotify(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<{ ok: true }> {
+    if (process.env.NODE_ENV !== 'development') {
+      throw new ForbiddenException('test notify disabled outside development');
+    }
+    const entry = await this.repo.findOne({ where: { id } });
+    if (!entry) throw new NotFoundException();
+    await this.notifications.notifyImportantDate(entry, 0);
+    return { ok: true };
   }
 }

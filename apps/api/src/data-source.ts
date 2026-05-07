@@ -15,7 +15,6 @@ import { Insight } from './modules/insights/entities/insight.entity';
 import { SalaryRule } from './modules/salary-rules/entities/salary-rule.entity';
 import { Transaction } from './modules/transactions/entities/transaction.entity';
 import { User } from './modules/users/entities/user.entity';
-import { DeviceToken } from './shared/notifications/entities/device-token.entity';
 
 // Load root-level .env (concord/.env). Works when CLI is run from apps/api
 // (cwd = apps/api, file = apps/api/dist/data-source.js or src/data-source.ts).
@@ -36,7 +35,6 @@ export const entities = [
   ChatSession,
   ChatMessage,
   ImportantDate,
-  DeviceToken,
 ];
 
 const databaseUrl = process.env.DATABASE_URL;

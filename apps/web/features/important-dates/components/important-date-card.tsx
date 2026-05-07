@@ -30,10 +30,12 @@ export function ImportantDateCard({
   entry,
   onEdit,
   onDelete,
+  onTest,
 }: {
   entry: ImportantDateView;
   onEdit: () => void;
   onDelete: () => void;
+  onTest: () => void;
 }) {
   const next = new Date(entry.nextOccurrence);
   const formatted = next.toLocaleDateString('vi-VN', {
@@ -78,6 +80,14 @@ export function ImportantDateCard({
           )}
         </div>
         <div className="flex shrink-0 flex-col gap-1">
+          <button
+            type="button"
+            onClick={onTest}
+            className="rounded-md px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+            title="Bắn thông báo test ngay (mail + FCM)"
+          >
+            🔔 Bắn thử
+          </button>
           <button
             type="button"
             onClick={onEdit}

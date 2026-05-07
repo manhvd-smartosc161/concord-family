@@ -5,11 +5,11 @@ import { Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import {
   deleteImportantDate,
   listImportantDates,
+  testNotifyImportantDate,
 } from '@/features/important-dates/api';
 import { ImportantDateCard } from '@/features/important-dates/components/important-date-card';
 import { ImportantDateFormModal } from '@/features/important-dates/components/important-date-form-modal';
 import type { ImportantDateView } from '@/features/important-dates/types';
-import { EnablePushBanner } from '@/features/notifications/components/enable-push-banner';
 
 export default function ImportantDatesPage() {
   const [items, setItems] = useState<ImportantDateView[] | null>(null);
@@ -49,6 +49,15 @@ export default function ImportantDatesPage() {
     }
   }
 
+  async function handleTest(id: string) {
+    try {
+      await testNotifyImportantDate(id);
+      alert('Đã bắn — kiểm tra mail và notification');
+    } catch (err) {
+      alert((err as Error).message);
+    }
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
@@ -66,8 +75,6 @@ export default function ImportantDatesPage() {
       />
       <main className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto max-w-2xl space-y-4">
-          <EnablePushBanner />
-
           {items === null && (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -94,6 +101,7 @@ export default function ImportantDatesPage() {
                   entry={entry}
                   onEdit={() => openEdit(entry)}
                   onDelete={() => handleDelete(entry.id)}
+                  onTest={() => handleTest(entry.id)}
                 />
               ))}
             </div>

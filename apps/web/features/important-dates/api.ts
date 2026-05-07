@@ -31,3 +31,9 @@ export function updateImportantDate(
 export function deleteImportantDate(id: string): Promise<void> {
   return apiFetch<void>(`/api/important-dates/${id}`, { method: 'DELETE' });
 }
+
+export function testNotifyImportantDate(id: string): Promise<{ ok: true }> {
+  return apiFetch<{ ok: true }>(`/api/important-dates/${id}/test-notify`, {
+    method: 'POST',
+  });
+}
