@@ -38,9 +38,13 @@ export class NotificationsService {
   }, daysBefore: number): Promise<void> {
     const users = await this.users.find();
     const dayPhrase =
-      daysBefore === 0 ? 'Hôm nay' : `Còn ${daysBefore} ngày nữa`;
-    const subject = `📅 ${dayPhrase} là ${item.name}`;
-    const body = `${dayPhrase} là ${item.name} (dương: ${item.occursOn})${item.notes ? `\n${item.notes}` : ''}`;
+      daysBefore === 0
+        ? 'Hôm nay là'
+        : daysBefore > 0
+          ? `Còn ${daysBefore} ngày nữa là`
+          : `Cách đây ${Math.abs(daysBefore)} ngày là`;
+    const subject = `📅 ${dayPhrase} ${item.name}`;
+    const body = `${dayPhrase} ${item.name} (dương: ${item.occursOn})${item.notes ? `\n${item.notes}` : ''}`;
     const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1c1917;"><h1 style="font-size:20px;margin:0 0 12px;color:#0c0a09;">${escape(subject)}</h1><p style="font-size:14px;line-height:1.6;color:#44403c;white-space:pre-line;">${escape(body)}</p><hr style="border:none;border-top:1px solid #e7e5e4;margin:24px 0;" /><p style="font-size:12px;color:#a8a29e;">Concord — couple finance agent</p></div>`;
     const text = `${subject}\n\n${body}`;
 

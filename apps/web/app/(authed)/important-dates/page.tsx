@@ -160,8 +160,19 @@ export default function ImportantDatesPage() {
         open={modalOpen}
         entry={editing}
         onClose={() => setModalOpen(false)}
-        onSaved={() => {
+        onSaved={(saved) => {
           void reload();
+          const next = new Date(saved.nextOccurrence);
+          const nextMonth = next.getUTCMonth() + 1;
+          const nextYear = next.getUTCFullYear();
+          if (
+            view &&
+            (nextMonth !== view.month || nextYear !== view.year)
+          ) {
+            alert(
+              `Đã lưu — "${saved.name}" sẽ hiện trong ${MONTH_LABEL_VI[nextMonth]} ${nextYear}, không phải tháng đang xem.`,
+            );
+          }
         }}
       />
     </div>

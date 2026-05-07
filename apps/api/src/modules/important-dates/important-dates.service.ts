@@ -172,8 +172,9 @@ export class ImportantDatesService {
       }
     }
 
-    items.sort((a, b) => a.occursOn.localeCompare(b.occursOn));
-    return { year, month, items, aiGeneratedAt };
+    const future = items.filter((i) => i.daysUntil >= 0);
+    future.sort((a, b) => a.occursOn.localeCompare(b.occursOn));
+    return { year, month, items: future, aiGeneratedAt };
   }
 
   async findDueOn(

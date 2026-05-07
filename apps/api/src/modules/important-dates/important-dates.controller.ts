@@ -102,7 +102,7 @@ export class ImportantDatesController {
       occurrence < today
         ? resolveOccurrenceForYear(entry, year + 1)
         : occurrence;
-    const daysBefore = Math.max(0, daysBetweenUtc(today, target));
+    const daysBefore = daysBetweenUtc(today, target);
     await this.notifications.notifyImportantDate(entry, daysBefore);
     return { ok: true };
   }
@@ -114,7 +114,7 @@ export class ImportantDatesController {
   ): Promise<{ ok: true }> {
     const target = new Date(`${body.date.slice(0, 10)}T00:00:00Z`);
     const today = todayInTimezone('Asia/Ho_Chi_Minh');
-    const daysBefore = Math.max(0, daysBetweenUtc(today, target));
+    const daysBefore = daysBetweenUtc(today, target);
     await this.notifications.notifyAiDate(
       {
         name: body.name,
