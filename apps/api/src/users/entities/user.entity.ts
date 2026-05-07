@@ -1,5 +1,5 @@
 import { Column, Entity, Index, OneToMany } from 'typeorm';
-import { BaseEntity } from '../../common/base.entity';
+import { BaseEntity } from '../../shared/common/base.entity';
 import { Fund } from '../../funds/entities/fund.entity';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 import { SalaryRule } from './salary-rule.entity';

@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../../common/base.entity';
-import { bigintTransformer } from '../../common/transformers';
+import { BaseEntity } from '../../shared/common/base.entity';
+import { bigintTransformer } from '../../shared/common/transformers';
 import { User } from '../../users/entities/user.entity';
 
 export type GoalPeriod = 'month' | 'year';

@@ -1,6 +1,6 @@
 import { ExecutionContext, createParamDecorator } from '@nestjs/common';
 import type { Request } from 'express';
-import type { User } from '../../users/entities/user.entity';
+import type { User } from '../../../users/entities/user.entity';
 
 /**
  * Inject the authenticated user into a controller method:

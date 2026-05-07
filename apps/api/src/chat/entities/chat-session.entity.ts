@@ -6,7 +6,7 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { BaseEntity } from '../../common/base.entity';
+import { BaseEntity } from '../../shared/common/base.entity';
 import { Fund } from '../../funds/entities/fund.entity';
 import { User } from '../../users/entities/user.entity';
 import { ChatMessage } from './chat-message.entity';

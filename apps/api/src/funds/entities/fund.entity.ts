@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
-import { BaseEntity } from '../../common/base.entity';
-import { bigintTransformer } from '../../common/transformers';
+import { BaseEntity } from '../../shared/common/base.entity';
+import { bigintTransformer } from '../../shared/common/transformers';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 import { User } from '../../users/entities/user.entity';
 

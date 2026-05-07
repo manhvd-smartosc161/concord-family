@@ -6,7 +6,7 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { BaseEntity } from '../../common/base.entity';
+import { BaseEntity } from '../../shared/common/base.entity';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 
 @Entity('categories')

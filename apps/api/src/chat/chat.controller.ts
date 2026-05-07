@@ -10,8 +10,8 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../shared/auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../shared/auth/guards/jwt-auth.guard';
 import { User } from '../users/entities/user.entity';
 import {
   ChatSessionsService,
