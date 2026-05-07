@@ -106,12 +106,13 @@ export function Badge({
   tone = 'neutral',
 }: {
   children: ReactNode;
-  tone?: 'emerald' | 'amber' | 'rose' | 'neutral';
+  tone?: 'emerald' | 'amber' | 'rose' | 'sky' | 'neutral';
 }) {
   const cls = {
     emerald: 'bg-emerald-100 text-emerald-800',
     amber: 'bg-amber-100 text-amber-800',
     rose: 'bg-rose-100 text-rose-800',
+    sky: 'bg-sky-100 text-sky-800',
     neutral: 'bg-stone-100 text-stone-700',
   }[tone];
   return (

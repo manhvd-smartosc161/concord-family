@@ -10,10 +10,16 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "db:up": "docker compose up -d postgres redis",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=22",
     "pnpm": ">=10"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
+    "husky": "^9.1.7"
   }
 }

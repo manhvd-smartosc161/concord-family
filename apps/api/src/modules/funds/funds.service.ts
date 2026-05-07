@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, IsNull, Repository } from 'typeorm';
+import { DataSource, In, IsNull, Repository } from 'typeorm';
 import { Transaction } from '../transactions/entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
 import type { CreateEnvelopeDto } from './dto/create-envelope.dto';
@@ -24,7 +24,7 @@ export interface FundView {
   balance: number | null;
   /** Số dư khởi đầu (do user khai báo khi bắt đầu xài app). null khi private. */
   openingBalance: number | null;
-  purpose: 'general' | 'envelope';
+  purpose: 'spending' | 'savings' | 'investment';
   targetAmount: number | null;
   targetDeadline: string | null;
   monthlyContributionTarget: number | null;
@@ -61,10 +61,10 @@ export class FundsService {
     const funds = await this.fundRepo.find({
       where: { archivedAt: IsNull() },
     });
-    // Order: Chung (joint general) → envelopes (joint envelope) → personal.
+    // Order: chi tiêu chung (joint spending) → tiết kiệm/đầu tư → cá nhân.
     funds.sort((a, b) => {
       const order = (f: Fund) => {
-        if (f.purpose === 'envelope') return 1;
+        if (f.purpose === 'savings' || f.purpose === 'investment') return 1;
         if (f.type === 'joint') return 0;
         return 2;
       };
@@ -115,7 +115,7 @@ export class FundsService {
 
   async listEnvelopes(user: User): Promise<FundView[]> {
     const funds = await this.fundRepo.find({
-      where: { purpose: 'envelope' },
+      where: { purpose: In(['savings', 'investment']) },
       order: { archivedAt: 'ASC', displayOrder: 'ASC', name: 'ASC' },
     });
     const openings = await this.txnRepo.find({
@@ -226,7 +226,9 @@ export class FundsService {
 
     const last = await this.fundRepo
       .createQueryBuilder('f')
-      .where('f.purpose = :p', { p: 'envelope' })
+      .where('f.purpose IN (:...purposes)', {
+        purposes: ['savings', 'investment'],
+      })
       .orderBy('f.display_order', 'DESC')
       .getOne();
 
@@ -235,7 +237,7 @@ export class FundsService {
       type: 'joint',
       ownerId: null,
       balance: 0,
-      purpose: 'envelope',
+      purpose: dto.purpose ?? 'savings',
       targetAmount: dto.targetAmount ?? null,
       targetDeadline: dto.targetDeadline ?? null,
       monthlyContributionTarget: dto.monthlyContributionTarget ?? null,
@@ -252,10 +254,8 @@ export class FundsService {
   ): Promise<FundView> {
     const fund = await this.fundRepo.findOneBy({ id: fundId });
     if (!fund) throw new NotFoundException('Quỹ không tồn tại');
-    if (fund.purpose !== 'envelope')
-      throw new BadRequestException(
-        'Chỉ có thể sửa quỹ mục tiêu, không phải tài khoản gốc',
-      );
+    if (fund.purpose === 'spending')
+      throw new BadRequestException('Không thể sửa quỹ chi tiêu gốc');
 
     if (dto.name !== undefined) {
       const t = dto.name.trim();
@@ -273,6 +273,7 @@ export class FundsService {
       fund.targetDeadline = dto.targetDeadline;
     if (dto.monthlyContributionTarget !== undefined)
       fund.monthlyContributionTarget = dto.monthlyContributionTarget;
+    if (dto.purpose !== undefined) fund.purpose = dto.purpose;
 
     await this.fundRepo.save(fund);
     return this.envelopeView(fund.id);
@@ -281,8 +282,8 @@ export class FundsService {
   async archiveEnvelope(fundId: string): Promise<FundView> {
     const fund = await this.fundRepo.findOneBy({ id: fundId });
     if (!fund) throw new NotFoundException('Quỹ không tồn tại');
-    if (fund.purpose !== 'envelope')
-      throw new BadRequestException('Chỉ archive được quỹ mục tiêu');
+    if (fund.purpose === 'spending')
+      throw new BadRequestException('Không thể archive quỹ chi tiêu gốc');
     fund.archivedAt = new Date();
     await this.fundRepo.save(fund);
     return this.envelopeView(fund.id);
@@ -291,8 +292,8 @@ export class FundsService {
   async unarchiveEnvelope(fundId: string): Promise<FundView> {
     const fund = await this.fundRepo.findOneBy({ id: fundId });
     if (!fund) throw new NotFoundException('Quỹ không tồn tại');
-    if (fund.purpose !== 'envelope')
-      throw new BadRequestException('Chỉ unarchive được quỹ mục tiêu');
+    if (fund.purpose === 'spending')
+      throw new BadRequestException('Quỹ chi tiêu gốc không thể unarchive');
     fund.archivedAt = null;
     await this.fundRepo.save(fund);
     return this.envelopeView(fund.id);

@@ -5,7 +5,7 @@ import { Transaction } from '../../transactions/entities/transaction.entity';
 import { User } from '../../users/entities/user.entity';
 
 export type FundType = 'personal' | 'joint';
-export type FundPurpose = 'general' | 'envelope';
+export type FundPurpose = 'spending' | 'savings' | 'investment';
 
 @Entity('funds')
 export class Fund extends BaseEntity {
@@ -31,13 +31,14 @@ export class Fund extends BaseEntity {
   balance!: number;
 
   /**
-   * 'general' = 3 quỹ gốc (Mạnh/Vợ/Chung) cho money flow hàng ngày.
-   * 'envelope' = quỹ mục tiêu user tự tạo (Du lịch, Sửa nhà, ...). Joint-only.
+   * 'spending' = 3 quỹ chi tiêu gốc (Mạnh/Vợ/Chung), không thể archive.
+   * 'savings'  = quỹ tiết kiệm user tự tạo gắn mục tiêu (Du lịch, Tiết kiệm năm, ...).
+   * 'investment' = quỹ đầu tư (chứng khoán, bất động sản, ...).
    */
   @Column({
     type: 'enum',
-    enum: ['general', 'envelope'],
-    default: 'general',
+    enum: ['spending', 'savings', 'investment'],
+    default: 'spending',
   })
   purpose!: FundPurpose;
 

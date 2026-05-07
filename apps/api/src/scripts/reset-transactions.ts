@@ -65,9 +65,13 @@ async function main() {
       const envResult = await fundRepo
         .createQueryBuilder()
         .delete()
-        .where('purpose = :p', { p: 'envelope' })
+        .where('purpose IN (:...purposes)', {
+          purposes: ['savings', 'investment'],
+        })
         .execute();
-      console.log(`🗑️  Deleted ${envResult.affected ?? 0} envelope funds`);
+      console.log(
+        `🗑️  Deleted ${envResult.affected ?? 0} savings/investment funds`,
+      );
     }
   });
 
