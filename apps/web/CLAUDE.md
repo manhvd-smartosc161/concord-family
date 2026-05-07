@@ -33,7 +33,7 @@ apps/web/
 │   │   ├── api.ts, types.ts
 │   │   ├── lib/group-by-day.ts
 │   │   └── components/{edit-transaction-modal, day-group, month-switcher, pagination}.tsx
-│   ├── chat/, goals/, reports/, categories/, settings/
+│   ├── chat/, goals/, reports/, categories/
 │   │   └── (mỗi cái có api.ts, types.ts)
 ├── components/                   shared UI
 │   ├── ui/index.tsx              Card, Badge, EmptyState, Skeleton, StatCard, PageHeader, ProgressBar

@@ -41,7 +41,7 @@ Cả 2 app organize theo **feature-first**: mỗi feature là 1 vertical slice t
 - **Privacy**: mỗi user chỉ thấy giao dịch trong (quỹ cá nhân của họ) ∪ (quỹ chung).
   Subagent thấy toàn bộ funds để generate insight cross-fund — nhưng UI output
   phải KHÔNG BAO GIỜ expose raw cross-fund transactions, chỉ aggregate ẩn danh.
-- **Income** chảy vào → auto-allocate sang 3 quỹ theo % user-set (`salary-rules`).
+- **Income** allocation: BE module `salary-rules` tồn tại để chia lương theo % vào quỹ riêng + chung, nhưng FE UI đã drop. Hiện tại không có flow log lương qua chat dùng rule này; có thể wire lại sau hoặc xoá module nếu permanent.
 - **Money** lưu integer VND (không decimal; 200,000đ → 200000).
 - **Locale**: timestamp lưu UTC; input/display Asia/Ho_Chi_Minh.
 - Default categories tiếng Việt (Ăn ngoài, Cà phê, Đi lại, Điện nước, Con cái, ...).

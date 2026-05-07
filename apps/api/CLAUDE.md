@@ -27,7 +27,7 @@ apps/api/
 │   │   ├── decorators/, filters/, interceptors/   (placeholder, dùng khi cần)
 │   ├── modules/                  feature flat (không layer subdivision)
 │   │   ├── users/                <name>.module + <name>.service + dto/ + entities/
-│   │   ├── salary-rules/         tách khỏi users, module riêng
+│   │   ├── salary-rules/         tách khỏi users (FE UI đã drop, module + endpoint còn — orphan, dọn sau nếu chắc)
 │   │   ├── funds/, transactions/, categories/, chat/, goals/, reports/
 │   │   ├── insights/             entities-only (chưa có module)
 │   │   └── budgets/              entities-only (chưa có module)
