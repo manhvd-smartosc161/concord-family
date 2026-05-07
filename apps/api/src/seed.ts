@@ -8,11 +8,11 @@ import 'reflect-metadata';
 import * as bcrypt from 'bcrypt';
 import { IsNull } from 'typeorm';
 import { AppDataSource } from './data-source';
-import { Category } from './categories/entities/category.entity';
-import { Fund } from './funds/entities/fund.entity';
-import { Goal } from './goals/entities/goal.entity';
-import { SalaryRule } from './users/entities/salary-rule.entity';
-import { User } from './users/entities/user.entity';
+import { Category } from './modules/categories/entities/category.entity';
+import { Fund } from './modules/funds/entities/fund.entity';
+import { Goal } from './modules/goals/entities/goal.entity';
+import { SalaryRule } from './modules/salary-rules/entities/salary-rule.entity';
+import { User } from './modules/users/entities/user.entity';
 
 const HUSBAND_EMAIL = 'manh@concord.local';
 const WIFE_EMAIL = 'wife@concord.local';

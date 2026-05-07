@@ -4,10 +4,10 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
-import { Category } from '../../categories/entities/category.entity';
-import { Fund } from '../../funds/entities/fund.entity';
-import { TransactionsService } from '../../transactions/transactions.service';
-import { User } from '../../users/entities/user.entity';
+import { Category } from '../../modules/categories/entities/category.entity';
+import { Fund } from '../../modules/funds/entities/fund.entity';
+import { TransactionsService } from '../../modules/transactions/transactions.service';
+import { User } from '../../modules/users/entities/user.entity';
 import { AnthropicService } from '../anthropic.service';
 import {
   AskClarificationInput,

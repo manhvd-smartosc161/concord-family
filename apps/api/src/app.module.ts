@@ -5,14 +5,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AgentModule } from './agent/agent.module';
 import { AuthModule } from './shared/auth/auth.module';
-import { CategoriesModule } from './categories/categories.module';
-import { ChatModule } from './chat/chat.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { ChatModule } from './modules/chat/chat.module';
 import { DatabaseModule } from './infra/database/database.module';
-import { FundsModule } from './funds/funds.module';
-import { GoalsModule } from './goals/goals.module';
-import { ReportsModule } from './reports/reports.module';
-import { TransactionsModule } from './transactions/transactions.module';
-import { UsersModule } from './users/users.module';
+import { FundsModule } from './modules/funds/funds.module';
+import { GoalsModule } from './modules/goals/goals.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { SalaryRulesModule } from './modules/salary-rules/salary-rules.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UsersModule } from './users/users.module';
     DatabaseModule,
     UsersModule,
     AuthModule,
+    SalaryRulesModule,
     FundsModule,
     CategoriesModule,
     TransactionsModule,

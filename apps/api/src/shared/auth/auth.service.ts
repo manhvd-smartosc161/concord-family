@@ -4,8 +4,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../../users/entities/user.entity';
-import { UsersService } from '../../users/users.service';
+import { User } from '../../modules/users/entities/user.entity';
+import { UsersService } from '../../modules/users/users.service';
 import type { ChangePasswordDto } from './dto/change-password.dto';
 import type { LoginDto } from './dto/login.dto';
 import type { AuthUserDto, JwtPayload, LoginResponseDto } from './auth.types';

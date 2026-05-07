@@ -1,4 +1,4 @@
-import type { UserRole } from '../../users/entities/user.entity';
+import type { UserRole } from '../../modules/users/entities/user.entity';
 
 /** Encoded inside the JWT — keep small. */
 export interface JwtPayload {

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Category } from '../categories/entities/category.entity';
-import { Fund } from '../funds/entities/fund.entity';
-import { TransactionsModule } from '../transactions/transactions.module';
+import { Category } from '../modules/categories/entities/category.entity';
+import { Fund } from '../modules/funds/entities/fund.entity';
+import { TransactionsModule } from '../modules/transactions/transactions.module';
 import { AnthropicService } from './anthropic.service';
 import { ParserSubagent } from './subagents/parser.subagent';
 
