@@ -9,7 +9,8 @@ import { listGoals, updateYearlySavingsGoal } from '@/features/goals/api';
 import type { GoalView } from '@/features/goals/types';
 import { getSalaryRule, updateSalaryRule } from '@/features/settings/api';
 import type { SalaryRule } from '@/features/settings/types';
-import { pickFundIcon, useAuthedLayout } from '../layout';
+import { useAuthedLayout } from '../layout';
+import { pickFundIcon } from '@/features/funds/components/fund-card';
 import { ChangePasswordModal } from '@/features/auth/components/change-password-modal';
 import {
   Card,

@@ -13,7 +13,8 @@ import {
 } from '@/features/chat/api';
 import type { ChatSessionView, ParseAction } from '@/features/chat/types';
 import type { FundView } from '@/features/funds/types';
-import { pickFundIcon, useAuthedLayout } from '../layout';
+import { useAuthedLayout } from '../layout';
+import { pickFundIcon } from '@/features/funds/components/fund-card';
 
 interface PendingMessage {
   id: string;

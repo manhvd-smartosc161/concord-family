@@ -3,14 +3,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
-import type { FundView } from '@/features/funds/types';
+import { FundFilterTabs } from '@/features/funds/components/fund-filter-tabs';
 import {
   deleteTransaction,
   listTransactions,
 } from '@/features/transactions/api';
 import type { TransactionView } from '@/features/transactions/types';
-import { useAuthedLayout } from '../layout';
+import { groupByDay } from '@/features/transactions/lib/group-by-day';
+import { DayGroup } from '@/features/transactions/components/day-group';
+import { MonthSwitcher } from '@/features/transactions/components/month-switcher';
+import { Pagination } from '@/features/transactions/components/pagination';
 import { EditTransactionModal } from '@/features/transactions/components/edit-transaction-modal';
+import { useAuthedLayout } from '../layout';
 import {
   Card,
   EmptyState,
@@ -60,7 +64,6 @@ export default function TransactionsPage() {
     setPage(0);
   }
 
-
   const fetchData = useCallback(async () => {
     setLoading(true);
     const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
@@ -89,7 +92,6 @@ export default function TransactionsPage() {
     void fetchData();
   }, [fetchData]);
 
-  // ─── Stats (within current filter) ──────────────────────────────────
   const stats = useMemo(() => {
     let income = 0;
     let expense = 0;
@@ -101,7 +103,6 @@ export default function TransactionsPage() {
     return { income, expense, net: income - expense };
   }, [items]);
 
-  // ─── Delete + edit handlers ─────────────────────────────────────────
   async function handleDelete(id: string) {
     if (!confirm('Xoá giao dịch này? Số dư quỹ sẽ được hoàn lại.')) return;
     try {
@@ -132,7 +133,6 @@ export default function TransactionsPage() {
 
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto max-w-5xl space-y-5">
-          {/* Filter bar */}
           <Card padding="p-4">
             <div className="space-y-3">
               <FundFilterTabs
@@ -158,7 +158,6 @@ export default function TransactionsPage() {
             </div>
           </Card>
 
-          {/* Stats row */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <StatCard
               label="Thu (trang này)"
@@ -178,7 +177,6 @@ export default function TransactionsPage() {
             />
           </div>
 
-          {/* List */}
           <Card>
             {loading && (
               <div className="space-y-2">
@@ -206,7 +204,6 @@ export default function TransactionsPage() {
               ))}
           </Card>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <Pagination
               page={page}
@@ -228,281 +225,4 @@ export default function TransactionsPage() {
       />
     </div>
   );
-}
-
-// ─── Sub-components ────────────────────────────────────────────────────
-
-function FundFilterTabs({
-  funds,
-  value,
-  onChange,
-}: {
-  funds: FundView[];
-  value: string | 'all';
-  onChange: (v: string | 'all') => void;
-}) {
-  const tabs: Array<
-    { id: 'all' | string; label: string; icon: string; disabled?: boolean }
-  > = [
-    { id: 'all', label: 'Tất cả', icon: '📋' },
-    ...funds.map((f) => ({
-      id: f.id,
-      label: f.name.replace('Quỹ ', ''),
-      icon:
-        f.accessLevel === 'private'
-          ? '🔒'
-          : f.type === 'joint'
-            ? '🤝'
-            : '💰',
-      disabled: f.accessLevel === 'private',
-    })),
-  ];
-  return (
-    <div className="flex flex-wrap gap-1">
-      {tabs.map((t) => {
-        const active = t.id === value;
-        return (
-          <button
-            key={t.id}
-            onClick={() => !t.disabled && onChange(t.id)}
-            disabled={t.disabled}
-            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-              active
-                ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-                : t.disabled
-                  ? 'cursor-not-allowed border-stone-200 bg-stone-50 text-stone-300'
-                  : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
-            }`}
-          >
-            <span>{t.icon}</span> {t.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function MonthSwitcher({
-  year,
-  month,
-  onShift,
-  isCurrent,
-}: {
-  year: number;
-  month: number;
-  onShift: (delta: number) => void;
-  isCurrent: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white p-0.5">
-      <button
-        onClick={() => onShift(-1)}
-        className="rounded-md p-1.5 text-stone-600 transition-colors hover:bg-stone-100"
-        aria-label="Tháng trước"
-      >
-        <Chevron dir="left" />
-      </button>
-      <div className="min-w-[120px] px-3 py-1 text-center text-sm font-medium text-stone-800">
-        Tháng {month}/{year}
-      </div>
-      <button
-        onClick={() => onShift(1)}
-        disabled={isCurrent}
-        className="rounded-md p-1.5 text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
-        aria-label="Tháng sau"
-      >
-        <Chevron dir="right" />
-      </button>
-    </div>
-  );
-}
-
-function Chevron({ dir }: { dir: 'left' | 'right' }) {
-  return (
-    <svg
-      className="h-4 w-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d={dir === 'left' ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}
-      />
-    </svg>
-  );
-}
-
-interface DayGrouped {
-  day: string;
-  items: TransactionView[];
-}
-
-function groupByDay(items: TransactionView[]): DayGrouped[] {
-  const buckets = new Map<string, TransactionView[]>();
-  for (const t of items) {
-    const day = t.date.slice(0, 10);
-    if (!buckets.has(day)) buckets.set(day, []);
-    buckets.get(day)!.push(t);
-  }
-  return Array.from(buckets.entries())
-    .sort(([a], [b]) => (a < b ? 1 : -1))
-    .map(([day, items]) => ({ day, items }));
-}
-
-function DayGroup({
-  day,
-  items,
-  onEdit,
-  onDelete,
-}: {
-  day: string;
-  items: TransactionView[];
-  onEdit: (t: TransactionView) => void;
-  onDelete: (id: string) => void;
-}) {
-  const dayLabel = formatDayLabel(day);
-  return (
-    <div className="mb-4 last:mb-0">
-      <div className="mb-1 flex items-baseline justify-between border-b border-stone-100 pb-1">
-        <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-          {dayLabel}
-        </span>
-        <span className="text-[11px] text-stone-400">
-          {items.length} giao dịch
-        </span>
-      </div>
-      {items.map((t) => (
-        <TxnRow
-          key={t.id}
-          t={t}
-          onEdit={() => onEdit(t)}
-          onDelete={() => onDelete(t.id)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function TxnRow({
-  t,
-  onEdit,
-  onDelete,
-}: {
-  t: TransactionView;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
-  const isExpense = t.amount < 0;
-  const isInternal = t.category?.name === 'Chuyển nội bộ';
-  return (
-    <div className="group flex items-center justify-between border-b border-stone-50 py-2.5 last:border-0">
-      <div className="flex items-center gap-3">
-        <span className="text-base">
-          {t.category?.icon ?? (isExpense ? '💸' : '💰')}
-        </span>
-        <div className="leading-tight">
-          <div className="text-sm text-stone-800">
-            {t.note ?? t.category?.name ?? '(không ghi chú)'}
-          </div>
-          <div className="text-[11px] text-stone-500">
-            <span className="font-medium">{t.fund.name}</span>
-            {t.category && ` · ${t.category.name}`}
-            {' · '}
-            {new Date(t.date).toLocaleTimeString('vi-VN', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-            {' · '}
-            <span className="text-stone-400">{t.loggedBy.name}</span>
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <span
-          className={`font-mono text-sm font-semibold tabular-nums ${
-            isInternal
-              ? 'text-stone-500'
-              : isExpense
-                ? 'text-rose-700'
-                : 'text-emerald-700'
-          }`}
-        >
-          {formatVND(t.amount, true)}
-        </span>
-        <div className="invisible flex items-center gap-1 group-hover:visible">
-          <button
-            onClick={onEdit}
-            aria-label="Sửa"
-            title="Sửa quỹ / số tiền / category"
-            className="rounded-md p-1 text-stone-400 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
-          >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </button>
-          <button
-            onClick={onDelete}
-            aria-label="Xoá"
-            title="Xoá + hoàn lại số dư"
-            className="rounded-md p-1 text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
-          >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Pagination({
-  page,
-  total,
-  onChange,
-}: {
-  page: number;
-  total: number;
-  onChange: (p: number) => void;
-}) {
-  return (
-    <div className="flex items-center justify-center gap-2">
-      <button
-        onClick={() => onChange(Math.max(0, page - 1))}
-        disabled={page === 0}
-        className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-30"
-      >
-        ← Trước
-      </button>
-      <span className="text-xs text-stone-500">
-        Trang {page + 1} / {total}
-      </span>
-      <button
-        onClick={() => onChange(Math.min(total - 1, page + 1))}
-        disabled={page >= total - 1}
-        className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-30"
-      >
-        Tiếp →
-      </button>
-    </div>
-  );
-}
-
-function formatDayLabel(iso: string): string {
-  const d = new Date(iso + 'T00:00:00');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  if (+d === +today) return 'Hôm nay';
-  if (+d === +yesterday) return 'Hôm qua';
-  return d.toLocaleDateString('vi-VN', {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
 }

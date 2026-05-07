@@ -15,7 +15,8 @@ import {
   listRecentTransactions,
 } from '@/features/transactions/api';
 import type { TransactionView } from '@/features/transactions/types';
-import { pickFundIcon, useAuthedLayout } from '../layout';
+import { useAuthedLayout } from '../layout';
+import { pickFundIcon } from '@/features/funds/components/fund-card';
 import { EditTransactionModal } from '@/features/transactions/components/edit-transaction-modal';
 import {
   Badge,
