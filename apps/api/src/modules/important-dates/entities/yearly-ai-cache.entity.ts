@@ -1,4 +1,4 @@
-import { Column, Entity, Index, Unique } from 'typeorm';
+import { Column, Entity, Index } from 'typeorm';
 import { BaseEntity } from '../../../shared/common/base.entity';
 
 export type AiDateKind =
@@ -16,16 +16,11 @@ export interface AiDateItem {
   remindDaysBefore: number[];
 }
 
-@Entity('monthly_ai_dates_cache')
-@Unique(['year', 'month'])
-export class MonthlyAiCache extends BaseEntity {
-  @Index()
+@Entity('yearly_ai_dates_cache')
+export class YearlyAiCache extends BaseEntity {
+  @Index({ unique: true })
   @Column({ type: 'int' })
   year!: number;
-
-  @Index()
-  @Column({ type: 'int' })
-  month!: number;
 
   @Column({ type: 'jsonb' })
   items!: AiDateItem[];

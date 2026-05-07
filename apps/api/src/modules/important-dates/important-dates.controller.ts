@@ -7,9 +7,11 @@ import {
   HttpCode,
   NotFoundException,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,7 +27,8 @@ import { ImportantDatesCron } from './important-dates.cron';
 import {
   ImportantDatesService,
   ImportantDateView,
-  MonthListView,
+  UpcomingView,
+  YearAgendaView,
 } from './important-dates.service';
 import {
   daysBetweenUtc,
@@ -49,9 +52,18 @@ export class ImportantDatesController {
     return this.service.list();
   }
 
-  @Get('this-month')
-  listThisMonth(): Promise<MonthListView> {
-    return this.service.listThisMonth();
+  @Get('upcoming')
+  upcoming(
+    @Query('limit') limitRaw?: string,
+  ): Promise<UpcomingView> {
+    const parsed = limitRaw ? parseInt(limitRaw, 10) : 10;
+    const limit = Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 100) : 10;
+    return this.service.listUpcoming(limit);
+  }
+
+  @Get('year/:year')
+  year(@Param('year', ParseIntPipe) year: number): Promise<YearAgendaView> {
+    return this.service.listForYear(year);
   }
 
   @Post()

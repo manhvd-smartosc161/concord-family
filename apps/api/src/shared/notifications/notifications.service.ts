@@ -3,8 +3,42 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../modules/users/entities/user.entity';
 import { EmailService } from './email.service';
-import { buildEmail } from './templates/important-date';
+import { LivelyMessageService } from './lively-message.service';
+import {
+  buildLivelyEmail,
+  type LivelyEmailInput,
+} from './templates/lively-email';
 import type { ImportantDate } from '../../modules/important-dates/entities/important-date.entity';
+
+const USER_ICONS: Record<ImportantDate['type'], string> = {
+  birthday: '🎂',
+  death_anniversary: '🕯️',
+  anniversary: '💍',
+  other: '📌',
+};
+
+const USER_LABELS: Record<ImportantDate['type'], string> = {
+  birthday: 'Sinh nhật',
+  death_anniversary: 'Ngày giỗ',
+  anniversary: 'Kỷ niệm',
+  other: 'Sự kiện',
+};
+
+const AI_ICONS: Record<string, string> = {
+  lunar: '🌙',
+  national: '🇻🇳',
+  international: '🌍',
+  religious: '🙏',
+  other: '📌',
+};
+
+const AI_LABELS: Record<string, string> = {
+  lunar: 'Ngày âm lịch',
+  national: 'Lễ Việt Nam',
+  international: 'Lễ quốc tế',
+  religious: 'Lễ tôn giáo',
+  other: 'Sự kiện',
+};
 
 @Injectable()
 export class NotificationsService {
@@ -13,55 +47,76 @@ export class NotificationsService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     private readonly email: EmailService,
+    private readonly lively: LivelyMessageService,
   ) {}
 
   async notifyImportantDate(
     entry: ImportantDate,
     daysBefore: number,
   ): Promise<void> {
-    const users = await this.users.find();
-    const { subject, html, text } = buildEmail(entry, daysBefore);
+    const message = await this.lively.generate({
+      name: entry.name,
+      kindLabel: USER_LABELS[entry.type],
+      daysBefore,
+      notes: entry.notes,
+    });
+    await this.deliver({
+      icon: USER_ICONS[entry.type],
+      kindLabel: USER_LABELS[entry.type],
+      name: entry.name,
+      occursOn: this.dateString(entry),
+      isLunar: entry.isLunar,
+      notes: entry.notes,
+      daysBefore,
+      message,
+    });
+  }
 
+  async notifyAiDate(
+    item: {
+      name: string;
+      notes: string | null;
+      occursOn: string;
+      kind: string;
+    },
+    daysBefore: number,
+  ): Promise<void> {
+    const icon = AI_ICONS[item.kind] ?? AI_ICONS.other;
+    const kindLabel = AI_LABELS[item.kind] ?? AI_LABELS.other;
+    const message = await this.lively.generate({
+      name: item.name,
+      kindLabel,
+      daysBefore,
+      notes: item.notes,
+    });
+    await this.deliver({
+      icon,
+      kindLabel,
+      name: item.name,
+      occursOn: item.occursOn,
+      isLunar: item.kind === 'lunar',
+      notes: item.notes,
+      daysBefore,
+      message,
+    });
+  }
+
+  private async deliver(input: LivelyEmailInput): Promise<void> {
+    const users = await this.users.find();
+    const { subject, html, text } = buildLivelyEmail(input);
     await Promise.allSettled(
       users.map((u) => this.email.send(u.email, { subject, html, text })),
     );
     this.logger.log(
-      `notified ${users.length} users for "${entry.name}" (d=${daysBefore})`,
+      `notified ${users.length} users for "${input.name}" (d=${input.daysBefore})`,
     );
   }
 
-  async notifyAiDate(item: {
-    name: string;
-    notes: string | null;
-    occursOn: string;
-    kind: string;
-  }, daysBefore: number): Promise<void> {
-    const users = await this.users.find();
-    const dayPhrase =
-      daysBefore === 0
-        ? 'Hôm nay là'
-        : daysBefore > 0
-          ? `Còn ${daysBefore} ngày nữa là`
-          : `Cách đây ${Math.abs(daysBefore)} ngày là`;
-    const subject = `📅 ${dayPhrase} ${item.name}`;
-    const body = `${dayPhrase} ${item.name} (dương: ${item.occursOn})${item.notes ? `\n${item.notes}` : ''}`;
-    const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1c1917;"><h1 style="font-size:20px;margin:0 0 12px;color:#0c0a09;">${escape(subject)}</h1><p style="font-size:14px;line-height:1.6;color:#44403c;white-space:pre-line;">${escape(body)}</p><hr style="border:none;border-top:1px solid #e7e5e4;margin:24px 0;" /><p style="font-size:12px;color:#a8a29e;">Concord — couple finance agent</p></div>`;
-    const text = `${subject}\n\n${body}`;
-
-    await Promise.allSettled(
-      users.map((u) => this.email.send(u.email, { subject, html, text })),
-    );
-    this.logger.log(
-      `notified ${users.length} users for AI date "${item.name}" (d=${daysBefore})`,
-    );
+  private dateString(entry: ImportantDate): string {
+    const raw =
+      typeof entry.date === 'string'
+        ? entry.date
+        : new Date(entry.date).toISOString();
+    return raw.slice(0, 10);
   }
-}
-
-function escape(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 }

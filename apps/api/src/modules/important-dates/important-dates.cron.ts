@@ -2,8 +2,8 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { NotificationsService } from '../../shared/notifications/notifications.service';
 import { ImportantDatesService } from './important-dates.service';
-import { MonthlyAiService } from './monthly-ai.service';
-import { addDaysUtc, daysBetweenUtc, todayInTimezone } from './lib/lunar';
+import { YearlyAiService } from './yearly-ai.service';
+import { daysBetweenUtc, todayInTimezone } from './lib/lunar';
 
 const TZ = 'Asia/Ho_Chi_Minh';
 
@@ -14,18 +14,17 @@ export class ImportantDatesCron implements OnModuleInit {
   constructor(
     private readonly service: ImportantDatesService,
     private readonly notifications: NotificationsService,
-    private readonly monthlyAi: MonthlyAiService,
+    private readonly yearlyAi: YearlyAiService,
   ) {}
 
   async onModuleInit(): Promise<void> {
     const today = todayInTimezone(TZ);
     const year = today.getUTCFullYear();
-    const month = today.getUTCMonth() + 1;
     try {
-      await this.monthlyAi.ensureCache(year, month);
+      await this.yearlyAi.ensureCache(year);
     } catch (err) {
       this.logger.warn(
-        `boot warm AI cache failed for ${year}-${month}: ${(err as Error).message}`,
+        `boot warm AI cache failed for ${year}: ${(err as Error).message}`,
       );
     }
   }
@@ -35,18 +34,15 @@ export class ImportantDatesCron implements OnModuleInit {
     await this.run();
   }
 
-  @Cron('0 0 1 * *', { timeZone: TZ })
-  async monthlyAiTick(): Promise<void> {
+  @Cron('0 0 1 1 *', { timeZone: TZ })
+  async yearlyAiTick(): Promise<void> {
     const today = todayInTimezone(TZ);
     const year = today.getUTCFullYear();
-    const month = today.getUTCMonth() + 1;
-    this.logger.log(`monthly AI tick: regenerating ${year}-${month}`);
+    this.logger.log(`yearly AI tick: regenerating ${year}`);
     try {
-      await this.monthlyAi.regenerate(year, month);
+      await this.yearlyAi.regenerate(year);
     } catch (err) {
-      this.logger.error(
-        `monthly AI regen failed: ${(err as Error).message}`,
-      );
+      this.logger.error(`yearly AI regen failed: ${(err as Error).message}`);
     }
   }
 
@@ -94,9 +90,9 @@ export class ImportantDatesCron implements OnModuleInit {
       item: { date: string; name: string; kind: string; notes: string | null };
       daysBefore: number;
     }[] = [];
-    const months = uniqueMonthsToScan(today);
-    for (const { year, month } of months) {
-      const cache = await this.monthlyAi.findCache(year, month);
+    const year = today.getUTCFullYear();
+    for (const y of [year, year + 1]) {
+      const cache = await this.yearlyAi.findCache(y);
       if (!cache) continue;
       for (const item of cache.items) {
         const occurrence = new Date(`${item.date}T00:00:00Z`);
@@ -108,20 +104,4 @@ export class ImportantDatesCron implements OnModuleInit {
     }
     return out;
   }
-}
-
-function uniqueMonthsToScan(today: Date): { year: number; month: number }[] {
-  const horizon = addDaysUtc(today, 60);
-  const months = new Set<string>();
-  for (
-    let d = new Date(today);
-    d <= horizon;
-    d = new Date(d.getTime() + 86_400_000)
-  ) {
-    months.add(`${d.getUTCFullYear()}-${d.getUTCMonth() + 1}`);
-  }
-  return Array.from(months).map((s) => {
-    const [y, m] = s.split('-').map(Number);
-    return { year: y, month: m };
-  });
 }

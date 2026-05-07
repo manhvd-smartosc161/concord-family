@@ -35,14 +35,14 @@ export type AiDateKind =
   | 'religious'
   | 'other';
 
-export type MonthItemKind = ImportantDateType | AiDateKind;
-export type MonthItemSource = 'user' | 'ai';
+export type AgendaItemKind = ImportantDateType | AiDateKind;
+export type AgendaItemSource = 'user' | 'ai';
 
-export interface MonthItem {
+export interface AgendaItem {
   occursOn: string;
   daysUntil: number;
-  source: MonthItemSource;
-  kind: MonthItemKind;
+  source: AgendaItemSource;
+  kind: AgendaItemKind;
   name: string;
   isLunar: boolean;
   notes: string | null;
@@ -50,9 +50,13 @@ export interface MonthItem {
   remindDaysBefore: number[];
 }
 
-export interface MonthListView {
+export interface UpcomingView {
+  items: AgendaItem[];
+  aiGeneratedAt: string | null;
+}
+
+export interface YearAgendaView {
   year: number;
-  month: number;
-  items: MonthItem[];
+  items: AgendaItem[];
   aiGeneratedAt: string | null;
 }

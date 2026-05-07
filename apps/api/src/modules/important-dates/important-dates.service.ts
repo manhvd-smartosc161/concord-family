@@ -4,13 +4,13 @@ import { Repository } from 'typeorm';
 import { CreateImportantDateDto } from './dto/create-important-date.dto';
 import { UpdateImportantDateDto } from './dto/update-important-date.dto';
 import { ImportantDate } from './entities/important-date.entity';
-import { MonthlyAiService } from './monthly-ai.service';
+import { YearlyAiService } from './yearly-ai.service';
 import {
   daysBetweenUtc,
   resolveOccurrenceForYear,
   todayInTimezone,
 } from './lib/lunar';
-import type { AiDateKind } from './entities/monthly-ai-cache.entity';
+import type { AiDateKind } from './entities/yearly-ai-cache.entity';
 
 const TZ = 'Asia/Ho_Chi_Minh';
 
@@ -27,16 +27,14 @@ export interface ImportantDateView {
   daysUntilNext: number;
 }
 
-export type MonthItemSource = 'user' | 'ai';
-export type MonthItemKind =
-  | ImportantDate['type']
-  | AiDateKind;
+export type AgendaItemSource = 'user' | 'ai';
+export type AgendaItemKind = ImportantDate['type'] | AiDateKind;
 
-export interface MonthItem {
+export interface AgendaItem {
   occursOn: string;
   daysUntil: number;
-  source: MonthItemSource;
-  kind: MonthItemKind;
+  source: AgendaItemSource;
+  kind: AgendaItemKind;
   name: string;
   isLunar: boolean;
   notes: string | null;
@@ -44,10 +42,14 @@ export interface MonthItem {
   remindDaysBefore: number[];
 }
 
-export interface MonthListView {
+export interface UpcomingView {
+  items: AgendaItem[];
+  aiGeneratedAt: string | null;
+}
+
+export interface YearAgendaView {
   year: number;
-  month: number;
-  items: MonthItem[];
+  items: AgendaItem[];
   aiGeneratedAt: string | null;
 }
 
@@ -56,7 +58,7 @@ export class ImportantDatesService {
   constructor(
     @InjectRepository(ImportantDate)
     private readonly repo: Repository<ImportantDate>,
-    private readonly monthlyAi: MonthlyAiService,
+    private readonly yearlyAi: YearlyAiService,
   ) {}
 
   async list(): Promise<ImportantDateView[]> {
@@ -115,30 +117,45 @@ export class ImportantDatesService {
     if (result.affected === 0) throw new NotFoundException();
   }
 
-  async listThisMonth(): Promise<MonthListView> {
+  async listUpcoming(limit = 10): Promise<UpcomingView> {
     const today = todayInTimezone(TZ);
-    const year = today.getUTCFullYear();
-    const month = today.getUTCMonth() + 1;
-    return this.listForMonth(year, month, today);
+    const all = await this.collectAgenda(today, today.getUTCFullYear());
+    const future = all.items.filter((i) => i.daysUntil >= 0);
+    future.sort((a, b) => a.daysUntil - b.daysUntil);
+    return {
+      items: future.slice(0, limit),
+      aiGeneratedAt: all.aiGeneratedAt,
+    };
   }
 
-  async listForMonth(
-    year: number,
-    month: number,
-    today: Date,
-  ): Promise<MonthListView> {
-    const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
-    const startOfNextMonth = new Date(Date.UTC(year, month, 1));
+  async listForYear(year: number): Promise<YearAgendaView> {
+    const today = todayInTimezone(TZ);
+    const collected = await this.collectAgenda(today, year, { fullYear: true });
+    const future = collected.items.filter((i) => i.daysUntil >= 0);
+    future.sort((a, b) => a.occursOn.localeCompare(b.occursOn));
+    return {
+      year,
+      items: future,
+      aiGeneratedAt: collected.aiGeneratedAt,
+    };
+  }
 
+  private async collectAgenda(
+    today: Date,
+    year: number,
+    opts: { fullYear?: boolean } = {},
+  ): Promise<{ items: AgendaItem[]; aiGeneratedAt: string | null }> {
+    const items: AgendaItem[] = [];
     const all = await this.repo.find();
-    const items: MonthItem[] = [];
 
     for (const e of all) {
-      let occurrence = resolveOccurrenceForYear(e, year);
-      if (occurrence < startOfMonth) {
-        occurrence = resolveOccurrenceForYear(e, year + 1);
-      }
-      if (occurrence >= startOfMonth && occurrence < startOfNextMonth) {
+      const dates = opts.fullYear
+        ? [resolveOccurrenceForYear(e, year)]
+        : [
+            resolveOccurrenceForYear(e, year),
+            resolveOccurrenceForYear(e, year + 1),
+          ];
+      for (const occurrence of dates) {
         items.push({
           occursOn: occurrence.toISOString().slice(0, 10),
           daysUntil: daysBetweenUtc(today, occurrence),
@@ -153,9 +170,12 @@ export class ImportantDatesService {
       }
     }
 
-    const cache = await this.monthlyAi.findCache(year, month);
-    const aiGeneratedAt = cache?.generatedAt.toISOString() ?? null;
-    if (cache) {
+    const years = opts.fullYear ? [year] : [year, year + 1];
+    let aiGeneratedAt: string | null = null;
+    for (const y of years) {
+      const cache = await this.yearlyAi.findCache(y);
+      if (!cache) continue;
+      if (y === year) aiGeneratedAt = cache.generatedAt.toISOString();
       for (const ai of cache.items) {
         const occurrence = new Date(`${ai.date}T00:00:00Z`);
         items.push({
@@ -172,9 +192,7 @@ export class ImportantDatesService {
       }
     }
 
-    const future = items.filter((i) => i.daysUntil >= 0);
-    future.sort((a, b) => a.occursOn.localeCompare(b.occursOn));
-    return { year, month, items: future, aiGeneratedAt };
+    return { items, aiGeneratedAt };
   }
 
   async findDueOn(

@@ -2,16 +2,21 @@ import { apiFetch } from '@/lib/api-client';
 import type {
   CreateImportantDatePayload,
   ImportantDateView,
-  MonthListView,
+  UpcomingView,
   UpdateImportantDatePayload,
+  YearAgendaView,
 } from './types';
 
 export function listImportantDates(): Promise<ImportantDateView[]> {
   return apiFetch<ImportantDateView[]>('/api/important-dates');
 }
 
-export function listThisMonth(): Promise<MonthListView> {
-  return apiFetch<MonthListView>('/api/important-dates/this-month');
+export function listUpcoming(limit = 10): Promise<UpcomingView> {
+  return apiFetch<UpcomingView>(`/api/important-dates/upcoming?limit=${limit}`);
+}
+
+export function listForYear(year: number): Promise<YearAgendaView> {
+  return apiFetch<YearAgendaView>(`/api/important-dates/year/${year}`);
 }
 
 export function createImportantDate(
