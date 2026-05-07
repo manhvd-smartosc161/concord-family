@@ -2,7 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ApiError, clearToken, getToken, me, type AuthUser } from './api';
+import { ApiError, clearToken, getToken } from './api-client';
+import { me } from '@/features/auth/api';
+import type { AuthUser } from '@/features/auth/types';
 
 export type AuthState =
   | { status: 'loading' }

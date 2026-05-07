@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ApiError, getToken, login, setToken } from '../../lib/api';
+import { ApiError, getToken, setToken } from '@/lib/api-client';
+import { login } from '@/features/auth/api';
 
 export default function LoginPage() {
   const router = useRouter();

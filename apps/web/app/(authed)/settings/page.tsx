@@ -1,18 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  ApiError,
-  formatVND,
-  getSalaryRule,
-  listGoals,
-  setFundOpeningBalance,
-  updateSalaryRule,
-  updateYearlySavingsGoal,
-  type FundView,
-  type GoalView,
-  type SalaryRule,
-} from '../../../lib/api';
+import { ApiError } from '@/lib/api-client';
+import { formatVND } from '@/lib/format';
+import { setFundOpeningBalance } from '@/features/funds/api';
+import type { FundView } from '@/features/funds/types';
+import { listGoals, updateYearlySavingsGoal } from '@/features/goals/api';
+import type { GoalView } from '@/features/goals/types';
+import { getSalaryRule, updateSalaryRule } from '@/features/settings/api';
+import type { SalaryRule } from '@/features/settings/types';
 import { pickFundIcon, useAuthedLayout } from '../layout';
 import { ChangePasswordModal } from '../_components/change-password-modal';
 import {

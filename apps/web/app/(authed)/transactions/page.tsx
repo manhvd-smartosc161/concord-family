@@ -1,14 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ApiError } from '@/lib/api-client';
+import { formatVND } from '@/lib/format';
+import type { FundView } from '@/features/funds/types';
 import {
-  ApiError,
   deleteTransaction,
-  formatVND,
   listTransactions,
-  type FundView,
-  type TransactionView,
-} from '../../../lib/api';
+} from '@/features/transactions/api';
+import type { TransactionView } from '@/features/transactions/types';
 import { useAuthedLayout } from '../layout';
 import { EditTransactionModal } from '../_components/edit-transaction-modal';
 import {

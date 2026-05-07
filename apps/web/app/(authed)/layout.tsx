@@ -9,12 +9,10 @@ import {
   useEffect,
   useState,
 } from 'react';
-import {
-  formatVND,
-  listFunds,
-  type AuthUser,
-  type FundView,
-} from '../../lib/api';
+import { formatVND } from '@/lib/format';
+import { listFunds } from '@/features/funds/api';
+import type { FundView } from '@/features/funds/types';
+import type { AuthUser } from '@/features/auth/types';
 import { logout, useAuth } from '../../lib/use-auth';
 import { ChangePasswordModal } from './_components/change-password-modal';
 

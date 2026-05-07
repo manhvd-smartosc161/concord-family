@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { getToken } from '../lib/api';
+import { getToken } from '@/lib/api-client';
 
 export default function Home() {
   const router = useRouter();

@@ -2,19 +2,19 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { ApiError } from '@/lib/api-client';
+import { formatVND } from '@/lib/format';
+import { listEnvelopes } from '@/features/funds/api';
+import type { FundView } from '@/features/funds/types';
+import { listGoals } from '@/features/goals/api';
+import type { GoalView } from '@/features/goals/types';
+import { getMonthlyReport } from '@/features/reports/api';
+import type { MonthlyReport } from '@/features/reports/types';
 import {
-  ApiError,
   deleteTransaction,
-  formatVND,
-  getMonthlyReport,
-  listEnvelopes,
-  listGoals,
   listRecentTransactions,
-  type FundView,
-  type GoalView,
-  type MonthlyReport,
-  type TransactionView,
-} from '../../../lib/api';
+} from '@/features/transactions/api';
+import type { TransactionView } from '@/features/transactions/types';
 import { pickFundIcon, useAuthedLayout } from '../layout';
 import { EditTransactionModal } from '../_components/edit-transaction-modal';
 import {

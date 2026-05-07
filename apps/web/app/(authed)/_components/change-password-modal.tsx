@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ApiError, changePassword } from '../../../lib/api';
+import { ApiError } from '@/lib/api-client';
+import { changePassword } from '@/features/auth/api';
 
 interface Props {
   open: boolean;

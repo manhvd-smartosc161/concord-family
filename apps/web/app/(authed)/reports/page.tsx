@@ -10,12 +10,12 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import {
-  formatVND,
-  getMonthlyReport,
-  type CategoryAggregate,
-  type MonthlyReport,
-} from '../../../lib/api';
+import { formatVND } from '@/lib/format';
+import { getMonthlyReport } from '@/features/reports/api';
+import type {
+  CategoryAggregate,
+  MonthlyReport,
+} from '@/features/reports/types';
 import {
   Card,
   EmptyState,

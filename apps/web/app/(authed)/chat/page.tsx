@@ -2,18 +2,17 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ApiError } from '@/lib/api-client';
+import { formatVND } from '@/lib/format';
 import {
-  ApiError,
   createChatSession,
   deleteChatSession,
-  formatVND,
   listChatMessages,
   listChatSessions,
   sendChat,
-  type ChatSessionView,
-  type FundView,
-  type ParseAction,
-} from '../../../lib/api';
+} from '@/features/chat/api';
+import type { ChatSessionView, ParseAction } from '@/features/chat/types';
+import type { FundView } from '@/features/funds/types';
 import { pickFundIcon, useAuthedLayout } from '../layout';
 
 interface PendingMessage {

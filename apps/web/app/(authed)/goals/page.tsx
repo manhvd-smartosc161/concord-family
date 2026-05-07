@@ -1,18 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ApiError } from '@/lib/api-client';
+import { formatVND } from '@/lib/format';
 import {
-  ApiError,
   archiveEnvelope,
   createEnvelope,
-  formatVND,
   listEnvelopes,
   unarchiveEnvelope,
   updateEnvelope,
-  type CreateEnvelopePayload,
-  type FundView,
-  type UpdateEnvelopePayload,
-} from '../../../lib/api';
+} from '@/features/funds/api';
+import type {
+  CreateEnvelopePayload,
+  FundView,
+  UpdateEnvelopePayload,
+} from '@/features/funds/types';
 import { useAuthedLayout } from '../layout';
 import {
   Badge,

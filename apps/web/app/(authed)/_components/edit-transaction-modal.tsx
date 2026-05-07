@@ -1,15 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  ApiError,
-  formatVND,
-  listCategories,
-  updateTransaction,
-  type CategoryView,
-  type FundView,
-  type TransactionView,
-} from '../../../lib/api';
+import { ApiError } from '@/lib/api-client';
+import { formatVND } from '@/lib/format';
+import { listCategories } from '@/features/categories/api';
+import type { CategoryView } from '@/features/categories/types';
+import type { FundView } from '@/features/funds/types';
+import { updateTransaction } from '@/features/transactions/api';
+import type { TransactionView } from '@/features/transactions/types';
 
 interface Props {
   open: boolean;
