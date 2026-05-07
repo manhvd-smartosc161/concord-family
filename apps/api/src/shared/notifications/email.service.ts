@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as dns from 'dns';
-import * as nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
 export interface EmailMessage {
   subject: string;
@@ -12,67 +11,53 @@ export interface EmailMessage {
 @Injectable()
 export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter | null = null;
+  private enabled = false;
   private from = '';
 
   constructor(private readonly config: ConfigService) {}
 
-  async onModuleInit(): Promise<void> {
-    dns.setDefaultResultOrder('ipv4first');
-
-    const user = this.config.get<string>('GMAIL_USER');
-    const pass = this.config.get<string>('GMAIL_APP_PASSWORD');
-    const from = this.config.get<string>('GMAIL_FROM');
-    if (!user || !pass) {
+  onModuleInit(): void {
+    const apiKey = this.config.get<string>('SENDGRID_API_KEY');
+    const from = this.config.get<string>('SENDGRID_FROM');
+    if (!apiKey || !from) {
       this.logger.warn(
-        'GMAIL_USER / GMAIL_APP_PASSWORD not set — email sending disabled',
+        'SENDGRID_API_KEY / SENDGRID_FROM not set — email sending disabled',
       );
       return;
     }
-
-    let host = 'smtp.gmail.com';
-    try {
-      const r = await dns.promises.lookup('smtp.gmail.com', { family: 4 });
-      host = r.address;
-      this.logger.log(`smtp.gmail.com resolved to IPv4 ${host}`);
-    } catch (err) {
-      this.logger.warn(
-        `IPv4 lookup failed, using hostname: ${(err as Error).message}`,
-      );
-    }
-
-    this.transporter = nodemailer.createTransport({
-      host,
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      auth: { user, pass },
-      connectionTimeout: 15_000,
-      greetingTimeout: 10_000,
-      socketTimeout: 20_000,
-      tls: { servername: 'smtp.gmail.com' },
-    });
-    this.from = from ?? user;
+    sgMail.setApiKey(apiKey);
+    this.from = from;
+    this.enabled = true;
+    this.logger.log(`SendGrid initialised, sender: ${this.from}`);
   }
 
   async send(to: string, message: EmailMessage): Promise<boolean> {
-    if (!this.transporter) {
-      this.logger.warn(`email skipped (transporter disabled): ${to}`);
+    if (!this.enabled) {
+      this.logger.warn(`email skipped (SendGrid disabled): ${to}`);
       return false;
     }
     try {
-      await this.transporter.sendMail({
+      const [resp] = await sgMail.send({
         from: this.from,
         to,
         subject: message.subject,
         text: message.text,
         html: message.html,
       });
+      this.logger.log(
+        `sent to ${to} (status ${resp.statusCode}, id=${resp.headers['x-message-id'] ?? '?'})`,
+      );
       return true;
     } catch (err) {
-      this.logger.error(
-        `email send failed to ${to}: ${(err as Error).message}`,
-      );
+      const e = err as {
+        message?: string;
+        response?: { body?: { errors?: { message: string }[] } };
+      };
+      const detail =
+        e.response?.body?.errors?.map((x) => x.message).join('; ') ??
+        e.message ??
+        String(err);
+      this.logger.error(`email send failed to ${to}: ${detail}`);
       return false;
     }
   }
