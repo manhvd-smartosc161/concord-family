@@ -153,10 +153,9 @@ export class ImportantDatesService {
       }
     }
 
-    let aiGeneratedAt: string | null = null;
-    try {
-      const cache = await this.monthlyAi.getOrGenerate(year, month);
-      aiGeneratedAt = cache.generatedAt.toISOString();
+    const cache = await this.monthlyAi.findCache(year, month);
+    const aiGeneratedAt = cache?.generatedAt.toISOString() ?? null;
+    if (cache) {
       for (const ai of cache.items) {
         const occurrence = new Date(`${ai.date}T00:00:00Z`);
         items.push({
@@ -171,18 +170,10 @@ export class ImportantDatesService {
           remindDaysBefore: ai.remindDaysBefore,
         });
       }
-    } catch (err) {
-      // AI failure is non-fatal — show user entries only
-      // eslint-disable-next-line no-console
-      console.warn('AI cache fetch failed:', (err as Error).message);
     }
 
     items.sort((a, b) => a.occursOn.localeCompare(b.occursOn));
     return { year, month, items, aiGeneratedAt };
-  }
-
-  async refreshAiCache(year: number, month: number): Promise<void> {
-    await this.monthlyAi.regenerate(year, month);
   }
 
   async findDueOn(

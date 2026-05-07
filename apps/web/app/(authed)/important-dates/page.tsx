@@ -5,8 +5,7 @@ import { Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import {
   deleteImportantDate,
   listThisMonth,
-  refreshAiCache,
-  testAiDate,
+  notifyAiDate,
   testNotifyImportantDate,
 } from '@/features/important-dates/api';
 import { ImportantDateFormModal } from '@/features/important-dates/components/important-date-form-modal';
@@ -36,7 +35,6 @@ export default function ImportantDatesPage() {
   const [view, setView] = useState<MonthListView | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ImportantDateView | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
 
   async function reload() {
     try {
@@ -44,20 +42,6 @@ export default function ImportantDatesPage() {
       setView(data);
     } catch (err) {
       console.error(err);
-    }
-  }
-
-  async function handleRefreshAi() {
-    if (!confirm('Hỏi AI lại để tạo danh sách ngày quan trọng cho tháng này?'))
-      return;
-    setRefreshing(true);
-    try {
-      const data = await refreshAiCache();
-      setView(data);
-    } catch (err) {
-      alert((err as Error).message);
-    } finally {
-      setRefreshing(false);
     }
   }
 
@@ -108,7 +92,7 @@ export default function ImportantDatesPage() {
       if (item.source === 'user' && item.sourceId) {
         await testNotifyImportantDate(item.sourceId);
       } else {
-        await testAiDate(item.name, item.occursOn, item.kind, item.notes);
+        await notifyAiDate(item.name, item.occursOn, item.kind, item.notes);
       }
       alert('Đã bắn — kiểm tra mail');
     } catch (err) {
@@ -119,36 +103,20 @@ export default function ImportantDatesPage() {
   const monthLabel = view
     ? `${MONTH_LABEL_VI[view.month]} ${view.year}`
     : '';
-  const aiInfo = view?.aiGeneratedAt
-    ? `AI cache: ${new Date(view.aiGeneratedAt).toLocaleString('vi-VN')}`
-    : 'AI cache: chưa có';
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
         title="Ngày quan trọng"
-        subtitle={
-          view ? `${monthLabel} — ${aiInfo}` : 'Đang tải…'
-        }
+        subtitle={view ? monthLabel : 'Đang tải…'}
         actions={
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleRefreshAi}
-              disabled={refreshing}
-              className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-200 disabled:opacity-50"
-              title="Hỏi AI lại để regen danh sách tháng này"
-            >
-              {refreshing ? '🤖 Đang hỏi AI…' : '🤖 Refresh AI'}
-            </button>
-            <button
-              type="button"
-              onClick={openCreate}
-              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
-            >
-              + Thêm ngày
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={openCreate}
+            className="cursor-pointer rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
+          >
+            + Thêm ngày
+          </button>
         }
       />
       <main className="flex-1 overflow-y-auto px-6 py-6">
@@ -165,8 +133,8 @@ export default function ImportantDatesPage() {
             <Card>
               <EmptyState
                 icon="📅"
-                title={`Không có ngày quan trọng nào trong ${monthLabel}`}
-                description="Bấm Refresh AI hoặc tự thêm ngày."
+                title={`Chưa có ngày quan trọng cho ${monthLabel}`}
+                description="AI sẽ tự sinh danh sách vào đầu mỗi tháng. Trong lúc đó, bạn có thể tự thêm ngày."
               />
             </Card>
           )}

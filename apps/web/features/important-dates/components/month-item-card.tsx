@@ -100,28 +100,29 @@ export function MonthItemCard({
             <p className="mt-2 text-xs italic text-stone-500">{item.notes}</p>
           )}
         </div>
-        <div className="flex shrink-0 flex-col gap-1">
+        <div className="flex shrink-0 flex-col items-stretch gap-1">
           <button
             type="button"
             onClick={onTest}
-            className="rounded-md px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
-            title="Bắn thử mail ngay"
+            className="flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+            title="Gửi mail thông báo ngay"
           >
-            🔔 Bắn thử
+            <span className="text-xl leading-none">🔔</span>
+            <span>Bắn thông báo</span>
           </button>
           {isUser && (
             <>
               <button
                 type="button"
                 onClick={onEdit}
-                className="rounded-md px-2 py-1 text-xs text-stone-600 hover:bg-stone-100"
+                className="cursor-pointer rounded-md px-2 py-1 text-xs text-stone-600 hover:bg-stone-100"
               >
                 Sửa
               </button>
               <button
                 type="button"
                 onClick={onDelete}
-                className="rounded-md px-2 py-1 text-xs text-rose-600 hover:bg-rose-50"
+                className="cursor-pointer rounded-md px-2 py-1 text-xs text-rose-600 hover:bg-rose-50"
               >
                 Xoá
               </button>

@@ -20,8 +20,7 @@ const TYPE_LABEL: Record<ImportantDateType, string> = {
 export function buildTitle(entry: ImportantDate, daysBefore: number): string {
   const icon = ICONS[entry.type];
   if (daysBefore === 0) return `${icon} Hôm nay là ${entry.name}`;
-  if (daysBefore === 1) return `${icon} Mai là ${entry.name}`;
-  return `${icon} Còn ${daysBefore} ngày là ${entry.name}`;
+  return `${icon} Còn ${daysBefore} ngày nữa là ${entry.name}`;
 }
 
 export function buildBody(entry: ImportantDate, daysBefore: number): string {
@@ -30,10 +29,7 @@ export function buildBody(entry: ImportantDate, daysBefore: number): string {
   if (daysBefore === 0) {
     return `Đừng quên ${label} hôm nay${lunarSuffix}.${entry.notes ? `\n${entry.notes}` : ''}`;
   }
-  if (daysBefore === 1) {
-    return `Mai sẽ là ${label}${lunarSuffix}, chuẩn bị từ hôm nay nhé.`;
-  }
-  return `Còn ${daysBefore} ngày nữa là ${label}${lunarSuffix}.`;
+  return `Còn ${daysBefore} ngày nữa là ${label}${lunarSuffix}.${entry.notes ? `\n${entry.notes}` : ''}`;
 }
 
 export function buildEmail(

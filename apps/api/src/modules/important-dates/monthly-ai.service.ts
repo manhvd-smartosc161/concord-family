@@ -26,7 +26,11 @@ export class MonthlyAiService {
     private readonly repo: Repository<MonthlyAiCache>,
   ) {}
 
-  async getOrGenerate(year: number, month: number): Promise<MonthlyAiCache> {
+  async findCache(year: number, month: number): Promise<MonthlyAiCache | null> {
+    return this.repo.findOne({ where: { year, month } });
+  }
+
+  async ensureCache(year: number, month: number): Promise<MonthlyAiCache> {
     const existing = await this.repo.findOne({ where: { year, month } });
     if (existing) return existing;
     return this.regenerate(year, month);

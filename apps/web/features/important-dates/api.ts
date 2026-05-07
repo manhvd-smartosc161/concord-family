@@ -43,19 +43,13 @@ export function testNotifyImportantDate(id: string): Promise<{ ok: true }> {
   });
 }
 
-export function refreshAiCache(): Promise<MonthListView> {
-  return apiFetch<MonthListView>('/api/important-dates/refresh-ai-cache', {
-    method: 'POST',
-  });
-}
-
-export function testAiDate(
+export function notifyAiDate(
   name: string,
   date: string,
   kind: string,
   notes: string | null,
 ): Promise<{ ok: true }> {
-  return apiFetch('/api/important-dates/_test-ai-date', {
+  return apiFetch('/api/important-dates/notify-ai-date', {
     method: 'POST',
     body: JSON.stringify({ name, date, kind, notes }),
   });

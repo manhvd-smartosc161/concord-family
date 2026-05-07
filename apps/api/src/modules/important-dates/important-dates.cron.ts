@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { NotificationsService } from '../../shared/notifications/notifications.service';
 import { ImportantDatesService } from './important-dates.service';
@@ -8,7 +8,7 @@ import { addDaysUtc, daysBetweenUtc, todayInTimezone } from './lib/lunar';
 const TZ = 'Asia/Ho_Chi_Minh';
 
 @Injectable()
-export class ImportantDatesCron {
+export class ImportantDatesCron implements OnModuleInit {
   private readonly logger = new Logger(ImportantDatesCron.name);
 
   constructor(
@@ -17,9 +17,37 @@ export class ImportantDatesCron {
     private readonly monthlyAi: MonthlyAiService,
   ) {}
 
+  async onModuleInit(): Promise<void> {
+    const today = todayInTimezone(TZ);
+    const year = today.getUTCFullYear();
+    const month = today.getUTCMonth() + 1;
+    try {
+      await this.monthlyAi.ensureCache(year, month);
+    } catch (err) {
+      this.logger.warn(
+        `boot warm AI cache failed for ${year}-${month}: ${(err as Error).message}`,
+      );
+    }
+  }
+
   @Cron('0 8 * * *', { timeZone: TZ })
   async tick(): Promise<void> {
     await this.run();
+  }
+
+  @Cron('0 0 1 * *', { timeZone: TZ })
+  async monthlyAiTick(): Promise<void> {
+    const today = todayInTimezone(TZ);
+    const year = today.getUTCFullYear();
+    const month = today.getUTCMonth() + 1;
+    this.logger.log(`monthly AI tick: regenerating ${year}-${month}`);
+    try {
+      await this.monthlyAi.regenerate(year, month);
+    } catch (err) {
+      this.logger.error(
+        `monthly AI regen failed: ${(err as Error).message}`,
+      );
+    }
   }
 
   async run(): Promise<{ count: number }> {
@@ -68,15 +96,8 @@ export class ImportantDatesCron {
     }[] = [];
     const months = uniqueMonthsToScan(today);
     for (const { year, month } of months) {
-      let cache;
-      try {
-        cache = await this.monthlyAi.getOrGenerate(year, month);
-      } catch (err) {
-        this.logger.warn(
-          `skip AI cache for ${year}-${month}: ${(err as Error).message}`,
-        );
-        continue;
-      }
+      const cache = await this.monthlyAi.findCache(year, month);
+      if (!cache) continue;
       for (const item of cache.items) {
         const occurrence = new Date(`${item.date}T00:00:00Z`);
         const diff = daysBetweenUtc(today, occurrence);

@@ -27,7 +27,11 @@ import {
   ImportantDateView,
   MonthListView,
 } from './important-dates.service';
-import { todayInTimezone } from './lib/lunar';
+import {
+  daysBetweenUtc,
+  resolveOccurrenceForYear,
+  todayInTimezone,
+} from './lib/lunar';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/important-dates')
@@ -89,37 +93,28 @@ export class ImportantDatesController {
   async testNotify(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<{ ok: true }> {
-    if (process.env.NODE_ENV !== 'development') {
-      throw new ForbiddenException('test notify disabled outside development');
-    }
     const entry = await this.repo.findOne({ where: { id } });
     if (!entry) throw new NotFoundException();
-    await this.notifications.notifyImportantDate(entry, 0);
+    const today = todayInTimezone('Asia/Ho_Chi_Minh');
+    const year = today.getUTCFullYear();
+    const occurrence = resolveOccurrenceForYear(entry, year);
+    const target =
+      occurrence < today
+        ? resolveOccurrenceForYear(entry, year + 1)
+        : occurrence;
+    const daysBefore = Math.max(0, daysBetweenUtc(today, target));
+    await this.notifications.notifyImportantDate(entry, daysBefore);
     return { ok: true };
   }
 
-  @Post('refresh-ai-cache')
-  async refreshAi(): Promise<MonthListView> {
-    const today = todayInTimezone('Asia/Ho_Chi_Minh');
-    const year = today.getUTCFullYear();
-    const month = today.getUTCMonth() + 1;
-    await this.service.refreshAiCache(year, month);
-    return this.service.listForMonth(year, month, today);
-  }
-
-  @Post('_test-ai-date')
-  async testAiDate(
-    @Body() body: { name: string; date: string; notes?: string | null; kind?: string },
+  @Post('notify-ai-date')
+  async notifyAiDate(
+    @Body()
+    body: { name: string; date: string; notes?: string | null; kind?: string },
   ): Promise<{ ok: true }> {
-    if (process.env.NODE_ENV !== 'development') {
-      throw new ForbiddenException('test disabled outside development');
-    }
     const target = new Date(`${body.date.slice(0, 10)}T00:00:00Z`);
     const today = todayInTimezone('Asia/Ho_Chi_Minh');
-    const daysBefore = Math.max(
-      0,
-      Math.round((target.getTime() - today.getTime()) / 86_400_000),
-    );
+    const daysBefore = Math.max(0, daysBetweenUtc(today, target));
     await this.notifications.notifyAiDate(
       {
         name: body.name,
