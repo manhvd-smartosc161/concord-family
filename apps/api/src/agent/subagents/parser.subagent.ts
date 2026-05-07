@@ -1,0 +1,384 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import type Anthropic from '@anthropic-ai/sdk';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Repository } from 'typeorm';
+import { Category } from '../../categories/entities/category.entity';
+import { Fund } from '../../funds/entities/fund.entity';
+import { TransactionsService } from '../../transactions/transactions.service';
+import { User } from '../../users/entities/user.entity';
+import { AnthropicService } from '../anthropic.service';
+import {
+  AskClarificationInput,
+  DeleteTransactionInput,
+  LogTransactionInput,
+  UpdateTransactionInput,
+  parserTools,
+} from '../tools';
+
+export type ParseAction =
+  | {
+      kind: 'logged';
+      id: string;
+      fundName: string;
+      amount: number;
+      categoryName: string | null;
+      balance: number;
+    }
+  | {
+      kind: 'updated';
+      id: string;
+      fundName: string;
+      amount: number;
+      categoryName: string | null;
+    }
+  | { kind: 'deleted'; id: string }
+  | { kind: 'clarify'; question: string }
+  | { kind: 'tool_error'; toolName: string; message: string };
+
+export interface ParseResult {
+  reply: string;
+  actions: ParseAction[];
+  stopReason: string | null;
+  usage: { inputTokens: number; outputTokens: number };
+}
+
+@Injectable()
+export class ParserSubagent {
+  private readonly logger = new Logger(ParserSubagent.name);
+  private readonly skill: string;
+
+  constructor(
+    private readonly anthropic: AnthropicService,
+    private readonly transactionsService: TransactionsService,
+    @InjectRepository(Fund)
+    private readonly fundRepo: Repository<Fund>,
+    @InjectRepository(Category)
+    private readonly categoryRepo: Repository<Category>,
+  ) {
+    // Skill files live in agent/skills/. When tsc compiles this file
+    // to dist/, __dirname becomes dist/agent/subagents/, so the skill
+    // path resolves the same relative to its sibling folder.
+    const skillPath = path.join(
+      __dirname,
+      '..',
+      'skills',
+      'parse-vn-expense.md',
+    );
+    this.skill = fs.readFileSync(skillPath, 'utf8');
+  }
+
+  async parse(
+    message: string,
+    user: User,
+    options?: {
+      defaultFundName?: string;
+      history?: Array<{ role: 'user' | 'agent'; text: string }>;
+    },
+  ): Promise<ParseResult> {
+    const context = await this.buildContext(user, options?.defaultFundName);
+    const messages = buildMessages(options?.history ?? [], message);
+
+    const response = await this.anthropic.client.messages.create({
+      model: this.anthropic.fastModel,
+      max_tokens: 1024,
+      system: [
+        // Static portion → cacheable (saves ~90% of input cost on repeat calls).
+        {
+          type: 'text',
+          text: this.skill,
+          cache_control: { type: 'ephemeral' },
+        },
+        // Dynamic portion (changes per request).
+        { type: 'text', text: context },
+      ],
+      tools: parserTools,
+      // Buộc model phải gọi 1 trong 4 tool, không cho emit text-only reply
+      // (model hay hallucinate "✅ Đã ghi..." mà không thực sự log).
+      tool_choice: { type: 'any' },
+      messages,
+    });
+
+    return this.handleResponse(response, user, message);
+  }
+
+  /** Build the dynamic context block (current user, visible funds, category list). */
+  private async buildContext(
+    user: User,
+    defaultFundName?: string,
+  ): Promise<string> {
+    const recentTxns = await this.transactionsService.lastLoggedByUser(
+      user.id,
+      5,
+    );
+    const recentLines = recentTxns.length
+      ? recentTxns.map((t) => {
+          const sign = t.amount >= 0 ? '+' : '−';
+          const abs = Math.abs(t.amount).toLocaleString('vi-VN');
+          const cat = t.category?.name ?? '(no category)';
+          const note = t.note ? ` — "${t.note}"` : '';
+          const ts = t.createdAt.toLocaleString('vi-VN', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+          });
+          return `  - id=\`${t.id}\` · ${t.fund.name} · ${sign}${abs}đ · ${cat}${note} · log lúc ${ts}`;
+        })
+      : ['  (chưa có giao dịch nào trước đó)'];
+    // Funds the user can WRITE to: their personal + joint.
+    const writableFunds = await this.fundRepo.find({
+      where: [{ ownerId: user.id }, { ownerId: IsNull() }],
+      order: { type: 'ASC', name: 'ASC' },
+    });
+
+    // Top-level categories with their children (compact tree).
+    const tops = await this.categoryRepo.find({
+      where: { parentId: IsNull() },
+      order: { name: 'ASC' },
+    });
+    const tree: string[] = [];
+    for (const top of tops) {
+      const children = await this.categoryRepo.find({
+        where: { parentId: top.id },
+        order: { name: 'ASC' },
+      });
+      const childNames = children.map((c) => c.name).join(', ');
+      tree.push(`  - ${top.icon ?? '•'} ${top.name}: ${childNames}`);
+    }
+
+    const nowVN = new Date().toLocaleString('vi-VN', {
+      timeZone: 'Asia/Ho_Chi_Minh',
+    });
+
+    const defaultFundLine = defaultFundName
+      ? [
+          '',
+          `### 🎯 Cuộc hội thoại này gắn với quỹ: **"${defaultFundName}"**`,
+          `→ Khi user KHÔNG nói rõ quỹ nào, mặc định dùng **${defaultFundName}**.`,
+          `→ Vẫn tuân thủ rule semantic (lương → quỹ riêng người nhận; "đưa vợ" → transfer 2 leg).`,
+        ]
+      : [];
+
+    return [
+      '## Current Context',
+      '',
+      `- Current user: **${user.name}** (role: ${user.role === 'husband' ? 'chồng' : 'vợ'})`,
+      `- Now: ${nowVN} (Asia/Ho_Chi_Minh)`,
+      ...defaultFundLine,
+      '',
+      '### Quỹ user CÓ THỂ ghi vào',
+      ...writableFunds.map(
+        (f) =>
+          `  - **"${f.name}"** (${f.type === 'joint' ? 'chung' : 'riêng'}, balance hiện tại: ${(
+            f.balance ?? 0
+          ).toLocaleString('vi-VN')}đ)`,
+      ),
+      '',
+      '### Categories có sẵn (top-level: sub-categories)',
+      ...tree,
+      '',
+      '> Khi gọi log_transaction, dùng EXACT fundName từ list trên.',
+      '> categoryName có thể là tên top-level HOẶC sub-category.',
+      '> KHÔNG bịa fund/category mới.',
+      '',
+      '### Giao dịch user vừa log (để update_transaction / delete_transaction)',
+      ...recentLines,
+    ].join('\n');
+  }
+
+  private async handleResponse(
+    response: Anthropic.Message,
+    user: User,
+    rawText: string,
+  ): Promise<ParseResult> {
+    const actions: ParseAction[] = [];
+    const replyParts: string[] = [];
+
+    for (const block of response.content) {
+      if (block.type === 'text') {
+        replyParts.push(block.text);
+      } else if (block.type === 'tool_use') {
+        if (block.name === 'log_transaction') {
+          const input = block.input as LogTransactionInput;
+          try {
+            const { txn, fund, category } =
+              await this.transactionsService.createFromAgent(
+                input,
+                user,
+                rawText,
+              );
+            actions.push({
+              kind: 'logged',
+              id: txn.id,
+              fundName: fund.name,
+              amount: input.amount,
+              categoryName: category?.name ?? null,
+              balance: fund.balance,
+            });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`log_transaction failed: ${msg}`);
+            actions.push({
+              kind: 'tool_error',
+              toolName: 'log_transaction',
+              message: msg,
+            });
+          }
+        } else if (block.name === 'ask_clarification') {
+          const input = block.input as AskClarificationInput;
+          actions.push({ kind: 'clarify', question: input.question });
+        } else if (block.name === 'update_transaction') {
+          const input = block.input as UpdateTransactionInput;
+          try {
+            const view = await this.transactionsService.updateFromAgent(
+              input.txn_id,
+              user,
+              {
+                fundName: input.fundName,
+                amount: input.amount,
+                categoryName: input.categoryName,
+                note: input.note,
+              },
+            );
+            actions.push({
+              kind: 'updated',
+              id: view.id,
+              fundName: view.fund.name,
+              amount: view.amount,
+              categoryName: view.category?.name ?? null,
+            });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`update_transaction failed: ${msg}`);
+            actions.push({
+              kind: 'tool_error',
+              toolName: 'update_transaction',
+              message: msg,
+            });
+          }
+        } else if (block.name === 'delete_transaction') {
+          const input = block.input as DeleteTransactionInput;
+          try {
+            await this.transactionsService.deleteForUser(input.txn_id, user);
+            actions.push({ kind: 'deleted', id: input.txn_id });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`delete_transaction failed: ${msg}`);
+            actions.push({
+              kind: 'tool_error',
+              toolName: 'delete_transaction',
+              message: msg,
+            });
+          }
+        }
+      }
+    }
+
+    let reply = replyParts.join('').trim();
+    // The model often emits only tool_use blocks with no text when stop_reason
+    // is "tool_use". Synthesize a deterministic confirmation from the actions
+    // we just executed — cheaper than a follow-up Claude call.
+    if (!reply) reply = synthesizeReply(actions);
+
+    return {
+      reply,
+      actions,
+      stopReason: response.stop_reason ?? null,
+      usage: {
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+      },
+    };
+  }
+}
+
+/**
+ * Convert chat history (role='user'|'agent') sang Anthropic messages format.
+ * Skip empty texts. Đảm bảo array kết thúc bằng user turn (current message);
+ * nếu history kết thúc bằng user, history's trailing user turn được giữ và
+ * current message append thêm vào cuối — nhưng chuẩn flow là history luôn
+ * end ở agent vì current user message chưa được append vào history khi gọi.
+ */
+function buildMessages(
+  history: Array<{ role: 'user' | 'agent'; text: string }>,
+  currentMessage: string,
+): Array<{ role: 'user' | 'assistant'; content: string }> {
+  const out: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+  for (const h of history) {
+    const text = h.text?.trim();
+    if (!text) continue;
+    const role = h.role === 'agent' ? 'assistant' : 'user';
+    if (out.length > 0 && out[out.length - 1].role === role) {
+      out[out.length - 1].content += '\n\n' + text;
+    } else {
+      out.push({ role, content: text });
+    }
+  }
+  if (out.length > 0 && out[out.length - 1].role === 'user') {
+    out[out.length - 1].content += '\n\n' + currentMessage;
+  } else {
+    out.push({ role: 'user', content: currentMessage });
+  }
+  return out;
+}
+
+function synthesizeReply(actions: ParseAction[]): string {
+  if (actions.length === 0) {
+    return 'Tôi chưa hiểu yêu cầu. Thử gõ rõ số tiền + quỹ + nội dung nhé.';
+  }
+  const logged = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'logged' }> => a.kind === 'logged',
+  );
+  const updated = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'updated' }> => a.kind === 'updated',
+  );
+  const deleted = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'deleted' }> => a.kind === 'deleted',
+  );
+  const clarifies = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'clarify' }> => a.kind === 'clarify',
+  );
+  const errors = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'tool_error' }> =>
+      a.kind === 'tool_error',
+  );
+
+  const parts: string[] = [];
+  if (logged.length === 1) {
+    const a = logged[0];
+    parts.push(
+      `✅ Đã ghi: ${formatVND(a.amount, true)} • ${a.fundName}` +
+        (a.categoryName ? ` • ${a.categoryName}` : ''),
+    );
+  } else if (logged.length > 1) {
+    parts.push(`✅ Đã ghi ${logged.length} giao dịch.`);
+  }
+  if (updated.length > 0) {
+    for (const u of updated) {
+      parts.push(
+        `🔧 Đã sửa: ${formatVND(u.amount, true)} • ${u.fundName}` +
+          (u.categoryName ? ` • ${u.categoryName}` : ''),
+      );
+    }
+  }
+  if (deleted.length > 0) {
+    parts.push(
+      deleted.length === 1
+        ? '🗑️ Đã xoá giao dịch.'
+        : `🗑️ Đã xoá ${deleted.length} giao dịch.`,
+    );
+  }
+  if (clarifies.length > 0) {
+    parts.push(...clarifies.map((c) => `❓ ${c.question}`));
+  }
+  if (errors.length > 0) {
+    parts.push(...errors.map((e) => `⚠️ ${e.message}`));
+  }
+  return parts.join('\n');
+}
+
+function formatVND(n: number, withSign = false): string {
+  const formatted = Math.abs(n).toLocaleString('vi-VN');
+  if (n < 0) return `−${formatted}đ`;
+  if (n === 0 || !withSign) return `${formatted}đ`;
+  return `+${formatted}đ`;
+}

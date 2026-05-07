@@ -1,0 +1,19 @@
+{
+  "name": "concord",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Couple finance agent — NextJS + NestJS + Claude Agent SDK",
+  "scripts": {
+    "dev:api": "pnpm --filter api start:dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "db:up": "docker compose up -d postgres redis",
+    "db:down": "docker compose down"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  }
+}
