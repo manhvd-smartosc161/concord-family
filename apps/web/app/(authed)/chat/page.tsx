@@ -439,7 +439,7 @@ function FundTabs({
         const variant = disabled
           ? 'cursor-not-allowed opacity-40'
           : isActive
-            ? f.purpose === 'envelope'
+            ? (f.purpose === 'savings' || f.purpose === 'investment')
               ? 'bg-sky-50 ring-1 ring-sky-300 text-sky-900'
               : f.type === 'joint'
                 ? 'bg-amber-50 ring-1 ring-amber-300 text-amber-900'

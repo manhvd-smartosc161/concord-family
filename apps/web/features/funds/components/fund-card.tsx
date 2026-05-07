@@ -6,11 +6,11 @@ import type { FundView } from '../types';
 export function pickFundIcon(fund: {
   name: string;
   type: 'personal' | 'joint';
-  purpose: 'general' | 'envelope';
+  purpose: 'spending' | 'savings' | 'investment';
   accessLevel: 'owner' | 'joint' | 'private';
 }): string {
   if (fund.accessLevel === 'private') return '🔒';
-  if (fund.purpose === 'general') {
+  if (fund.purpose === 'spending') {
     return fund.type === 'joint' ? '🤝' : '💰';
   }
   const n = fund.name.toLowerCase();
@@ -35,13 +35,13 @@ export function pickFundIcon(fund: {
 
 export function FundCard({ fund }: { fund: FundView }) {
   const isPrivate = fund.accessLevel === 'private';
+  const isGoalFund = fund.purpose === 'savings' || fund.purpose === 'investment';
   const variant = {
     owner:
       'border-emerald-200 bg-gradient-to-br from-emerald-50 to-white',
-    joint:
-      fund.purpose === 'envelope'
-        ? 'border-sky-200 bg-gradient-to-br from-sky-50 to-white'
-        : 'border-amber-200 bg-gradient-to-br from-amber-50 to-white',
+    joint: isGoalFund
+      ? 'border-sky-200 bg-gradient-to-br from-sky-50 to-white'
+      : 'border-amber-200 bg-gradient-to-br from-amber-50 to-white',
     private: 'border-stone-200 bg-stone-50',
   }[fund.accessLevel];
 
@@ -50,9 +50,11 @@ export function FundCard({ fund }: { fund: FundView }) {
     fund.accessLevel === 'owner'
       ? 'Của bạn'
       : fund.accessLevel === 'joint'
-        ? fund.purpose === 'envelope'
-          ? 'Mục tiêu'
-          : 'Chung'
+        ? fund.purpose === 'investment'
+          ? 'Đầu tư'
+          : fund.purpose === 'savings'
+            ? 'Tiết kiệm'
+            : 'Chung'
         : 'Riêng tư';
 
   return (

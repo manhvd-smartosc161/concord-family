@@ -156,5 +156,5 @@ pnpm --filter api test
   - Xoá transactions + chat sessions/messages, reset `funds.balance`.
   - Giữ users, fund entities, categories, salary rules, goals.
   - `--keep-opening`: giữ entry số dư khởi điểm (`__opening_balance__`), balance recompute từ chúng.
-  - `--drop-envelopes`: xoá luôn các fund với `purpose='envelope'` (du lịch, đầu tư…).
+  - `--drop-envelopes`: xoá luôn các fund với `purpose IN ('savings','investment')` (du lịch, đầu tư…).
   - Source: `src/scripts/reset-transactions.ts`. Khi cần reset state để demo/test, dùng cái này.

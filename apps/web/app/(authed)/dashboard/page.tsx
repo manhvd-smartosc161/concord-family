@@ -207,6 +207,9 @@ function GoalHero({ goal }: { goal: GoalView }) {
         </span>
       </div>
       <ProgressBar value={pct} max={100} tone={tone} />
+      <p className="mt-1.5 text-[10px] text-stone-400">
+        Tính theo dòng tiền vào quỹ tiết kiệm & đầu tư trong năm
+      </p>
 
       <div className="mt-4 grid grid-cols-3 gap-4 border-t border-stone-100 pt-4">
         <Stat
@@ -361,15 +364,18 @@ function FundsBlock({
           Tổng (bạn thấy được): {formatVND(totalVisible)}
         </span>
       </div>
-      <div className="space-y-2">
-        {[...funds]
-          .sort((a, b) => {
-            if (a.purpose !== b.purpose) {
-              return a.purpose === 'general' ? -1 : 1;
-            }
-            return a.name.localeCompare(b.name, 'vi');
-          })
-          .map((f) => {
+      {(() => {
+        const sorted = [...funds].sort((a, b) => {
+          if (a.purpose !== b.purpose) {
+            return a.purpose === 'spending' ? -1 : 1;
+          }
+          return a.name.localeCompare(b.name, 'vi');
+        });
+        const spendingFunds = sorted.filter((f) => f.purpose === 'spending');
+        const goalFunds = sorted.filter(
+          (f) => f.purpose === 'savings' || f.purpose === 'investment',
+        );
+        const renderFund = (f: (typeof funds)[number]) => {
           const isPrivate = f.accessLevel === 'private';
           const tone = {
             owner: 'border-emerald-100 bg-emerald-50/40',
@@ -382,8 +388,7 @@ function FundsBlock({
               className={`flex items-center justify-between rounded-lg border ${tone} px-3 py-2.5`}
             >
               <span className="flex items-center gap-2 text-sm font-medium text-stone-700">
-                <span>{pickFundIcon(f)}</span>{' '}
-                {f.name}
+                <span>{pickFundIcon(f)}</span> {f.name}
               </span>
               <span className="font-mono text-sm font-semibold tabular-nums">
                 {isPrivate ? (
@@ -396,8 +401,21 @@ function FundsBlock({
               </span>
             </div>
           );
-        })}
-      </div>
+        };
+        return (
+          <div className="space-y-2">
+            {spendingFunds.map(renderFund)}
+            {goalFunds.length > 0 && (
+              <>
+                <p className="pt-1 text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                  Tiết kiệm & đầu tư
+                </p>
+                {goalFunds.map(renderFund)}
+              </>
+            )}
+          </div>
+        );
+      })()}
     </Card>
   );
 }

@@ -91,9 +91,13 @@ export class GoalsService {
 
     let fundIds: string[];
     if (isCoupleSave) {
-      fundIds = (await this.fundRepo.find({ where: { type: 'joint' } })).map(
-        (f) => f.id,
-      );
+      // Chỉ track quỹ tiết kiệm + đầu tư — KHÔNG phải quỹ chi tiêu.
+      // Tiết kiệm thực = dòng tiền vào quỹ tiết kiệm/đầu tư (qua Chuyển nội bộ).
+      fundIds = (
+        await this.fundRepo.find({
+          where: { purpose: In(['savings', 'investment']) },
+        })
+      ).map((f) => f.id);
     } else if (g.userId) {
       fundIds = (
         await this.fundRepo.find({ where: { ownerId: g.userId } })
@@ -112,8 +116,10 @@ export class GoalsService {
         })
       : [];
 
+    // Couple savings: GIỮ "Chuyển nội bộ" — đây chính là hành động tiết kiệm.
+    // Chỉ loại opening_balance để không double-count số dư khai báo đầu kỳ.
     const txns = isCoupleSave
-      ? allTxns
+      ? allTxns.filter((t) => t.note !== OPENING_BALANCE_NOTE)
       : allTxns.filter(
           (t) =>
             t.category?.name !== 'Chuyển nội bộ' &&
