@@ -15,10 +15,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  const port = parseInt(
-    process.env.PORT ?? process.env.API_PORT ?? '3001',
-    10,
-  );
+  const port = parseInt(process.env.PORT ?? process.env.API_PORT ?? '3001', 10);
   await app.listen(port, '0.0.0.0');
   Logger.log(`🟢 Concord API listening on 0.0.0.0:${port}`, 'Bootstrap');
 }

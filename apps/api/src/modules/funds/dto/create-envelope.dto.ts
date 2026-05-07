@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsDateString,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -12,6 +13,10 @@ export class CreateEnvelopeDto {
   @IsString()
   @Length(1, 100)
   name!: string;
+
+  @IsOptional()
+  @IsIn(['savings', 'investment'])
+  purpose?: 'savings' | 'investment';
 
   @IsOptional()
   @Type(() => Number)

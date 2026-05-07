@@ -37,7 +37,20 @@ Cả 2 app organize theo **feature-first**: mỗi feature là 1 vertical slice t
 
 ## Business rules (load-bearing — không được vi phạm)
 
-- **Three funds**: Mạnh (chồng cá nhân), Wife cá nhân, Joint (chung).
+- **Three spending funds**: Mạnh (chồng cá nhân), Wife cá nhân, Joint/Chung — đây là **quỹ chi tiêu**
+  (`purpose='spending'`). Dòng tiền liên tục: lương về, chi tiêu hằng ngày, chuyển nội bộ giữa các quỹ.
+  **Không thể archive**. Không tạo thêm spending fund — 3 cái này là cố định.
+
+- **Savings & Investment funds** (`purpose='savings'` hoặc `purpose='investment'`): quỹ mục tiêu tĩnh
+  (du lịch, mua xe, đầu tư chứng khoán...). Không có income trực tiếp — chỉ nhận tiền qua
+  "Chuyển nội bộ" từ quỹ chi tiêu. Có thể tạo/archive/unarchive tự do. Hiện tại luôn là `type='joint'`
+  (không có savings fund riêng cá nhân).
+
+- **Annual savings goal progress** = net inflow vào toàn bộ savings + investment funds trong năm.
+  **KHÔNG phải** thu/chi của Quỹ Chung. "Chuyển nội bộ" vào savings fund CHÍNH LÀ hành động tiết kiệm —
+  không loại bỏ nó. Opening balance (`__opening_balance__`) bị loại để tránh double-count.
+  Logic nằm tại `GoalsService.computeProgress()` (goals.service.ts).
+
 - **Privacy**: mỗi user chỉ thấy giao dịch trong (quỹ cá nhân của họ) ∪ (quỹ chung).
   Subagent thấy toàn bộ funds để generate insight cross-fund — nhưng UI output
   phải KHÔNG BAO GIỜ expose raw cross-fund transactions, chỉ aggregate ẩn danh.

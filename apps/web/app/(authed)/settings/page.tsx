@@ -165,9 +165,9 @@ function YearlyGoalSection() {
         Mục tiêu tiết kiệm năm {year}
       </h3>
       <p className="mb-5 text-xs text-stone-500">
-        Số tiền 2 vợ chồng muốn để dành cùng nhau trong năm. Tiến độ trên
-        dashboard tính bằng <span className="font-medium">tổng thu − tổng chi</span>{' '}
-        của cả 3 quỹ (đã loại &ldquo;Chuyển nội bộ&rdquo;).
+        Số tiền 2 vợ chồng muốn để dành cùng nhau trong năm. Tiến độ tính bằng{' '}
+        <span className="font-medium">tổng tiền đã chuyển vào các quỹ tiết kiệm &amp; đầu tư</span>{' '}
+        trong năm — không phải thu/chi của quỹ chi tiêu.
       </p>
 
       {loading && <Skeleton className="h-32 w-full rounded-lg" />}
@@ -265,8 +265,8 @@ function OpeningBalanceSection() {
         Tiền đã có sẵn trong mỗi quỹ tại thời điểm bạn bắt đầu xài Concord
         (vd: số dư app ngân hàng, ví Shopee, tiền mặt). Khoản này được ghi như
         1 entry cấu trúc — không hiện trong &ldquo;Giao dịch gần đây&rdquo; và không tính
-        vào báo cáo thu/chi tháng. Riêng <span className="font-medium">Quỹ Chung</span>{' '}
-        sẽ cộng vào tiến độ tiết kiệm năm.
+        vào báo cáo thu/chi tháng. Số dư khởi đầu của quỹ tiết kiệm &amp; đầu tư{' '}
+        <span className="font-medium">không tính</span> vào tiến độ tiết kiệm năm.
       </p>
 
       {accessible.length === 0 && (
@@ -277,7 +277,7 @@ function OpeningBalanceSection() {
         {[...accessible]
           .sort((a, b) => {
             if (a.purpose !== b.purpose) {
-              return a.purpose === 'general' ? -1 : 1;
+              return a.purpose === 'spending' ? -1 : 1;
             }
             return a.name.localeCompare(b.name, 'vi');
           })

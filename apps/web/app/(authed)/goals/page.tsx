@@ -15,6 +15,8 @@ import type {
   FundView,
   UpdateEnvelopePayload,
 } from '@/features/funds/types';
+import { listTransactions } from '@/features/transactions/api';
+import type { TransactionView } from '@/features/transactions/types';
 import { useAuthedLayout } from '../layout';
 import {
   Badge,
@@ -46,8 +48,8 @@ export default function GoalsPage() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
-        title="Quỹ mục tiêu"
-        subtitle="Tạo các envelope để dành tiền theo từng mục đích (du lịch, học hành, sửa nhà, đầu tư…)"
+        title="Quỹ tiết kiệm & đầu tư"
+        subtitle="Tích luỹ theo mục tiêu cụ thể. Chuyển tiền từ quỹ chi tiêu vào đây để bắt đầu tiết kiệm."
         actions={
           <button
             onClick={() => setEditingId('new')}
@@ -70,9 +72,9 @@ export default function GoalsPage() {
           {!loading && active.length === 0 && archived.length === 0 && (
             <Card>
               <EmptyState
-                icon="🎯"
-                title="Chưa có quỹ mục tiêu nào"
-                description="Bấm + Tạo quỹ để bắt đầu. Vd: Quỹ Du lịch 50tr, Quỹ Sửa nhà 300tr, …"
+                icon="🐷"
+                title="Chưa có quỹ tiết kiệm hay đầu tư nào"
+                description="Bấm + Tạo quỹ để bắt đầu. Vd: Quỹ Tiết kiệm Năm 2026, Quỹ Du lịch, Quỹ Chứng khoán…"
               />
             </Card>
           )}
@@ -141,6 +143,7 @@ function EnvelopeCard({
   onEdit: () => void;
   onArchive: () => void;
 }) {
+  const [showLedger, setShowLedger] = useState(false);
   const balance = envelope.balance ?? 0;
   const target = envelope.targetAmount ?? 0;
   const hasTarget = target > 0;
@@ -195,8 +198,12 @@ function EnvelopeCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-semibold text-stone-900">
+              {envelope.purpose === 'investment' ? '📈 ' : '🐷 '}
               {envelope.name}
             </h3>
+            {envelope.purpose === 'investment' && (
+              <Badge tone="sky">Đầu tư</Badge>
+            )}
             {reached && <Badge tone="emerald">✅ Đạt</Badge>}
             {!reached && paceLabel && <Badge tone={paceTone}>{paceLabel}</Badge>}
             {isArchived && <Badge tone="neutral">Archived</Badge>}
@@ -273,8 +280,181 @@ function EnvelopeCard({
           )}
         </div>
       )}
+
+      <div className="mt-3 border-t border-stone-100 pt-3">
+        <button
+          onClick={() => setShowLedger((v) => !v)}
+          className="flex items-center gap-1 text-[11px] font-medium text-stone-500 hover:text-stone-700"
+        >
+          <span>{showLedger ? '▲' : '▼'}</span> Lịch sử giao dịch
+        </button>
+        {showLedger && <FundLedgerPanel fundId={envelope.id} />}
+      </div>
     </Card>
   );
+}
+
+// ─── Fund ledger ───────────────────────────────────────────────────────
+
+function FundLedgerPanel({ fundId }: { fundId: string }) {
+  const [txns, setTxns] = useState<TransactionView[] | null>(null);
+
+  useEffect(() => {
+    listTransactions({ fundId, limit: 200 }).then((r) => setTxns(r.items));
+  }, [fundId]);
+
+  if (txns === null)
+    return <Skeleton className="mt-3 h-16 w-full rounded-lg" />;
+  if (txns.length === 0)
+    return (
+      <p className="mt-3 text-center text-[11px] text-stone-400">
+        Chưa có giao dịch nào
+      </p>
+    );
+
+  const currentYear = new Date().getFullYear();
+  const byYear = groupLedgerByYear(txns);
+  const thisYearTxns = byYear[currentYear] ?? [];
+  const prevYears = Object.entries(byYear)
+    .filter(([y]) => Number(y) < currentYear)
+    .sort(([a], [b]) => Number(b) - Number(a));
+
+  return (
+    <div className="mt-3 space-y-3">
+      <LedgerYearSection
+        year={currentYear}
+        txns={thisYearTxns}
+        isCurrentYear
+      />
+      {prevYears.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-[11px] text-stone-400 hover:text-stone-600">
+            Các năm trước ({prevYears.length} năm)
+          </summary>
+          <div className="mt-2 space-y-3">
+            {prevYears.map(([year, rows]) => (
+              <LedgerYearSection key={year} year={Number(year)} txns={rows} />
+            ))}
+          </div>
+        </details>
+      )}
+    </div>
+  );
+}
+
+function LedgerYearSection({
+  year,
+  txns,
+  isCurrentYear,
+}: {
+  year: number;
+  txns: TransactionView[];
+  isCurrentYear?: boolean;
+}) {
+  const inflow = txns
+    .filter((t) => t.amount > 0)
+    .reduce((s, t) => s + t.amount, 0);
+  const outflow = txns
+    .filter((t) => t.amount < 0)
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
+  const net = inflow - outflow;
+
+  return (
+    <div>
+      <div
+        className={`rounded-lg px-3 py-2 ${
+          isCurrentYear
+            ? 'border border-sky-100 bg-sky-50'
+            : 'bg-stone-50'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-stone-600">
+            Năm {year}
+          </span>
+          {isCurrentYear && (
+            <span
+              className={`font-mono text-xs font-semibold tabular-nums ${
+                net >= 0 ? 'text-emerald-700' : 'text-rose-700'
+              }`}
+            >
+              {net >= 0 ? '+' : ''}
+              {formatVND(net)} đóng góp mục tiêu
+            </span>
+          )}
+        </div>
+        <div className="mt-0.5 flex gap-3 text-[10px] text-stone-500">
+          <span>
+            Vào:{' '}
+            <span className="font-mono text-emerald-700">
+              +{formatVND(inflow)}
+            </span>
+          </span>
+          <span>
+            Rút:{' '}
+            <span className="font-mono text-rose-700">
+              -{formatVND(outflow)}
+            </span>
+          </span>
+        </div>
+      </div>
+      {txns.length > 0 && (
+        <div className="mt-1 divide-y divide-stone-100">
+          {txns.map((t) => (
+            <LedgerRow key={t.id} txn={t} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LedgerRow({ txn }: { txn: TransactionView }) {
+  const isInflow = txn.amount > 0;
+  return (
+    <div className="flex items-center justify-between py-1.5">
+      <div className="min-w-0">
+        <div className="truncate text-xs text-stone-700">
+          {txn.category?.icon}{' '}
+          {txn.note ?? txn.category?.name ?? '—'}
+        </div>
+        <div className="text-[10px] text-stone-400">
+          {formatLedgerDate(txn.date)}
+          {txn.category?.name ? ` · ${txn.category.name}` : ''}
+        </div>
+      </div>
+      <span
+        className={`ml-3 font-mono text-xs font-medium tabular-nums ${
+          isInflow ? 'text-emerald-700' : 'text-rose-700'
+        }`}
+      >
+        {isInflow ? '+' : ''}
+        {formatVND(txn.amount)}
+      </span>
+    </div>
+  );
+}
+
+function groupLedgerByYear(
+  txns: TransactionView[],
+): Record<number, TransactionView[]> {
+  const map: Record<number, TransactionView[]> = {};
+  for (const t of txns) {
+    const y = new Date(t.date).getFullYear();
+    (map[y] ??= []).push(t);
+  }
+  for (const arr of Object.values(map)) {
+    arr.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+  }
+  return map;
+}
+
+function formatLedgerDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
 }
 
 // ─── Form modal ────────────────────────────────────────────────────────
@@ -291,6 +471,7 @@ function EnvelopeFormModal({
   onSaved: () => void;
 }) {
   const [name, setName] = useState('');
+  const [purpose, setPurpose] = useState<'savings' | 'investment'>('savings');
   const [targetAmount, setTargetAmount] = useState<number | ''>('');
   const [targetDeadline, setTargetDeadline] = useState('');
   const [monthly, setMonthly] = useState<number | ''>('');
@@ -300,6 +481,9 @@ function EnvelopeFormModal({
   useEffect(() => {
     if (!open) return;
     setName(envelope?.name ?? '');
+    setPurpose(
+      envelope?.purpose === 'investment' ? 'investment' : 'savings',
+    );
     setTargetAmount(envelope?.targetAmount ?? '');
     setTargetDeadline(envelope?.targetDeadline ?? '');
     setMonthly(envelope?.monthlyContributionTarget ?? '');
@@ -321,13 +505,14 @@ function EnvelopeFormModal({
       if (isEdit && envelope) {
         const patch: UpdateEnvelopePayload = {
           name: name.trim(),
+          purpose,
           targetAmount: targetAmount === '' ? null : Number(targetAmount),
           targetDeadline: targetDeadline === '' ? null : targetDeadline,
           monthlyContributionTarget: monthly === '' ? null : Number(monthly),
         };
         await updateEnvelope(envelope.id, patch);
       } else {
-        const payload: CreateEnvelopePayload = { name: name.trim() };
+        const payload: CreateEnvelopePayload = { name: name.trim(), purpose };
         if (targetAmount !== '') payload.targetAmount = Number(targetAmount);
         if (targetDeadline !== '') payload.targetDeadline = targetDeadline;
         if (monthly !== '') payload.monthlyContributionTarget = Number(monthly);
@@ -357,13 +542,37 @@ function EnvelopeFormModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="mb-1 text-base font-semibold text-stone-900">
-          {isEdit ? 'Sửa quỹ mục tiêu' : 'Tạo quỹ mục tiêu mới'}
+          {isEdit ? 'Sửa quỹ' : 'Tạo quỹ mới'}
         </h2>
         <p className="mb-5 text-xs text-stone-500">
-          Envelope joint — cả 2 vợ chồng cùng thấy và góp được.
+          Quỹ tiết kiệm & đầu tư — cả 2 vợ chồng cùng thấy và góp được.
         </p>
 
         <div className="space-y-4">
+          <Field label="Loại quỹ" required>
+            <div className="flex gap-2">
+              {(
+                [
+                  { value: 'savings', label: '🐷 Tiết kiệm' },
+                  { value: 'investment', label: '📈 Đầu tư' },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setPurpose(opt.value)}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                    purpose === opt.value
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                      : 'border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </Field>
+
           <Field label="Tên quỹ" required>
             <input
               type="text"

@@ -58,13 +58,16 @@ bằng cách gọi tool `log_transaction`. Nếu thông tin không đủ, gọi
 - "đưa em B 500k", "cho mẹ vợ 2tr" — đây là CHI TIÊU thật
 - 1 call duy nhất, fund = quỹ riêng user, category = "Quà tặng" hoặc "Cá nhân"
 
-#### 2.c. Transfer vào QUỸ MỤC TIÊU (envelope)
+#### 2.c. Transfer vào QUỸ TIẾT KIỆM / ĐẦU TƯ
 
-> Trong **Current Context** có thể có các quỹ joint khác Quỹ Chung (vd "Quỹ Du lịch", "Quỹ Sửa nhà", "Quỹ Tiết kiệm", "Quỹ Học Sóc", "Quỹ Đầu Tư"). Đây là **envelopes** — quỹ mục tiêu user tự tạo để dành tiền cho 1 việc cụ thể.
+> **Quỹ chi tiêu** (Mạnh/Vợ/Chung) = dòng tiền hàng ngày, có thu nhập, có chi tiêu, sống liên tục.
+> **Quỹ tiết kiệm/đầu tư** = quỹ TĨNH, KHÔNG có income trực tiếp. Tiền vào duy nhất qua "Chuyển nội bộ" từ quỹ chi tiêu.
+
+> Trong **Current Context** có thể có các quỹ joint khác Quỹ Chung (vd "Quỹ Du lịch", "Quỹ Sửa nhà", "Quỹ Tiết kiệm Năm", "Quỹ Học Sóc", "Quỹ Đầu Tư Chứng Khoán"). Đây là **quỹ tiết kiệm hoặc đầu tư** — user tự tạo để tích luỹ tiền cho 1 mục tiêu cụ thể.
 
 Khi user nói:
 - "chuyển 5tr cho **quỹ du lịch**" / "góp 10tr vào **quỹ tiết kiệm**" / "để dành 2tr vào **quỹ Sóc**"
-- "đầu tư 10tr tháng này" (nếu có quỹ "Đầu Tư" trong context)
+- "đầu tư 10tr tháng này" / "góp quỹ chứng khoán 5tr" (nếu có quỹ đầu tư trong context)
 
 → Phải log như **TRANSFER 2 leg** (giống "đưa vợ"), nguồn tiền là **Quỹ Chung** (default) trừ khi user chỉ rõ nguồn khác:
 
@@ -80,7 +83,9 @@ Khi user nói:
    - `categoryName` = `"Chuyển nội bộ"`
    - `note` = "góp từ Quỹ Chung" / similar
 
-Nếu user nói "rút từ quỹ du lịch 1tr ra tiêu" → ngược lại (envelope leg ÂM, Chung leg DƯƠNG, đều "Chuyển nội bộ").
+Nếu user nói "rút từ quỹ du lịch 1tr ra tiêu" → ngược lại (quỹ tiết kiệm leg ÂM, Chung leg DƯƠNG, đều "Chuyển nội bộ").
+
+> ⚠️ **KHÔNG** log income (lương, thưởng...) trực tiếp vào quỹ tiết kiệm/đầu tư. Income luôn đi vào quỹ chi tiêu (riêng hoặc chung). Muốn tiết kiệm thì user chủ động chuyển từ chi tiêu sang tiết kiệm.
 
 **Ví dụ**: User (Mạnh): "góp quỹ du lịch 5tr"
 → 2 calls:

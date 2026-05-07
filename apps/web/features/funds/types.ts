@@ -17,7 +17,7 @@ export interface FundView {
   accessLevel: FundAccessLevel;
   balance: number | null;
   openingBalance: number | null;
-  purpose: 'general' | 'envelope';
+  purpose: 'spending' | 'savings' | 'investment';
   targetAmount: number | null;
   targetDeadline: string | null;
   monthlyContributionTarget: number | null;
@@ -27,6 +27,7 @@ export interface FundView {
 
 export interface CreateEnvelopePayload {
   name: string;
+  purpose?: 'savings' | 'investment';
   targetAmount?: number;
   targetDeadline?: string;
   monthlyContributionTarget?: number;
@@ -34,6 +35,7 @@ export interface CreateEnvelopePayload {
 
 export interface UpdateEnvelopePayload {
   name?: string;
+  purpose?: 'savings' | 'investment';
   targetAmount?: number | null;
   targetDeadline?: string | null;
   monthlyContributionTarget?: number | null;

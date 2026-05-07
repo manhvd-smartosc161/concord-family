@@ -101,7 +101,7 @@ export default function FoobarPage() {
 
 - Tailwind v4 (dùng `@import "tailwindcss"` trong `globals.css`).
 - Palette: `stone-*` neutral, `emerald-*` positive/owner, `amber-*` joint,
-  `sky-*` envelope/mục tiêu, `rose-*` destructive.
+  `sky-*` savings/investment (quỹ mục tiêu), `rose-*` destructive.
 - Number monospace: `font-mono tabular-nums`.
 - VND format: `formatVND()` từ `@/lib/format`. KHÔNG tự `toLocaleString` ad-hoc.
 - shadcn/ui: chưa setup. Đừng `npx shadcn add ...` mà không discuss trước.
