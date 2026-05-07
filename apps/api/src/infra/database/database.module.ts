@@ -8,21 +8,31 @@ import { entities } from '../../data-source';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get<string>('POSTGRES_HOST', 'localhost'),
-        port: parseInt(config.get<string>('POSTGRES_PORT', '5436'), 10),
-        username: config.get<string>('POSTGRES_USER', 'concord'),
-        password: config.get<string>('POSTGRES_PASSWORD', 'concord'),
-        database: config.get<string>('POSTGRES_DB', 'concord'),
-        entities,
-        // Production-safe: never auto-sync. Use migrations.
-        synchronize: false,
-        logging:
-          config.get<string>('NODE_ENV') === 'development'
-            ? ['error', 'warn']
-            : ['error'],
-      }),
+      useFactory: (config: ConfigService) => {
+        const databaseUrl = config.get<string>('DATABASE_URL');
+        const useSsl =
+          config.get<string>('POSTGRES_SSL') === 'true' ||
+          (databaseUrl?.includes('sslmode=require') ?? false);
+        return {
+          type: 'postgres' as const,
+          ...(databaseUrl
+            ? { url: databaseUrl }
+            : {
+                host: config.get<string>('POSTGRES_HOST', 'localhost'),
+                port: parseInt(config.get<string>('POSTGRES_PORT', '5436'), 10),
+                username: config.get<string>('POSTGRES_USER', 'concord'),
+                password: config.get<string>('POSTGRES_PASSWORD', 'concord'),
+                database: config.get<string>('POSTGRES_DB', 'concord'),
+              }),
+          ssl: useSsl ? { rejectUnauthorized: false } : false,
+          entities,
+          synchronize: false,
+          logging:
+            config.get<string>('NODE_ENV') === 'development'
+              ? ['error', 'warn']
+              : ['error'],
+        };
+      },
     }),
   ],
 })

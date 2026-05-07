@@ -35,13 +35,23 @@ export const entities = [
   ChatMessage,
 ];
 
+const databaseUrl = process.env.DATABASE_URL;
+const useSsl =
+  process.env.POSTGRES_SSL === 'true' ||
+  (databaseUrl?.includes('sslmode=require') ?? false);
+
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: process.env.POSTGRES_HOST ?? 'localhost',
-  port: parseInt(process.env.POSTGRES_PORT ?? '5436', 10),
-  username: process.env.POSTGRES_USER ?? 'concord',
-  password: process.env.POSTGRES_PASSWORD ?? 'concord',
-  database: process.env.POSTGRES_DB ?? 'concord',
+  ...(databaseUrl
+    ? { url: databaseUrl }
+    : {
+        host: process.env.POSTGRES_HOST ?? 'localhost',
+        port: parseInt(process.env.POSTGRES_PORT ?? '5436', 10),
+        username: process.env.POSTGRES_USER ?? 'concord',
+        password: process.env.POSTGRES_PASSWORD ?? 'concord',
+        database: process.env.POSTGRES_DB ?? 'concord',
+      }),
+  ssl: useSsl ? { rejectUnauthorized: false } : false,
   entities,
   migrations: [path.join(__dirname, '..', 'migrations', '*.{ts,js}')],
   synchronize: false,
