@@ -2,20 +2,21 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ApiError, getToken, setToken } from '@/lib/api-client';
+import { ApiError, setToken } from '@/lib/api-client';
 import { login } from '@/features/auth/api';
+import { useAuth } from '@/features/auth/hooks';
 
 export default function LoginPage() {
   const router = useRouter();
+  const auth = useAuth(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // If already logged in, bounce to /dashboard
   useEffect(() => {
-    if (getToken()) router.replace('/dashboard');
-  }, [router]);
+    if (auth.status === 'authed') router.replace('/dashboard');
+  }, [auth.status, router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

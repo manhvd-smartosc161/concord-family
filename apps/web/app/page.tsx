@@ -2,13 +2,16 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { getToken } from '@/lib/api-client';
+import { useAuth } from '@/features/auth/hooks';
 
 export default function Home() {
   const router = useRouter();
+  const auth = useAuth(false);
+
   useEffect(() => {
-    router.replace(getToken() ? '/dashboard' : '/login');
-  }, [router]);
+    if (auth.status === 'loading') return;
+    router.replace(auth.status === 'authed' ? '/dashboard' : '/login');
+  }, [auth.status, router]);
 
   return (
     <div className="flex h-screen items-center justify-center text-stone-400">
