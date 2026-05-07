@@ -27,7 +27,7 @@ import {
   ImportantDateView,
   MonthListView,
 } from './important-dates.service';
-import { addDaysUtc, lunarOf, todayInTimezone } from './lib/lunar';
+import { todayInTimezone } from './lib/lunar';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/important-dates')
@@ -98,65 +98,37 @@ export class ImportantDatesController {
     return { ok: true };
   }
 
-  @Post('_test-lunar-tick')
-  async testLunarTick(): Promise<{
-    ok: true;
-    kind: 'mung1' | 'ram';
-    target: string;
-    lunarMonth: number;
-  }> {
-    if (process.env.NODE_ENV !== 'development') {
-      throw new ForbiddenException(
-        'test lunar tick disabled outside development',
-      );
-    }
+  @Post('refresh-ai-cache')
+  async refreshAi(): Promise<MonthListView> {
     const today = todayInTimezone('Asia/Ho_Chi_Minh');
-    for (let offset = 0; offset < 35; offset++) {
-      const target = addDaysUtc(today, offset);
-      const lunar = lunarOf(target);
-      if (lunar.day === 1 || lunar.day === 15) {
-        const kind: 'mung1' | 'ram' = lunar.day === 1 ? 'mung1' : 'ram';
-        await this.notifications.notifyLunarMilestone({
-          kind,
-          target,
-          lunarMonth: lunar.month,
-          daysBefore: offset,
-        });
-        return {
-          ok: true,
-          kind,
-          target: target.toISOString().slice(0, 10),
-          lunarMonth: lunar.month,
-        };
-      }
-    }
-    throw new NotFoundException(
-      'no lunar 1 or 15 found in the next 35 days (impossible)',
-    );
+    const year = today.getUTCFullYear();
+    const month = today.getUTCMonth() + 1;
+    await this.service.refreshAiCache(year, month);
+    return this.service.listForMonth(year, month, today);
   }
 
-  @Post('_lunar-notify')
-  async testLunarByDate(
-    @Body() body: { kind: 'mung1' | 'ram'; date: string },
+  @Post('_test-ai-date')
+  async testAiDate(
+    @Body() body: { name: string; date: string; notes?: string | null; kind?: string },
   ): Promise<{ ok: true }> {
     if (process.env.NODE_ENV !== 'development') {
-      throw new ForbiddenException(
-        'test lunar notify disabled outside development',
-      );
+      throw new ForbiddenException('test disabled outside development');
     }
     const target = new Date(`${body.date.slice(0, 10)}T00:00:00Z`);
-    const lunar = lunarOf(target);
     const today = todayInTimezone('Asia/Ho_Chi_Minh');
     const daysBefore = Math.max(
       0,
       Math.round((target.getTime() - today.getTime()) / 86_400_000),
     );
-    await this.notifications.notifyLunarMilestone({
-      kind: body.kind,
-      target,
-      lunarMonth: lunar.month,
+    await this.notifications.notifyAiDate(
+      {
+        name: body.name,
+        notes: body.notes ?? null,
+        occursOn: body.date,
+        kind: body.kind ?? 'other',
+      },
       daysBefore,
-    });
+    );
     return { ok: true };
   }
 }

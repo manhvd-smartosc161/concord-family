@@ -11,6 +11,7 @@ import { ChatSession } from './modules/chat/entities/chat-session.entity';
 import { Fund } from './modules/funds/entities/fund.entity';
 import { Goal } from './modules/goals/entities/goal.entity';
 import { ImportantDate } from './modules/important-dates/entities/important-date.entity';
+import { MonthlyAiCache } from './modules/important-dates/entities/monthly-ai-cache.entity';
 import { Insight } from './modules/insights/entities/insight.entity';
 import { SalaryRule } from './modules/salary-rules/entities/salary-rule.entity';
 import { Transaction } from './modules/transactions/entities/transaction.entity';
@@ -35,6 +36,7 @@ export const entities = [
   ChatSession,
   ChatMessage,
   ImportantDate,
+  MonthlyAiCache,
 ];
 
 const databaseUrl = process.env.DATABASE_URL;

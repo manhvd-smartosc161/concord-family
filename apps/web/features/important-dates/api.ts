@@ -43,21 +43,20 @@ export function testNotifyImportantDate(id: string): Promise<{ ok: true }> {
   });
 }
 
-export function testLunarTick(): Promise<{
-  ok: true;
-  kind: 'mung1' | 'ram';
-  target: string;
-  lunarMonth: number;
-}> {
-  return apiFetch('/api/important-dates/_test-lunar-tick', { method: 'POST' });
+export function refreshAiCache(): Promise<MonthListView> {
+  return apiFetch<MonthListView>('/api/important-dates/refresh-ai-cache', {
+    method: 'POST',
+  });
 }
 
-export function testLunarByDate(
-  kind: 'mung1' | 'ram',
+export function testAiDate(
+  name: string,
   date: string,
+  kind: string,
+  notes: string | null,
 ): Promise<{ ok: true }> {
-  return apiFetch('/api/important-dates/_lunar-notify', {
+  return apiFetch('/api/important-dates/_test-ai-date', {
     method: 'POST',
-    body: JSON.stringify({ kind, date }),
+    body: JSON.stringify({ name, date, kind, notes }),
   });
 }

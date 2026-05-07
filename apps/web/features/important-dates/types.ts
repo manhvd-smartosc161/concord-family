@@ -28,25 +28,31 @@ export interface CreateImportantDatePayload {
 
 export type UpdateImportantDatePayload = Partial<CreateImportantDatePayload>;
 
-export type MonthItemKind =
-  | ImportantDateType
-  | 'lunar_mung1'
-  | 'lunar_ram';
+export type AiDateKind =
+  | 'lunar'
+  | 'national'
+  | 'international'
+  | 'religious'
+  | 'other';
+
+export type MonthItemKind = ImportantDateType | AiDateKind;
+export type MonthItemSource = 'user' | 'ai';
 
 export interface MonthItem {
   occursOn: string;
   daysUntil: number;
+  source: MonthItemSource;
   kind: MonthItemKind;
   name: string;
   isLunar: boolean;
   notes: string | null;
   sourceId: string | null;
   remindDaysBefore: number[];
-  lunarMonth: number | null;
 }
 
 export interface MonthListView {
   year: number;
   month: number;
   items: MonthItem[];
+  aiGeneratedAt: string | null;
 }

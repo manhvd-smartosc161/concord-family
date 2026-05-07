@@ -8,8 +8,10 @@ const ICONS: Record<MonthItemKind, string> = {
   death_anniversary: '🕯️',
   anniversary: '💍',
   other: '📌',
-  lunar_mung1: '🌑',
-  lunar_ram: '🌕',
+  lunar: '🌙',
+  national: '🇻🇳',
+  international: '🌍',
+  religious: '🙏',
 };
 
 const TYPE_LABEL: Record<MonthItemKind, string> = {
@@ -17,8 +19,10 @@ const TYPE_LABEL: Record<MonthItemKind, string> = {
   death_anniversary: 'Giỗ',
   anniversary: 'Kỷ niệm',
   other: 'Khác',
-  lunar_mung1: 'Mùng 1',
-  lunar_ram: 'Rằm',
+  lunar: 'Âm lịch',
+  national: 'Lễ VN',
+  international: 'Lễ quốc tế',
+  religious: 'Tôn giáo',
 };
 
 const REMIND_LABEL: Record<number, string> = {
@@ -42,7 +46,7 @@ export function MonthItemCard({
   onDelete: () => void;
   onTest: () => void;
 }) {
-  const isLunarSynthetic = item.sourceId === null;
+  const isUser = item.source === 'user';
   const date = new Date(item.occursOn);
   const formatted = date.toLocaleDateString('vi-VN', {
     weekday: 'short',
@@ -64,18 +68,19 @@ export function MonthItemCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-lg leading-none">{ICONS[item.kind]}</span>
+            <span className="text-lg leading-none">{ICONS[item.kind] ?? '📌'}</span>
             <h3 className="text-base font-semibold text-stone-900">
               {item.name}
             </h3>
-            <Badge tone={isLunarSynthetic ? 'sky' : 'neutral'}>
-              {TYPE_LABEL[item.kind]}
+            <Badge tone={isUser ? 'neutral' : 'sky'}>
+              {TYPE_LABEL[item.kind] ?? item.kind}
             </Badge>
-            {item.isLunar && !isLunarSynthetic && <Badge tone="amber">Âm lịch</Badge>}
+            {!isUser && <Badge tone="amber">AI</Badge>}
+            {isUser && item.isLunar && <Badge tone="amber">Âm lịch</Badge>}
           </div>
           <p className="mt-1 text-xs text-stone-500">
             <span className="font-medium text-stone-700">{formatted}</span> ·{' '}
-            <span className={days <= 2 ? 'font-semibold text-emerald-700' : ''}>
+            <span className={days >= 0 && days <= 2 ? 'font-semibold text-emerald-700' : ''}>
               {dayHint}
             </span>
           </p>
@@ -100,11 +105,11 @@ export function MonthItemCard({
             type="button"
             onClick={onTest}
             className="rounded-md px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
-            title="Bắn thử thông báo ngay"
+            title="Bắn thử mail ngay"
           >
             🔔 Bắn thử
           </button>
-          {!isLunarSynthetic && (
+          {isUser && (
             <>
               <button
                 type="button"

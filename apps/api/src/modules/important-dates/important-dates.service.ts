@@ -4,12 +4,13 @@ import { Repository } from 'typeorm';
 import { CreateImportantDateDto } from './dto/create-important-date.dto';
 import { UpdateImportantDateDto } from './dto/update-important-date.dto';
 import { ImportantDate } from './entities/important-date.entity';
+import { MonthlyAiService } from './monthly-ai.service';
 import {
   daysBetweenUtc,
-  findLunarMilestonesInSolarMonth,
   resolveOccurrenceForYear,
   todayInTimezone,
 } from './lib/lunar';
+import type { AiDateKind } from './entities/monthly-ai-cache.entity';
 
 const TZ = 'Asia/Ho_Chi_Minh';
 
@@ -26,30 +27,28 @@ export interface ImportantDateView {
   daysUntilNext: number;
 }
 
+export type MonthItemSource = 'user' | 'ai';
 export type MonthItemKind =
-  | 'birthday'
-  | 'death_anniversary'
-  | 'anniversary'
-  | 'other'
-  | 'lunar_mung1'
-  | 'lunar_ram';
+  | ImportantDate['type']
+  | AiDateKind;
 
 export interface MonthItem {
   occursOn: string;
   daysUntil: number;
+  source: MonthItemSource;
   kind: MonthItemKind;
   name: string;
   isLunar: boolean;
   notes: string | null;
   sourceId: string | null;
   remindDaysBefore: number[];
-  lunarMonth: number | null;
 }
 
 export interface MonthListView {
   year: number;
   month: number;
   items: MonthItem[];
+  aiGeneratedAt: string | null;
 }
 
 @Injectable()
@@ -57,6 +56,7 @@ export class ImportantDatesService {
   constructor(
     @InjectRepository(ImportantDate)
     private readonly repo: Repository<ImportantDate>,
+    private readonly monthlyAi: MonthlyAiService,
   ) {}
 
   async list(): Promise<ImportantDateView[]> {
@@ -119,6 +119,14 @@ export class ImportantDatesService {
     const today = todayInTimezone(TZ);
     const year = today.getUTCFullYear();
     const month = today.getUTCMonth() + 1;
+    return this.listForMonth(year, month, today);
+  }
+
+  async listForMonth(
+    year: number,
+    month: number,
+    today: Date,
+  ): Promise<MonthListView> {
     const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
     const startOfNextMonth = new Date(Date.UTC(year, month, 1));
 
@@ -134,34 +142,47 @@ export class ImportantDatesService {
         items.push({
           occursOn: occurrence.toISOString().slice(0, 10),
           daysUntil: daysBetweenUtc(today, occurrence),
+          source: 'user',
           kind: e.type,
           name: e.name,
           isLunar: e.isLunar,
           notes: e.notes,
           sourceId: e.id,
           remindDaysBefore: e.remindDaysBefore,
-          lunarMonth: null,
         });
       }
     }
 
-    const lunar = findLunarMilestonesInSolarMonth(year, month);
-    for (const m of lunar) {
-      items.push({
-        occursOn: m.date.toISOString().slice(0, 10),
-        daysUntil: daysBetweenUtc(today, m.date),
-        kind: m.kind === 'mung1' ? 'lunar_mung1' : 'lunar_ram',
-        name: m.kind === 'mung1' ? `Mùng 1 tháng ${m.lunarMonth} âm` : `Rằm tháng ${m.lunarMonth} âm`,
-        isLunar: true,
-        notes: null,
-        sourceId: null,
-        remindDaysBefore: [2],
-        lunarMonth: m.lunarMonth,
-      });
+    let aiGeneratedAt: string | null = null;
+    try {
+      const cache = await this.monthlyAi.getOrGenerate(year, month);
+      aiGeneratedAt = cache.generatedAt.toISOString();
+      for (const ai of cache.items) {
+        const occurrence = new Date(`${ai.date}T00:00:00Z`);
+        items.push({
+          occursOn: ai.date,
+          daysUntil: daysBetweenUtc(today, occurrence),
+          source: 'ai',
+          kind: ai.kind,
+          name: ai.name,
+          isLunar: ai.kind === 'lunar',
+          notes: ai.notes,
+          sourceId: null,
+          remindDaysBefore: ai.remindDaysBefore,
+        });
+      }
+    } catch (err) {
+      // AI failure is non-fatal — show user entries only
+      // eslint-disable-next-line no-console
+      console.warn('AI cache fetch failed:', (err as Error).message);
     }
 
     items.sort((a, b) => a.occursOn.localeCompare(b.occursOn));
-    return { year, month, items };
+    return { year, month, items, aiGeneratedAt };
+  }
+
+  async refreshAiCache(year: number, month: number): Promise<void> {
+    await this.monthlyAi.regenerate(year, month);
   }
 
   async findDueOn(
