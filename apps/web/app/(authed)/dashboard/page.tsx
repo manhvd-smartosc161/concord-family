@@ -77,7 +77,7 @@ export default function DashboardPage() {
 
   const totalVisible =
     funds
-      .filter((f) => f.purpose === 'general' && f.balance !== null)
+      .filter((f) => f.balance !== null)
       .reduce((sum, f) => sum + (f.balance ?? 0), 0) ?? 0;
 
   const yearlyGoal = goals.find((g) => g.period === 'year' && g.type === 'save');
@@ -362,8 +362,13 @@ function FundsBlock({
         </span>
       </div>
       <div className="space-y-2">
-        {funds
-          .filter((f) => f.purpose === 'general')
+        {[...funds]
+          .sort((a, b) => {
+            if (a.purpose !== b.purpose) {
+              return a.purpose === 'general' ? -1 : 1;
+            }
+            return a.name.localeCompare(b.name, 'vi');
+          })
           .map((f) => {
           const isPrivate = f.accessLevel === 'private';
           const tone = {
