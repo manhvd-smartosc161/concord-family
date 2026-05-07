@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ParserSubagent } from '../../agent/subagents/parser.subagent';
+import { ParserSubagent } from '../../agent/subagents/parser/parser.subagent';
 import { User } from '../users/entities/user.entity';
 import { ChatSessionsService } from './chat-sessions.service';
 import type { ChatRequestDto, ChatResponseDto } from './chat.dto';

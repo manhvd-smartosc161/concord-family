@@ -10,7 +10,7 @@ import { DataSource, IsNull, Repository } from 'typeorm';
 import { Category } from '../categories/entities/category.entity';
 import { Fund } from '../funds/entities/fund.entity';
 import { OPENING_BALANCE_NOTE } from '../funds/opening-balance.constants';
-import type { LogTransactionInput } from '../../agent/tools';
+import type { LogTransactionInput } from '../../agent/subagents/parser/parser.tools';
 import { User } from '../users/entities/user.entity';
 import type { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { Transaction } from './entities/transaction.entity';

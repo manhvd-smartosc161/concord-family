@@ -4,18 +4,18 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
-import { Category } from '../../modules/categories/entities/category.entity';
-import { Fund } from '../../modules/funds/entities/fund.entity';
-import { TransactionsService } from '../../modules/transactions/transactions.service';
-import { User } from '../../modules/users/entities/user.entity';
-import { AnthropicService } from '../anthropic.service';
+import { Category } from '../../../modules/categories/entities/category.entity';
+import { Fund } from '../../../modules/funds/entities/fund.entity';
+import { TransactionsService } from '../../../modules/transactions/transactions.service';
+import { User } from '../../../modules/users/entities/user.entity';
+import { AnthropicService } from '../../core/anthropic.service';
 import {
   AskClarificationInput,
   DeleteTransactionInput,
   LogTransactionInput,
   UpdateTransactionInput,
   parserTools,
-} from '../tools';
+} from './parser.tools';
 
 export type ParseAction =
   | {
@@ -57,15 +57,7 @@ export class ParserSubagent {
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
   ) {
-    // Skill files live in agent/skills/. When tsc compiles this file
-    // to dist/, __dirname becomes dist/agent/subagents/, so the skill
-    // path resolves the same relative to its sibling folder.
-    const skillPath = path.join(
-      __dirname,
-      '..',
-      'skills',
-      'parse-vn-expense.md',
-    );
+    const skillPath = path.join(__dirname, 'skill.md');
     this.skill = fs.readFileSync(skillPath, 'utf8');
   }
 

@@ -7,7 +7,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import type { ParseAction } from '../../../agent/subagents/parser.subagent';
+import type { ParseAction } from '../../../agent/subagents/parser/parser.subagent';
 import { User } from '../../users/entities/user.entity';
 import { ChatSession } from './chat-session.entity';
 

@@ -5,7 +5,7 @@ import {
   IsUUID,
   MaxLength,
 } from 'class-validator';
-import type { ParseAction } from '../../agent/subagents/parser.subagent';
+import type { ParseAction } from '../../agent/subagents/parser/parser.subagent';
 
 export class ChatRequestDto {
   @IsString()

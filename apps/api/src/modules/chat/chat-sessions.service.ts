@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { ParseAction } from '../../agent/subagents/parser.subagent';
+import type { ParseAction } from '../../agent/subagents/parser/parser.subagent';
 import { Fund } from '../funds/entities/fund.entity';
 import { User } from '../users/entities/user.entity';
 import {
