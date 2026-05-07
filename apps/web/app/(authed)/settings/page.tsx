@@ -7,8 +7,6 @@ import { setFundOpeningBalance } from '@/features/funds/api';
 import type { FundView } from '@/features/funds/types';
 import { listGoals, updateYearlySavingsGoal } from '@/features/goals/api';
 import type { GoalView } from '@/features/goals/types';
-import { getSalaryRule, updateSalaryRule } from '@/features/settings/api';
-import type { SalaryRule } from '@/features/settings/types';
 import { useAuthedLayout } from '../layout';
 import { pickFundIcon } from '@/features/funds/components/fund-card';
 import { ChangePasswordModal } from '@/features/auth/components/change-password-modal';
@@ -32,7 +30,6 @@ export default function SettingsPage() {
           <AccountSection />
           <YearlyGoalSection />
           <OpeningBalanceSection />
-          <SalarySplitSection />
           <DangerZoneSection />
           <p className="text-center text-[11px] text-stone-400">
             User ID:{' '}
@@ -277,8 +274,13 @@ function OpeningBalanceSection() {
       )}
 
       <div className="space-y-3">
-        {accessible
-          .filter((f) => f.purpose === 'general')
+        {[...accessible]
+          .sort((a, b) => {
+            if (a.purpose !== b.purpose) {
+              return a.purpose === 'general' ? -1 : 1;
+            }
+            return a.name.localeCompare(b.name, 'vi');
+          })
           .map((fund) => (
             <OpeningBalanceRow
               key={fund.id}
@@ -384,170 +386,6 @@ function OpeningBalanceRow({
         </div>
       )}
     </div>
-  );
-}
-
-// ─── Salary split section ──────────────────────────────────────────────
-
-function SalarySplitSection() {
-  const [rule, setRule] = useState<SalaryRule | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [pctPersonal, setPctPersonal] = useState(70);
-  const [fixedJoint, setFixedJoint] = useState<number | ''>('');
-  const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState<{
-    kind: 'ok' | 'err';
-    msg: string;
-  } | null>(null);
-
-  useEffect(() => {
-    getSalaryRule()
-      .then((r) => {
-        setRule(r);
-        setPctPersonal(r.pctToPersonal);
-        setFixedJoint(r.fixedAmountToJoint ?? '');
-      })
-      .catch(() => {
-        /* ignore */
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const pctJoint = 100 - pctPersonal;
-
-  async function onSave() {
-    setSaving(true);
-    setFeedback(null);
-    try {
-      const updated = await updateSalaryRule(
-        pctPersonal,
-        pctJoint,
-        fixedJoint === '' ? null : Number(fixedJoint),
-      );
-      setRule(updated);
-      setFeedback({ kind: 'ok', msg: 'Đã lưu' });
-      setTimeout(() => setFeedback(null), 2500);
-    } catch (err) {
-      const msg =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-            ? err.message
-            : 'Lỗi không xác định';
-      setFeedback({ kind: 'err', msg });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <Card padding="p-6">
-      <h3 className="mb-1 text-sm font-semibold text-stone-800">
-        Quy tắc phân bổ lương
-      </h3>
-      <p className="mb-5 text-xs text-stone-500">
-        Khi lương về (cron tự động vào ngày trả lương), agent sẽ alloc theo
-        tỉ lệ này vào quỹ riêng + quỹ chung.
-      </p>
-
-      {loading && <Skeleton className="h-32 w-full rounded-lg" />}
-
-      {!loading && rule && (
-        <>
-          <div className="mb-6">
-            <div className="mb-2 flex items-baseline justify-between text-sm">
-              <span className="text-stone-700">
-                Quỹ riêng:{' '}
-                <span className="font-mono font-semibold tabular-nums text-emerald-700">
-                  {pctPersonal}%
-                </span>
-              </span>
-              <span className="text-stone-700">
-                Quỹ chung:{' '}
-                <span className="font-mono font-semibold tabular-nums text-amber-700">
-                  {pctJoint}%
-                </span>
-              </span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={5}
-              value={pctPersonal}
-              onChange={(e) => setPctPersonal(Number(e.target.value))}
-              className="w-full accent-emerald-600"
-            />
-            <div className="mt-1 flex justify-between text-[10px] text-stone-400">
-              <span>0% riêng / 100% chung</span>
-              <span>50/50</span>
-              <span>100% riêng / 0% chung</span>
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-stone-700">
-              Số cố định vào quỹ chung (tuỳ chọn)
-            </label>
-            <input
-              type="number"
-              value={fixedJoint}
-              onChange={(e) =>
-                setFixedJoint(e.target.value === '' ? '' : Number(e.target.value))
-              }
-              placeholder="vd: 5000000 (5 triệu)"
-              className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
-            />
-            <p className="mt-1 text-[11px] text-stone-400">
-              Nếu set: mỗi tháng sẽ trừ số này vào quỹ chung TRƯỚC, phần còn
-              lại mới chia theo % ở trên.
-              {fixedJoint !== '' && Number(fixedJoint) > 0 && (
-                <>
-                  {' '}
-                  Hiện set:{' '}
-                  <span className="font-mono">
-                    {formatVND(Number(fixedJoint))}
-                  </span>
-                  /tháng vào quỹ chung.
-                </>
-              )}
-            </p>
-          </div>
-
-          <div className="mt-5 flex items-center justify-between border-t border-stone-100 pt-4">
-            {feedback && (
-              <span
-                className={`text-xs ${
-                  feedback.kind === 'ok' ? 'text-emerald-700' : 'text-rose-700'
-                }`}
-              >
-                {feedback.kind === 'ok' ? '✅' : '⚠️'} {feedback.msg}
-              </span>
-            )}
-            <div className="ml-auto flex gap-2">
-              <button
-                onClick={() => {
-                  setPctPersonal(rule.pctToPersonal);
-                  setFixedJoint(rule.fixedAmountToJoint ?? '');
-                  setFeedback(null);
-                }}
-                disabled={saving}
-                className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50"
-              >
-                Reset
-              </button>
-              <button
-                onClick={onSave}
-                disabled={saving}
-                className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300"
-              >
-                {saving ? 'Đang lưu…' : 'Lưu'}
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-    </Card>
   );
 }
 
