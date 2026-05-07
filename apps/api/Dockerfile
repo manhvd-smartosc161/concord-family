@@ -16,6 +16,7 @@ RUN pnpm --filter api build \
 FROM node:22-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
 COPY --from=build /out ./
 EXPOSE 3001
 CMD ["sh", "-c", "node dist/run-migrations.js && node dist/main.js"]

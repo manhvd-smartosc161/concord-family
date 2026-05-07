@@ -17,7 +17,7 @@ export class EmailService implements OnModuleInit {
 
   constructor(private readonly config: ConfigService) {}
 
-  onModuleInit(): void {
+  async onModuleInit(): Promise<void> {
     dns.setDefaultResultOrder('ipv4first');
 
     const user = this.config.get<string>('GMAIL_USER');
@@ -29,8 +29,20 @@ export class EmailService implements OnModuleInit {
       );
       return;
     }
+
+    let host = 'smtp.gmail.com';
+    try {
+      const r = await dns.promises.lookup('smtp.gmail.com', { family: 4 });
+      host = r.address;
+      this.logger.log(`smtp.gmail.com resolved to IPv4 ${host}`);
+    } catch (err) {
+      this.logger.warn(
+        `IPv4 lookup failed, using hostname: ${(err as Error).message}`,
+      );
+    }
+
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host,
       port: 587,
       secure: false,
       requireTLS: true,
