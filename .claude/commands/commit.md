@@ -32,6 +32,8 @@ Tôi muốn commit thay đổi hiện tại. Làm các bước sau:
    Type: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `style`.
    Scope: `api`, `web`, `db`, `agent`, `auth`, `infra`.
 
+   **NGÔN NGỮ COMMIT: TIẾNG ANH BẮT BUỘC.** Subject + body đều English. Quoted strings từ codebase/UI (vd `"đi chợ"`, `"Quỹ Mạnh"`) được giữ nguyên tiếng Việt vì đó là content thực, KHÔNG phải commentary. Mọi giải thích/lý do phải English.
+
 5. Stage từng group bằng `git add <file>` (KHÔNG dùng `git add -A` hay `git add .`), commit từng cái một, mỗi commit dùng HEREDOC để format đẹp.
 
 6. KHÔNG push (trừ khi tôi yêu cầu rõ).
