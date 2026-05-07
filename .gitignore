@@ -8,6 +8,9 @@ dist/
 .turbo/
 build/
 out/
+apps/api/migrations/*.js
+apps/api/migrations/*.js.map
+apps/api/migrations/*.d.ts
 
 # TypeScript
 *.tsbuildinfo
