@@ -20,6 +20,7 @@ export function listTransactions(
   if (filters.q) qs.set('q', filters.q);
   if (filters.offset != null) qs.set('offset', String(filters.offset));
   if (filters.limit != null) qs.set('limit', String(filters.limit));
+  if (filters.scope && filters.scope !== 'all') qs.set('scope', filters.scope);
   const q = qs.toString();
   return apiFetch<TransactionPage>(`/api/transactions${q ? `?${q}` : ''}`);
 }

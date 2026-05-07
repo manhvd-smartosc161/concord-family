@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, IsNull, Repository } from 'typeorm';
+import { DataSource, In, IsNull, Repository } from 'typeorm';
 import { Category } from '../categories/entities/category.entity';
 import { Fund } from '../funds/entities/fund.entity';
 import { OPENING_BALANCE_NOTE } from '../funds/opening-balance.constants';
@@ -335,6 +335,7 @@ export class TransactionsService {
       q?: string;
       offset?: number;
       limit?: number;
+      scope?: 'all' | 'joint';
     },
   ): Promise<{ items: TransactionView[]; total: number }> {
     const visible = await this.visibleFundIds(user);
@@ -343,6 +344,12 @@ export class TransactionsService {
     let fundIds = visible;
     if (filters.fundId) {
       fundIds = visible.includes(filters.fundId) ? [filters.fundId] : [];
+    } else if (filters.scope === 'joint') {
+      const jointFunds = await this.fundRepo.find({
+        where: { id: In(visible), type: 'joint' },
+        select: { id: true },
+      });
+      fundIds = jointFunds.map((f) => f.id);
     }
     if (fundIds.length === 0) return { items: [], total: 0 };
 

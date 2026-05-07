@@ -76,6 +76,7 @@ export default function TransactionsPage() {
         q: debouncedSearch.trim() || undefined,
         offset: page * PAGE_SIZE,
         limit: PAGE_SIZE,
+        scope: fundFilter === 'all' ? 'joint' : 'all',
       });
       setItems(res.items);
       setTotal(res.total);

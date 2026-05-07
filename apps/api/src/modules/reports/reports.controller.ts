@@ -9,7 +9,11 @@ import {
 import { CurrentUser } from '../../shared/auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../shared/auth/guards/jwt-auth.guard';
 import { User } from '../users/entities/user.entity';
-import { ReportsService, type MonthlyReport } from './reports.service';
+import {
+  ReportsService,
+  type MonthlyReport,
+  type ReportScope,
+} from './reports.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/reports')
@@ -28,7 +32,9 @@ export class ReportsController {
       ParseIntPipe,
     )
     month: number,
+    @Query('scope') scope?: string,
   ): Promise<MonthlyReport> {
-    return this.reportsService.monthly(user, year, month);
+    const normalizedScope: ReportScope = scope === 'joint' ? 'joint' : 'all';
+    return this.reportsService.monthly(user, year, month, normalizedScope);
   }
 }

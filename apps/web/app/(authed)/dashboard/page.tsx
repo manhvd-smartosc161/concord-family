@@ -42,7 +42,7 @@ export default function DashboardPage() {
     const [g, e, r, t] = await Promise.all([
       listGoals(),
       listEnvelopes(),
-      getMonthlyReport(now.getFullYear(), now.getMonth() + 1),
+      getMonthlyReport(now.getFullYear(), now.getMonth() + 1, 'joint'),
       listRecentTransactions(8),
     ]);
     setGoals(g);

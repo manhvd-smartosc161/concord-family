@@ -16,6 +16,7 @@ export interface TransactionFilters {
   q?: string;
   offset?: number;
   limit?: number;
+  scope?: 'all' | 'joint';
 }
 
 export interface TransactionPage {

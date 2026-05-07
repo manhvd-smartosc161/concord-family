@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, In, Repository } from 'typeorm';
+import { Fund } from '../funds/entities/fund.entity';
 import { OPENING_BALANCE_NOTE } from '../funds/opening-balance.constants';
 import { Transaction } from '../transactions/entities/transaction.entity';
 import { TransactionsService } from '../transactions/transactions.service';
 import { User } from '../users/entities/user.entity';
+
+export type ReportScope = 'all' | 'joint';
 
 export interface CategoryAggregate {
   categoryId: string | null;
@@ -35,6 +38,8 @@ export class ReportsService {
   constructor(
     @InjectRepository(Transaction)
     private readonly txnRepo: Repository<Transaction>,
+    @InjectRepository(Fund)
+    private readonly fundRepo: Repository<Fund>,
     private readonly txnService: TransactionsService,
   ) {}
 
@@ -42,11 +47,19 @@ export class ReportsService {
     user: User,
     year: number,
     month: number,
+    scope: ReportScope = 'all',
   ): Promise<MonthlyReport> {
     const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
     const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
 
-    const fundIds = await this.txnService.visibleFundIds(user);
+    let fundIds = await this.txnService.visibleFundIds(user);
+    if (scope === 'joint' && fundIds.length > 0) {
+      const jointFunds = await this.fundRepo.find({
+        where: { id: In(fundIds), type: 'joint' },
+        select: { id: true },
+      });
+      fundIds = jointFunds.map((f) => f.id);
+    }
     if (fundIds.length === 0) {
       return {
         range: { start: start.toISOString(), end: end.toISOString() },

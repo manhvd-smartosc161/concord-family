@@ -50,6 +50,7 @@ export class TransactionsController {
     @Query('q') q?: string,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset = 0,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit = 50,
+    @Query('scope') scope?: string,
   ): Promise<{ items: TransactionView[]; total: number }> {
     return this.txnService.listForUser(user, {
       fundId,
@@ -58,6 +59,7 @@ export class TransactionsController {
       q,
       offset,
       limit,
+      scope: scope === 'joint' ? 'joint' : 'all',
     });
   }
 
