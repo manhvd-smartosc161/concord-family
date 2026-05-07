@@ -73,6 +73,18 @@ pnpm build           # build both apps
 pnpm lint            # lint everything
 ```
 
+### Maintenance
+
+```bash
+# Wipe transactions + chat history, keep users/funds/categories/goals
+pnpm --filter api reset:txn                      # full reset (balance = 0)
+pnpm --filter api reset:txn -- --keep-opening    # keep opening-balance entries
+pnpm --filter api reset:txn -- --drop-envelopes  # also delete envelope funds
+
+# Re-seed defaults (categories, demo users, fund skeleton)
+pnpm --filter api seed
+```
+
 ## Design notes
 
 See `CLAUDE.md` for architecture, business rules, and conventions.
