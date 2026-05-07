@@ -3,46 +3,54 @@
 NestJS 11 + TypeORM 0.3 + Anthropic SDK. Đây là module-level guide; quy ước
 chung của project xem `concord/CLAUDE.md`.
 
-## Layout
+## Layout (feature-first)
 
 ```
-apps/api/src/
-├── <module>/                  một feature module
-│   ├── <module>.module.ts
-│   ├── <module>.controller.ts
-│   ├── <module>.service.ts
-│   ├── dto/                   class-validator DTOs (1 file/DTO)
-│   └── entities/              TypeORM entities (1 file/entity)
-├── auth/                      JWT auth + Passport, decorators, guards
-│   ├── decorators/current-user.decorator.ts
-│   ├── guards/jwt-auth.guard.ts
-│   └── strategies/jwt.strategy.ts
-├── agent/                     Anthropic SDK orchestrator
-│   ├── agent.module.ts
-│   ├── anthropic.service.ts
-│   ├── skills/                Skill markdown files (system prompts cho subagent)
-│   ├── subagents/             1 subagent / file (parser, categorizer, ...)
-│   └── tools/                 function-calling tool definitions + types
-├── common/
-│   ├── base.entity.ts         id (uuid) + createdAt + updatedAt
-│   └── transformers.ts        TypeORM column transformers
-├── database/database.module.ts
-├── migrations/                TypeORM migration files
-├── data-source.ts             dùng cho CLI typeorm
-├── main.ts                    bootstrap, CORS, ValidationPipe
-└── seed.ts                    pnpm seed
+apps/api/
+├── src/
+│   ├── main.ts, app.module.ts, seed.ts, data-source.ts
+│   ├── infra/
+│   │   └── database/database.module.ts
+│   ├── shared/                   cross-cutting infrastructure
+│   │   ├── common/
+│   │   │   ├── base.entity.ts    id (uuid) + createdAt + updatedAt
+│   │   │   └── transformers.ts   bigintTransformer, ...
+│   │   ├── auth/                 JWT + Passport (cross-cutting, không phải feature)
+│   │   │   ├── auth.module.ts
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── decorators/current-user.decorator.ts
+│   │   │   ├── guards/jwt-auth.guard.ts
+│   │   │   ├── strategies/jwt.strategy.ts
+│   │   │   └── dto/{login,change-password}.dto.ts
+│   │   ├── guards/               (placeholder cho privacy guard sau)
+│   │   ├── decorators/, filters/, interceptors/   (placeholder, dùng khi cần)
+│   ├── modules/                  feature flat (không layer subdivision)
+│   │   ├── users/                <name>.module + <name>.service + dto/ + entities/
+│   │   ├── salary-rules/         tách khỏi users, module riêng
+│   │   ├── funds/, transactions/, categories/, chat/, goals/, reports/
+│   │   ├── insights/             entities-only (chưa có module)
+│   │   └── budgets/              entities-only (chưa có module)
+│   └── agent/                    Anthropic SDK orchestrator (cross-feature)
+│       ├── agent.module.ts
+│       ├── core/anthropic.service.ts
+│       └── subagents/
+│           └── parser/           mỗi subagent 1 folder
+│               ├── parser.subagent.ts
+│               ├── parser.tools.ts
+│               └── skill.md
+└── migrations/                   ngoài src/, build không touch
 ```
 
 ## Khi tạo module mới
 
-1. Tạo folder `src/<name>/` với 5 thứ: `<name>.module.ts`, `<name>.controller.ts`,
-   `<name>.service.ts`, `dto/`, `entities/`.
-2. Entity extend `BaseEntity` từ `src/common/base.entity.ts` (id uuid + timestamp).
-3. Module dùng `TypeOrmModule.forFeature([Entity1, Entity2])` trong `imports`,
-   `controllers: [...]`, `providers: [Service]`, `exports: [Service]` nếu module
-   khác cần inject.
+1. Tạo folder `src/modules/<name>/` với 5 thứ: `<name>.module.ts`,
+   `<name>.controller.ts`, `<name>.service.ts`, `dto/`, `entities/`.
+2. Entity extend `BaseEntity` từ `src/shared/common/base.entity.ts`.
+3. Module dùng `TypeOrmModule.forFeature([Entity1, Entity2])` trong `imports`.
 4. Đăng ký module trong `src/app.module.ts` (`imports: [..., NewModule]`).
-5. Nếu cần chạy migration sau khi đổi entity: `/db-migrate <name>`.
+5. Đăng ký entity mới trong `src/data-source.ts` array `entities`.
+6. Nếu đổi entity: `/db-migrate <name>` để generate migration.
 
 Pattern controller chuẩn:
 
@@ -59,13 +67,16 @@ export class FooController {
 }
 ```
 
-Pattern này có sẵn trong `transactions/`, `funds/`, `goals/` — khi mới tạo
-module, copy 1 trong số đó làm template.
+Pattern này có sẵn trong `modules/transactions/`, `modules/funds/`, `modules/goals/`
+— khi mới tạo module, copy 1 trong số đó làm template.
+
+Khi 1 module phình lớn (>10 file), cân nhắc tách thành 4 layer:
+`<module>/{domain,application,infrastructure,interface}/`. Hiện tại flat đủ.
 
 ## Privacy enforcement (load-bearing)
 
 Mọi service/route đụng `Transaction` hoặc `Fund` phải tự enforce per-user access.
-Pattern hiện dùng (xem `transactions.service.ts` để có example chi tiết):
+Pattern hiện dùng (xem `modules/transactions/transactions.service.ts`):
 
 ```ts
 async visibleFundIds(user: User): Promise<string[]> {
@@ -87,47 +98,47 @@ context, không truy cập repo trực tiếp.
 ## DTO + validation
 
 - Dùng `class-validator` + `class-transformer`.
-- `main.ts` đã set `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true })`,
-  nên DTO chỉ cần khai property + decorator. Property không khai sẽ bị strip.
-- Money fields: `@IsInt()` + `@Min(...)` (không bao giờ `@IsNumber()` raw vì float trượt).
+- `main.ts` đã set `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true })`.
+- Money fields: `@IsInt()` + `@Min(...)` — không bao giờ `@IsNumber()` raw.
 - Date fields nhận từ client: `@IsISO8601()` rồi service tự `new Date(...)`.
 
 ## TypeORM
 
-- `data-source.ts` là single source of truth cho CLI (`migration:generate`, `migration:run`).
+- `data-source.ts` là single source of truth cho CLI.
 - KHÔNG dùng `synchronize: true`. Tất cả schema change qua migration.
+- Migrations sống ở `apps/api/migrations/` (ngoài `src/`).
 - Workflow:
   1. Sửa entity
-  2. `pnpm --filter api migration:generate src/migrations/<name>` — generate
-  3. Mở file migration, kiểm tra SQL trước khi commit
+  2. `pnpm --filter api migration:generate migrations/<Name>` — generate
+  3. Mở file migration, kiểm tra SQL
   4. `pnpm --filter api migration:run` — apply
-- Money column dùng `bigint` hoặc `int` + transformer trong `common/transformers.ts`
-  để TypeScript thấy `number`, Postgres lưu integer.
 
 ## Anthropic / Agent
 
 - Default model: `claude-sonnet-4-6` (`process.env.ANTHROPIC_DEFAULT_MODEL`).
-- Fast model: `claude-haiku-4-5-20251001` cho parser/categorizer (nhanh + rẻ).
-- Skill files (`agent/skills/*.md`) là system prompt — chỉnh prompt KHÔNG cần
-  đụng code TS.
-- Subagent code (`agent/subagents/*.ts`) chỉ wrap: load skill markdown + define tool
-  schema + call Anthropic SDK. Logic business gọi service ở module tương ứng.
+- Fast model: `claude-haiku-4-5-20251001` cho parser/categorizer.
+- Mỗi subagent là 1 folder `agent/subagents/<name>/` chứa:
+  - `<name>.subagent.ts` — class `@Injectable()` wrap Anthropic SDK call
+  - `<name>.tools.ts` — function-calling tool definitions + types
+  - `skill.md` — system prompt
+- Skill file load qua `path.join(__dirname, 'skill.md')` (sibling).
+- `nest-cli.json` asset glob `agent/subagents/**/skill.md` → tự copy ra `dist/`.
 - Cache phần static của prompt (`cache_control: { type: 'ephemeral' }`).
 
 ## Test
 
-- `pnpm --filter api test` chạy Jest. Test file đặt cạnh source: `*.spec.ts`.
-- Hiện chỉ có `app.controller.spec.ts` mẫu — khi thêm logic phức tạp, viết test.
+- `pnpm --filter api test` chạy Jest. File đặt cạnh source: `*.spec.ts`.
 
 ## Anti-patterns thường gặp với Claude Code
 
-- ❌ Tạo file vào `packages/db` — chưa tồn tại, entity ở `apps/api/src/<module>/entities/`.
-- ❌ Tạo `src/workers/` — BullMQ chưa cài, đừng scaffold trước khi user yêu cầu.
+- ❌ Tạo file vào `packages/db` — chưa tồn tại; entity ở `src/modules/<x>/entities/`.
+- ❌ Tạo `src/workers/` — BullMQ chưa cài.
 - ❌ Import từ `@concord/shared` — package chưa tồn tại.
 - ❌ Dùng `synchronize: true` để bypass migration.
 - ❌ Floating point cho VND.
 - ❌ Bypass privacy check trong service.
-- ❌ Thêm global `PrivacyFilterGuard` mà không update tất cả service đang enforce inline (sẽ double-check).
+- ❌ Tạo module mới ngoài `src/modules/` — tất cả feature module phải dưới `modules/`.
+- ❌ Subagent inject repo trực tiếp — phải gọi service method có user context.
 
 ## Run
 
