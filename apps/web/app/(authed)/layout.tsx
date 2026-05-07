@@ -13,7 +13,7 @@ import { formatVND } from '@/lib/format';
 import { listFunds } from '@/features/funds/api';
 import type { FundView } from '@/features/funds/types';
 import type { AuthUser } from '@/features/auth/types';
-import { logout, useAuth } from '../../lib/use-auth';
+import { logout, useAuth } from '@/features/auth/hooks';
 import { ChangePasswordModal } from '@/features/auth/components/change-password-modal';
 
 const NAV = [
