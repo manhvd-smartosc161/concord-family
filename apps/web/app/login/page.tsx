@@ -41,10 +41,10 @@ export default function LoginPage() {
 
   function fillDemo(role: 'husband' | 'wife') {
     if (role === 'husband') {
-      setEmail('manh@concord.local');
+      setEmail('manhvd161@gmail.com');
       setPassword('concord-manh');
     } else {
-      setEmail('wife@concord.local');
+      setEmail('thuydung.td1998@gmail.com');
       setPassword('concord-wife');
     }
   }
@@ -99,7 +99,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoFocus
-                placeholder="ban@concord.local"
+                placeholder="ban@gmail.com"
                 className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-sm transition-colors placeholder:text-stone-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 disabled={submitting}
               />

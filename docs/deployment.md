@@ -22,8 +22,8 @@ URLs hiện tại:
 - **GitHub**: github.com/manhvd-smartosc161/concord-family
 
 Login mặc định (đổi sau lần login đầu):
-- `manh@concord.local` / `concord-manh`
-- `wife@concord.local` / `concord-wife`
+- `manhvd161@gmail.com` / `concord-manh`
+- `thuydung.td1998@gmail.com` / `concord-wife`
 
 ## 2. Workflow phát triển → production
 

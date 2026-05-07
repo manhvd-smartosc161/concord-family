@@ -14,8 +14,8 @@ import { Goal } from './modules/goals/entities/goal.entity';
 import { SalaryRule } from './modules/salary-rules/entities/salary-rule.entity';
 import { User } from './modules/users/entities/user.entity';
 
-const HUSBAND_EMAIL = 'manh@concord.local';
-const WIFE_EMAIL = 'wife@concord.local';
+const HUSBAND_EMAIL = 'manhvd161@gmail.com';
+const WIFE_EMAIL = 'thuydung.td1998@gmail.com';
 // Dev-only default passwords. Change these once auth is wired up.
 const HUSBAND_PASSWORD = 'concord-manh';
 const WIFE_PASSWORD = 'concord-wife';
