@@ -2,11 +2,11 @@ importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js');
 
 self.firebase.initializeApp({
-  apiKey: 'REPLACE_WITH_FIREBASE_API_KEY',
-  authDomain: 'REPLACE_WITH_FIREBASE_AUTH_DOMAIN',
-  projectId: 'REPLACE_WITH_FIREBASE_PROJECT_ID',
-  messagingSenderId: 'REPLACE_WITH_FIREBASE_MESSAGING_SENDER_ID',
-  appId: 'REPLACE_WITH_FIREBASE_APP_ID',
+  apiKey: 'AIzaSyAKvPrhqWTNtjR_kstvAU8jeGTIsBxbTEs',
+  authDomain: 'concord-a5aea.firebaseapp.com',
+  projectId: 'concord-a5aea',
+  messagingSenderId: '463886631922',
+  appId: '1:463886631922:web:bdbc823e9b22790af9616b',
 });
 
 const messaging = self.firebase.messaging();
