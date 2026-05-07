@@ -94,7 +94,6 @@ export default function ImportantDatesPage() {
       } else {
         await notifyAiDate(item.name, item.occursOn, item.kind, item.notes);
       }
-      alert('Đã bắn — kiểm tra mail');
     } catch (err) {
       alert((err as Error).message);
     }

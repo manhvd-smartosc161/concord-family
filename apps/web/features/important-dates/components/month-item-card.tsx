@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, Badge } from '@/components/ui';
 import type { MonthItem, MonthItemKind } from '../types';
 
@@ -26,13 +27,13 @@ const TYPE_LABEL: Record<MonthItemKind, string> = {
 };
 
 const REMIND_LABEL: Record<number, string> = {
-  0: 'Hôm đó',
-  1: '1 ngày',
-  2: '2 ngày',
-  3: '3 ngày',
-  7: '1 tuần',
-  14: '2 tuần',
-  30: '1 tháng',
+  0: 'Đúng ngày',
+  1: 'Trước 1 ngày',
+  2: 'Trước 2 ngày',
+  3: 'Trước 3 ngày',
+  7: 'Trước 1 tuần',
+  14: 'Trước 2 tuần',
+  30: 'Trước 1 tháng',
 };
 
 export function MonthItemCard({
@@ -44,9 +45,20 @@ export function MonthItemCard({
   item: MonthItem;
   onEdit: () => void;
   onDelete: () => void;
-  onTest: () => void;
+  onTest: () => Promise<void>;
 }) {
   const isUser = item.source === 'user';
+  const [sending, setSending] = useState(false);
+
+  async function handleTest() {
+    if (sending) return;
+    setSending(true);
+    try {
+      await onTest();
+    } finally {
+      setSending(false);
+    }
+  }
   const date = new Date(item.occursOn);
   const formatted = date.toLocaleDateString('vi-VN', {
     weekday: 'short',
@@ -85,13 +97,14 @@ export function MonthItemCard({
             </span>
           </p>
           {item.remindDaysBefore.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
+            <div className="mt-2 flex flex-wrap items-center gap-1">
+              <span className="text-[10px] text-stone-400">Nhắc:</span>
               {item.remindDaysBefore.map((d) => (
                 <span
                   key={d}
                   className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-600"
                 >
-                  {REMIND_LABEL[d] ?? `${d} ngày`}
+                  {REMIND_LABEL[d] ?? `Trước ${d} ngày`}
                 </span>
               ))}
             </div>
@@ -103,12 +116,22 @@ export function MonthItemCard({
         <div className="flex shrink-0 flex-col items-stretch gap-1">
           <button
             type="button"
-            onClick={onTest}
-            className="flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+            onClick={handleTest}
+            disabled={sending}
+            className="flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:cursor-wait disabled:opacity-60"
             title="Gửi mail thông báo ngay"
           >
-            <span className="text-xl leading-none">🔔</span>
-            <span>Bắn thông báo</span>
+            {sending ? (
+              <>
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-emerald-300 border-t-emerald-700" />
+                <span>Đang gửi…</span>
+              </>
+            ) : (
+              <>
+                <span className="text-xl leading-none">🔔</span>
+                <span>Bắn thông báo</span>
+              </>
+            )}
           </button>
           {isUser && (
             <>
