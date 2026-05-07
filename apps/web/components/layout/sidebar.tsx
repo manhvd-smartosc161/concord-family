@@ -11,6 +11,7 @@ const NAV = [
   { href: '/transactions', label: 'Giao dịch', icon: '📒' },
   { href: '/reports', label: 'Báo cáo', icon: '📈' },
   { href: '/goals', label: 'Mục tiêu', icon: '🎯' },
+  { href: '/important-dates', label: 'Ngày quan trọng', icon: '📅' },
   { href: '/settings', label: 'Cài đặt', icon: '⚙️' },
 ];
 

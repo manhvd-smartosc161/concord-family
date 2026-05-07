@@ -1,6 +1,7 @@
 import * as path from 'path';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AgentModule } from './agent/agent.module';
@@ -10,6 +11,8 @@ import { ChatModule } from './modules/chat/chat.module';
 import { DatabaseModule } from './infra/database/database.module';
 import { FundsModule } from './modules/funds/funds.module';
 import { GoalsModule } from './modules/goals/goals.module';
+import { ImportantDatesModule } from './modules/important-dates/important-dates.module';
+import { NotificationsModule } from './shared/notifications/notifications.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SalaryRulesModule } from './modules/salary-rules/salary-rules.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
@@ -24,6 +27,7 @@ import { UsersModule } from './modules/users/users.module';
         path.resolve(process.cwd(), '.env'),
       ],
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     UsersModule,
     AuthModule,
@@ -35,6 +39,8 @@ import { UsersModule } from './modules/users/users.module';
     GoalsModule,
     AgentModule,
     ChatModule,
+    NotificationsModule,
+    ImportantDatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
