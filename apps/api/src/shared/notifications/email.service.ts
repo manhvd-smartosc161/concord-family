@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as dns from 'dns';
 import * as nodemailer from 'nodemailer';
 
 export interface EmailMessage {
@@ -17,6 +18,8 @@ export class EmailService implements OnModuleInit {
   constructor(private readonly config: ConfigService) {}
 
   onModuleInit(): void {
+    dns.setDefaultResultOrder('ipv4first');
+
     const user = this.config.get<string>('GMAIL_USER');
     const pass = this.config.get<string>('GMAIL_APP_PASSWORD');
     const from = this.config.get<string>('GMAIL_FROM');
@@ -27,8 +30,15 @@ export class EmailService implements OnModuleInit {
       return;
     }
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      requireTLS: true,
       auth: { user, pass },
+      connectionTimeout: 15_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 20_000,
+      tls: { servername: 'smtp.gmail.com' },
     });
     this.from = from ?? user;
   }
