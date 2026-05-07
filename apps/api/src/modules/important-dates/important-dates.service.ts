@@ -6,6 +6,7 @@ import { UpdateImportantDateDto } from './dto/update-important-date.dto';
 import { ImportantDate } from './entities/important-date.entity';
 import {
   daysBetweenUtc,
+  findLunarMilestonesInSolarMonth,
   resolveOccurrenceForYear,
   todayInTimezone,
 } from './lib/lunar';
@@ -23,6 +24,32 @@ export interface ImportantDateView {
   createdById: string;
   nextOccurrence: string;
   daysUntilNext: number;
+}
+
+export type MonthItemKind =
+  | 'birthday'
+  | 'death_anniversary'
+  | 'anniversary'
+  | 'other'
+  | 'lunar_mung1'
+  | 'lunar_ram';
+
+export interface MonthItem {
+  occursOn: string;
+  daysUntil: number;
+  kind: MonthItemKind;
+  name: string;
+  isLunar: boolean;
+  notes: string | null;
+  sourceId: string | null;
+  remindDaysBefore: number[];
+  lunarMonth: number | null;
+}
+
+export interface MonthListView {
+  year: number;
+  month: number;
+  items: MonthItem[];
 }
 
 @Injectable()
@@ -86,6 +113,55 @@ export class ImportantDatesService {
   async remove(id: string): Promise<void> {
     const result = await this.repo.delete(id);
     if (result.affected === 0) throw new NotFoundException();
+  }
+
+  async listThisMonth(): Promise<MonthListView> {
+    const today = todayInTimezone(TZ);
+    const year = today.getUTCFullYear();
+    const month = today.getUTCMonth() + 1;
+    const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
+    const startOfNextMonth = new Date(Date.UTC(year, month, 1));
+
+    const all = await this.repo.find();
+    const items: MonthItem[] = [];
+
+    for (const e of all) {
+      let occurrence = resolveOccurrenceForYear(e, year);
+      if (occurrence < startOfMonth) {
+        occurrence = resolveOccurrenceForYear(e, year + 1);
+      }
+      if (occurrence >= startOfMonth && occurrence < startOfNextMonth) {
+        items.push({
+          occursOn: occurrence.toISOString().slice(0, 10),
+          daysUntil: daysBetweenUtc(today, occurrence),
+          kind: e.type,
+          name: e.name,
+          isLunar: e.isLunar,
+          notes: e.notes,
+          sourceId: e.id,
+          remindDaysBefore: e.remindDaysBefore,
+          lunarMonth: null,
+        });
+      }
+    }
+
+    const lunar = findLunarMilestonesInSolarMonth(year, month);
+    for (const m of lunar) {
+      items.push({
+        occursOn: m.date.toISOString().slice(0, 10),
+        daysUntil: daysBetweenUtc(today, m.date),
+        kind: m.kind === 'mung1' ? 'lunar_mung1' : 'lunar_ram',
+        name: m.kind === 'mung1' ? `Mùng 1 tháng ${m.lunarMonth} âm` : `Rằm tháng ${m.lunarMonth} âm`,
+        isLunar: true,
+        notes: null,
+        sourceId: null,
+        remindDaysBefore: [2],
+        lunarMonth: m.lunarMonth,
+      });
+    }
+
+    items.sort((a, b) => a.occursOn.localeCompare(b.occursOn));
+    return { year, month, items };
   }
 
   async findDueOn(

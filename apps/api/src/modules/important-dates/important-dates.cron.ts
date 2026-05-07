@@ -2,7 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { NotificationsService } from '../../shared/notifications/notifications.service';
 import { ImportantDatesService } from './important-dates.service';
-import { todayInTimezone } from './lib/lunar';
+import { findLunarMilestone, todayInTimezone } from './lib/lunar';
+
+const LUNAR_DAYS_BEFORE = 2;
 
 const TZ = 'Asia/Ho_Chi_Minh';
 
@@ -35,6 +37,21 @@ export class ImportantDatesCron {
         );
       }
     }
-    return { count: due.length };
+
+    const milestone = findLunarMilestone(today, LUNAR_DAYS_BEFORE);
+    if (milestone) {
+      try {
+        await this.notifications.notifyLunarMilestone({
+          ...milestone,
+          daysBefore: LUNAR_DAYS_BEFORE,
+        });
+      } catch (err) {
+        this.logger.error(
+          `lunar milestone notify failed: ${(err as Error).message}`,
+        );
+      }
+    }
+
+    return { count: due.length + (milestone ? 1 : 0) };
   }
 }
