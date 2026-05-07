@@ -10,12 +10,12 @@ import type { GoalView } from '@/features/goals/types';
 import { getSalaryRule, updateSalaryRule } from '@/features/settings/api';
 import type { SalaryRule } from '@/features/settings/types';
 import { pickFundIcon, useAuthedLayout } from '../layout';
-import { ChangePasswordModal } from '../_components/change-password-modal';
+import { ChangePasswordModal } from '@/features/auth/components/change-password-modal';
 import {
   Card,
   PageHeader,
   Skeleton,
-} from '../_components/ui';
+} from '@/components/ui';
 
 export default function SettingsPage() {
   const { user } = useAuthedLayout();

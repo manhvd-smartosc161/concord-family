@@ -10,14 +10,14 @@ import {
 } from '@/features/transactions/api';
 import type { TransactionView } from '@/features/transactions/types';
 import { useAuthedLayout } from '../layout';
-import { EditTransactionModal } from '../_components/edit-transaction-modal';
+import { EditTransactionModal } from '@/features/transactions/components/edit-transaction-modal';
 import {
   Card,
   EmptyState,
   PageHeader,
   Skeleton,
   StatCard,
-} from '../_components/ui';
+} from '@/components/ui';
 
 const PAGE_SIZE = 30;
 

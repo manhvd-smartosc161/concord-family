@@ -16,7 +16,7 @@ import {
 } from '@/features/transactions/api';
 import type { TransactionView } from '@/features/transactions/types';
 import { pickFundIcon, useAuthedLayout } from '../layout';
-import { EditTransactionModal } from '../_components/edit-transaction-modal';
+import { EditTransactionModal } from '@/features/transactions/components/edit-transaction-modal';
 import {
   Badge,
   Card,
@@ -25,7 +25,7 @@ import {
   ProgressBar,
   Skeleton,
   StatCard,
-} from '../_components/ui';
+} from '@/components/ui';
 
 export default function DashboardPage() {
   const { user, funds, reloadFunds } = useAuthedLayout();

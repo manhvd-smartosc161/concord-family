@@ -16,7 +16,8 @@ const eslintConfig = defineConfig([
       "lib/use-auth.ts",
       "app/(authed)/layout.tsx",
       "app/(authed)/**/page.tsx",
-      "app/(authed)/_components/**",
+      "features/**/components/**",
+      "features/**/hooks.ts",
     ],
     rules: {
       "react-hooks/set-state-in-effect": "off",

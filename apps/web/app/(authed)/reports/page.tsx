@@ -22,7 +22,7 @@ import {
   PageHeader,
   Skeleton,
   StatCard,
-} from '../_components/ui';
+} from '@/components/ui';
 
 export default function ReportsPage() {
   const now = new Date();

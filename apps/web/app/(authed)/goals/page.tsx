@@ -23,7 +23,7 @@ import {
   PageHeader,
   ProgressBar,
   Skeleton,
-} from '../_components/ui';
+} from '@/components/ui';
 
 export default function GoalsPage() {
   const { reloadFunds } = useAuthedLayout();

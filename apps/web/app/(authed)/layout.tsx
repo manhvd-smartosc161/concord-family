@@ -14,7 +14,7 @@ import { listFunds } from '@/features/funds/api';
 import type { FundView } from '@/features/funds/types';
 import type { AuthUser } from '@/features/auth/types';
 import { logout, useAuth } from '../../lib/use-auth';
-import { ChangePasswordModal } from './_components/change-password-modal';
+import { ChangePasswordModal } from '@/features/auth/components/change-password-modal';
 
 const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: '📊' },
