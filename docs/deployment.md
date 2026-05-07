@@ -51,9 +51,13 @@ Theo dõi:
 
 ### 2.2 Schema change (cần migration mới)
 
-**Quan trọng**: migration **phải chạy local pointing tới Supabase TRƯỚC khi push**, không bao giờ rely vào Render auto-run.
+**Render container tự chạy migration mỗi lần deploy** — Dockerfile CMD =
+`node dist/run-migrations.js && node dist/main.js`. Migration nào đã có trong
+bảng `migrations` của Supabase thì TypeORM tự skip, không apply lại.
 
-Lý do: nếu migration fail giữa chừng + Render restart container liên tục → schema corrupt, khó rollback.
+Nếu migration fail (lỗi SQL, conflict schema) → script exit non-zero →
+container không start → Render giữ version cũ, không swap traffic. Push tiếp
+1 fix lên main là deploy lại.
 
 Quy trình A → Z:
 
@@ -71,25 +75,30 @@ pnpm --filter api migration:run
 
 # 5. Test app local (pnpm dev) — đảm bảo entity + migration nhất quán
 
-# 6. Chạy migration trên Supabase (production DB)
-DATABASE_URL='postgresql://postgres.diucwefjchjdwefvdahk:<PASSWORD_URL_ENCODED>@aws-1-ap-south-1.pooler.supabase.com:5432/postgres' \
-POSTGRES_SSL=true \
-pnpm --filter api migration:run
-
-# 7. Verify schema qua GUI tool hoặc psql
-
-# 8. CHỈ KHI migration prod OK mới push code
-git add apps/api/migrations/
-git add apps/api/src/modules/...
+# 6. Push code — Render rebuild → container start → migration tự chạy
+git add apps/api/migrations/ apps/api/src/modules/...
 git commit -m "feat(api): add <feature> + migration"
 git push origin main
+
+# 7. Theo dõi Render logs (Events tab) cho dòng:
+#    [migrations] applied N migration(s) in Xms
 ```
 
-**Nếu migration prod fail giữa chừng**:
-1. KHÔNG push code lên main (api mới reference column chưa có)
-2. Connect tay vào Supabase → revert SQL bằng tay (đọc migration file để biết cần DROP gì)
-3. Hoặc: `pnpm migration:revert` để gỡ migration đã apply một phần
-4. Fix migration file → retry
+**Test migration trực tiếp trên Supabase trước khi push** (recommended cho
+migration phức tạp / DROP / không reversible):
+
+```bash
+DATABASE_URL='postgresql://postgres.diucwefjchjdwefvdahk:<PASSWORD>@aws-1-ap-south-1.pooler.supabase.com:5432/postgres' \
+POSTGRES_SSL=true \
+pnpm --filter api migration:run
+```
+
+**Nếu migration prod fail giữa chừng** (transaction-each → revert auto từng
+migration; nhưng TypeORM không transaction-toàn-cục):
+1. Render giữ version cũ, traffic không đổi → app vẫn live (nhưng entity mới
+   chưa lên DB)
+2. `pnpm migration:revert` từ local trỏ tới Supabase để gỡ migration apply dở
+3. Fix migration file → push tiếp
 
 ### 2.3 Đổi env var
 

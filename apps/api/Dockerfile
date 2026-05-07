@@ -18,4 +18,4 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /out ./
 EXPOSE 3001
-CMD ["node", "dist/main.js"]
+CMD ["sh", "-c", "node dist/run-migrations.js && node dist/main.js"]

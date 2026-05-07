@@ -57,7 +57,11 @@ export const AppDataSource = new DataSource({
       }),
   ssl: useSsl ? { rejectUnauthorized: false } : false,
   entities,
-  migrations: [path.join(__dirname, '..', 'migrations', '*.{ts,js}')],
+  migrations: [
+    __filename.endsWith('.js')
+      ? path.join(__dirname, 'migrations', '*.js')
+      : path.join(__dirname, '..', 'migrations', '*.ts'),
+  ],
   synchronize: false,
   logging: ['error', 'warn', 'migration', 'schema'],
 });
