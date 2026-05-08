@@ -779,6 +779,19 @@ function ActionCard({ action }: { action: ParseAction }) {
       </div>
     );
   }
+  if (action.kind === 'category_created') {
+    return (
+      <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
+        <span className="font-medium">✨ Đã tạo category: {action.name}</span>
+        <span>
+          {action.parentName ? ` (thuộc ${action.parentName})` : ' (danh mục cha)'}
+        </span>
+        <span className="text-stone-500">
+          {' '}— {action.isEssential ? 'thiết yếu' : 'không thiết yếu'}
+        </span>
+      </div>
+    );
+  }
   return (
     <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-900">
       ⚠️ {action.message}

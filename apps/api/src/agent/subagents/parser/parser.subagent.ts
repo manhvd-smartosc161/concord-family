@@ -5,12 +5,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { Category } from '../../../modules/categories/entities/category.entity';
+import { CategoriesService } from '../../../modules/categories/categories.service';
 import { Fund } from '../../../modules/funds/entities/fund.entity';
 import { TransactionsService } from '../../../modules/transactions/transactions.service';
 import { User } from '../../../modules/users/entities/user.entity';
 import { AnthropicService } from '../../core/anthropic.service';
 import {
   AskClarificationInput,
+  CreateCategoryInput,
   DeleteTransactionInput,
   LogTransactionInput,
   UpdateTransactionInput,
@@ -35,6 +37,12 @@ export type ParseAction =
     }
   | { kind: 'deleted'; id: string }
   | { kind: 'clarify'; question: string }
+  | {
+      kind: 'category_created';
+      name: string;
+      isEssential: boolean;
+      parentName: string | null;
+    }
   | { kind: 'tool_error'; toolName: string; message: string };
 
 export interface ParseResult {
@@ -52,6 +60,7 @@ export class ParserSubagent {
   constructor(
     private readonly anthropic: AnthropicService,
     private readonly transactionsService: TransactionsService,
+    private readonly categoriesService: CategoriesService,
     @InjectRepository(Fund)
     private readonly fundRepo: Repository<Fund>,
     @InjectRepository(Category)
@@ -170,7 +179,9 @@ export class ParserSubagent {
       '',
       '> Khi gọi log_transaction, dùng EXACT fundName từ list trên.',
       '> categoryName có thể là tên top-level HOẶC sub-category.',
-      '> KHÔNG bịa fund/category mới.',
+      '> KHÔNG bịa fund mới.',
+      '> Nếu user yêu cầu category mới (hoặc không có category phù hợp), dùng create_category.',
+      '> Hỏi xác nhận trước bằng ask_clarification (trừ khi user đã nói rõ ràng muốn tạo).',
       '',
       '### Giao dịch user vừa log (để update_transaction / delete_transaction)',
       ...recentLines,
@@ -261,6 +272,30 @@ export class ParserSubagent {
               message: msg,
             });
           }
+        } else if (block.name === 'create_category') {
+          const input = block.input as CreateCategoryInput;
+          try {
+            const category = await this.categoriesService.createCategory({
+              name: input.name,
+              icon: input.icon,
+              isEssential: input.isEssential,
+              parentName: input.parentName,
+            });
+            actions.push({
+              kind: 'category_created',
+              name: category.name,
+              isEssential: category.isEssential,
+              parentName: input.parentName ?? null,
+            });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`create_category failed: ${msg}`);
+            actions.push({
+              kind: 'tool_error',
+              toolName: 'create_category',
+              message: msg,
+            });
+          }
         }
       }
     }
@@ -329,6 +364,10 @@ function synthesizeReply(actions: ParseAction[]): string {
   const clarifies = actions.filter(
     (a): a is Extract<ParseAction, { kind: 'clarify' }> => a.kind === 'clarify',
   );
+  const categoryCreated = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'category_created' }> =>
+      a.kind === 'category_created',
+  );
   const errors = actions.filter(
     (a): a is Extract<ParseAction, { kind: 'tool_error' }> =>
       a.kind === 'tool_error',
@@ -361,6 +400,17 @@ function synthesizeReply(actions: ParseAction[]): string {
   }
   if (clarifies.length > 0) {
     parts.push(...clarifies.map((c) => `❓ ${c.question}`));
+  }
+  if (categoryCreated.length > 0) {
+    for (const c of categoryCreated) {
+      const essentialLabel = c.isEssential ? 'thiết yếu' : 'không thiết yếu';
+      const parentPart = c.parentName
+        ? ` (thuộc ${c.parentName})`
+        : ' (danh mục cha)';
+      parts.push(
+        `✨ Đã tạo category: **${c.name}**${parentPart} — ${essentialLabel}`,
+      );
+    }
   }
   if (errors.length > 0) {
     parts.push(...errors.map((e) => `⚠️ ${e.message}`));
