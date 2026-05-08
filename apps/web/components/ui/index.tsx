@@ -12,7 +12,7 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between border-b border-stone-200 bg-white px-6 py-4">
+    <div className="flex flex-wrap items-start justify-between gap-2 border-b border-stone-200 bg-white px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
       <div>
         <h1 className="text-lg font-semibold tracking-tight text-stone-900">
           {title}
