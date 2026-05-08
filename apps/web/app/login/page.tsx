@@ -80,7 +80,7 @@ export default function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-stone-200/80 bg-white/90 p-8 shadow-xl shadow-stone-300/30 backdrop-blur">
+        <div className="rounded-2xl border border-stone-200/80 bg-white/90 p-6 shadow-xl shadow-stone-300/30 backdrop-blur sm:p-8">
           <h2 className="text-base font-semibold text-stone-800">
             Đăng nhập
           </h2>
