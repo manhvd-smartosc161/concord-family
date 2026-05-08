@@ -87,7 +87,7 @@ export function ChangePasswordModal({ open, onClose }: Props) {
       />
 
       {/* Panel */}
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl shadow-stone-900/20">
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-4 shadow-2xl shadow-stone-900/20 sm:p-6">
         <div className="mb-1 flex items-start justify-between">
           <h3 className="text-base font-semibold text-stone-900">
             Đổi mật khẩu
@@ -149,19 +149,19 @@ export function ChangePasswordModal({ open, onClose }: Props) {
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-1">
+            <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end sm:gap-3">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50"
+                className="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 sm:w-auto"
               >
                 Huỷ
               </button>
               <button
                 type="submit"
                 disabled={submitting || !current || !next || !confirm}
-                className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
+                className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300 sm:w-auto"
               >
                 {submitting ? 'Đang đổi…' : 'Đổi mật khẩu'}
               </button>
