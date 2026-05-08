@@ -113,11 +113,45 @@ export const deleteTransactionTool: Anthropic.Tool = {
   },
 };
 
+export const createCategoryTool: Anthropic.Tool = {
+  name: 'create_category',
+  description:
+    'Tạo category mới khi user yêu cầu hoặc không tìm thấy category phù hợp. ' +
+    'Tự quyết isEssential và parentName. ' +
+    'PHẢI gọi ask_clarification để xác nhận trước (trừ khi user đã confirm rõ ràng).',
+  input_schema: {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string',
+        description: 'Tên category mới, tiếng Việt, ≤100 ký tự.',
+      },
+      icon: {
+        type: 'string',
+        description: 'Emoji đại diện (vd "🐾"). Bỏ trống nếu không chắc.',
+      },
+      isEssential: {
+        type: 'boolean',
+        description:
+          'true = thiết yếu (ăn uống, sức khỏe, đi lại, nhà cửa, con cái, thú cưng). ' +
+          'false = không thiết yếu (giải trí, mua sắm, cá nhân, quà tặng).',
+      },
+      parentName: {
+        type: 'string',
+        description:
+          'Tên category cha top-level muốn xếp vào. Bỏ trống nếu nên là top-level riêng.',
+      },
+    },
+    required: ['name', 'isEssential'],
+  },
+};
+
 export const parserTools: Anthropic.Tool[] = [
   logTransactionTool,
   askClarificationTool,
   updateTransactionTool,
   deleteTransactionTool,
+  createCategoryTool,
 ];
 
 // ─── Input types (mirror of input_schema for type safety in executor) ─────
@@ -144,4 +178,11 @@ export interface UpdateTransactionInput {
 
 export interface DeleteTransactionInput {
   txn_id: string;
+}
+
+export interface CreateCategoryInput {
+  name: string;
+  icon?: string;
+  isEssential: boolean;
+  parentName?: string;
 }

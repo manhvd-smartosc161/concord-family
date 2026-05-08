@@ -16,6 +16,7 @@ export type ParseAction =
     }
   | { kind: 'deleted'; id: string }
   | { kind: 'clarify'; question: string }
+  | { kind: 'category_created'; name: string; isEssential: boolean; parentName: string | null }
   | { kind: 'tool_error'; toolName: string; message: string };
 
 export interface ChatResponse {
