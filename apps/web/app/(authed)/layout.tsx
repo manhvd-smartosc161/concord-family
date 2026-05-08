@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Header } from '@/components/layout/header';
 import { Sidebar } from '@/components/layout/sidebar';
+import { MobileDrawer } from '@/components/ui';
 import { listFunds } from '@/features/funds/api';
 import type { FundView } from '@/features/funds/types';
 import type { AuthUser } from '@/features/auth/types';
@@ -31,6 +32,7 @@ export default function AuthedLayout({
   const auth = useAuth();
   const router = useRouter();
   const [funds, setFunds] = useState<FundView[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const reloadFunds = useCallback(async () => {
     try {
@@ -59,7 +61,24 @@ export default function AuthedLayout({
 
   return (
     <LayoutContext.Provider value={{ user: auth.user, funds, reloadFunds }}>
-      <div className="grid h-screen grid-cols-[280px_minmax(0,1fr)] grid-rows-[64px_minmax(0,1fr)]">
+      <div className="flex h-screen flex-col lg:hidden">
+        <Header
+          user={auth.user}
+          onLogout={() => logout(router)}
+          onMenuClick={() => setDrawerOpen(true)}
+        />
+        <main className="min-h-0 flex-1 overflow-hidden bg-stone-50">
+          {children}
+        </main>
+        <MobileDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+        >
+          <Sidebar funds={funds} onNavigate={() => setDrawerOpen(false)} />
+        </MobileDrawer>
+      </div>
+
+      <div className="hidden h-screen grid-cols-[280px_minmax(0,1fr)] grid-rows-[64px_minmax(0,1fr)] lg:grid">
         <Header user={auth.user} onLogout={() => logout(router)} />
         <Sidebar funds={funds} />
         <main className="min-h-0 overflow-hidden bg-stone-50">{children}</main>
