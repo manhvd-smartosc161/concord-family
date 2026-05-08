@@ -363,37 +363,34 @@ export default function ChatPage() {
           className="border-t border-stone-200 bg-white px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4 lg:px-6"
         >
           <div className="mx-auto max-w-4xl">
-            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 transition-colors focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-100">
-              <textarea
-                ref={composerRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                    e.preventDefault();
-                    void submit(input);
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 transition-colors focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-100 sm:px-4 sm:py-3">
+              <div className="flex items-end gap-2">
+                <textarea
+                  ref={composerRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                      e.preventDefault();
+                      void submit(input);
+                    }
+                  }}
+                  rows={1}
+                  placeholder={
+                    activeFund
+                      ? `Gõ giao dịch cho ${activeFund.name}…`
+                      : 'Chọn một quỹ ở sidebar trái'
                   }
-                }}
-                rows={2}
-                placeholder={
-                  activeFund
-                    ? `Gõ giao dịch cho ${activeFund.name}…`
-                    : 'Chọn một quỹ ở sidebar trái'
-                }
-                className="w-full resize-none border-0 bg-transparent text-sm leading-relaxed placeholder:text-stone-400 focus:outline-none focus:ring-0"
-                style={{ minHeight: '48px', maxHeight: '200px' }}
-                disabled={isLoading || loadingMessages || !activeFundId}
-              />
-              <div className="mt-1 flex items-center justify-between">
-                <span className="text-[11px] text-stone-400">
-                  Shift+Enter để xuống dòng
-                </span>
+                  className="min-h-[36px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed placeholder:text-stone-400 focus:outline-none focus:ring-0 sm:min-h-[44px]"
+                  style={{ maxHeight: '200px' }}
+                  disabled={isLoading || loadingMessages || !activeFundId}
+                />
                 <button
                   type="submit"
                   disabled={isLoading || !input.trim() || !activeFundId}
                   aria-label="Gửi"
                   title="Gửi (Enter)"
-                  className="flex h-9 items-center justify-center rounded-full bg-emerald-700 px-3 text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-95 disabled:cursor-not-allowed disabled:bg-stone-300 sm:px-4"
+                  className="flex h-9 shrink-0 items-center justify-center rounded-full bg-emerald-700 px-3 text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-95 disabled:cursor-not-allowed disabled:bg-stone-300 sm:px-4"
                 >
                   <span className="hidden text-sm sm:inline">Gửi</span>
                   <svg
@@ -409,6 +406,9 @@ export default function ChatPage() {
                   </svg>
                 </button>
               </div>
+              <span className="mt-1 hidden text-[11px] text-stone-400 sm:block">
+                Shift+Enter để xuống dòng
+              </span>
             </div>
             <p className="mt-2 text-[11px] text-stone-400">
               {isJointChat
