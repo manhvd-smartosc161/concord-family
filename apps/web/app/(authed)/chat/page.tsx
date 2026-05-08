@@ -796,18 +796,16 @@ function EmptyState({
         </p>
       </div>
       {suggestions.length > 0 && (
-        <div className="-mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0">
-          <div className="flex gap-2 whitespace-nowrap">
-            {suggestions.map((s) => (
-              <button
-                key={s}
-                onClick={() => onSuggest(s)}
-                className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-left text-xs text-stone-700 transition-all hover:border-emerald-200 hover:bg-emerald-50"
-              >
-                <span className="block font-mono">{s}</span>
-              </button>
-            ))}
-          </div>
+        <div className="hidden flex-wrap gap-2 sm:flex">
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              onClick={() => onSuggest(s)}
+              className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-left text-xs text-stone-700 transition-all hover:border-emerald-200 hover:bg-emerald-50"
+            >
+              <span className="block font-mono">{s}</span>
+            </button>
+          ))}
         </div>
       )}
     </div>
