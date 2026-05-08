@@ -163,7 +163,7 @@ export function AgendaItemCard({
           </div>
         </div>
 
-        <div className="relative flex min-w-0 flex-1 flex-col p-4 pr-3">
+        <div className="relative flex min-w-0 flex-1 flex-col p-3 sm:p-4 sm:pr-3">
           <div className="flex flex-wrap items-center gap-2 pr-32">
             <span className="text-base leading-none">
               {ICONS[item.kind] ?? '📌'}
@@ -195,7 +195,7 @@ export function AgendaItemCard({
           </div>
 
           {item.remindDaysBefore.length > 0 && (
-            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <div className="mt-3 hidden flex-wrap items-center gap-1.5 sm:flex">
               <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-stone-400">
                 Nhắc
               </span>
@@ -211,7 +211,7 @@ export function AgendaItemCard({
           )}
 
           {item.notes && (
-            <p className="mt-3 border-l-2 border-stone-200 pl-3 text-xs italic text-stone-500">
+            <p className="mt-3 hidden border-l-2 border-stone-200 pl-3 text-xs italic text-stone-500 sm:block">
               {item.notes}
             </p>
           )}

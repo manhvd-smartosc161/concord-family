@@ -110,7 +110,7 @@ export default function ImportantDatesPage() {
           </div>
         }
       />
-      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-stone-50 to-stone-50 px-6 py-8">
+      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-stone-50 to-stone-50 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
         <div className="mx-auto max-w-2xl space-y-4">
           {view === null && (
             <>

@@ -98,7 +98,7 @@ export function ImportantDateFormModal({
       <form
         onSubmit={handleSubmit}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl"
+        className="w-full max-w-md rounded-xl bg-white p-4 sm:p-6 shadow-xl"
       >
         <h2 className="mb-4 text-base font-semibold text-stone-900">
           {entry ? 'Sửa ngày quan trọng' : 'Thêm ngày quan trọng'}
@@ -185,18 +185,18 @@ export function ImportantDateFormModal({
           )}
         </div>
 
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-4 py-2 text-sm text-stone-600 hover:bg-stone-100"
+            className="w-full rounded-lg px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 sm:w-auto"
           >
             Hủy
           </button>
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 sm:w-auto"
           >
             {submitting ? 'Đang lưu...' : 'Lưu'}
           </button>
