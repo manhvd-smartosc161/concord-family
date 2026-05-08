@@ -29,7 +29,7 @@ export function PageHeader({
 export function Card({
   children,
   className = '',
-  padding = 'p-5',
+  padding = 'p-3 sm:p-5',
 }: {
   children: ReactNode;
   className?: string;
@@ -67,7 +67,7 @@ export function StatCard({
         {label}
       </div>
       <div
-        className={`mt-1 font-mono text-2xl font-semibold tabular-nums tracking-tight ${valueColor}`}
+        className={`mt-1 break-words font-mono text-lg font-semibold tabular-nums tracking-tight sm:text-xl lg:text-2xl ${valueColor}`}
       >
         {value}
       </div>

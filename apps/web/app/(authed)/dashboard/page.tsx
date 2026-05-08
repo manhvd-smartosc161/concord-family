@@ -196,7 +196,7 @@ function GoalHero({ goal }: { goal: GoalView }) {
       </div>
 
       <div className="mb-1 flex items-baseline justify-between">
-        <span className="font-mono text-3xl font-semibold tabular-nums text-stone-900">
+        <span className="font-mono text-xl font-semibold tabular-nums text-stone-900 sm:text-2xl lg:text-3xl">
           {formatVND(goal.currentProgress)}
         </span>
         <span className="text-sm text-stone-500">

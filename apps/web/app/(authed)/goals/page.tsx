@@ -234,7 +234,7 @@ function EnvelopeCard({
       </div>
 
       <div className="mb-1 flex items-baseline justify-between">
-        <span className="font-mono text-2xl font-semibold tabular-nums text-stone-900">
+        <span className="font-mono text-lg font-semibold tabular-nums text-stone-900 sm:text-xl lg:text-2xl">
           {formatVND(balance)}
         </span>
         {hasTarget && (
