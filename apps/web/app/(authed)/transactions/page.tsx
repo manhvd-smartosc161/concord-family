@@ -40,6 +40,7 @@ export default function TransactionsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [editTxn, setEditTxn] = useState<TransactionView | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -132,28 +133,53 @@ export default function TransactionsPage() {
         subtitle={`${total} giao dịch · trang ${page + 1}/${Math.max(1, totalPages)}`}
       />
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto max-w-5xl space-y-5">
-          <Card padding="p-4">
+          <Card padding="p-3 sm:p-4">
             <div className="space-y-3">
-              <FundFilterTabs
-                funds={funds}
-                value={fundFilter}
-                onChange={changeFundFilter}
-              />
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
                 <MonthSwitcher
                   year={year}
                   month={month}
                   onShift={shiftMonth}
                   isCurrent={isCurrentMonth}
                 />
+                <button
+                  type="button"
+                  onClick={() => setFilterOpen((v) => !v)}
+                  className="ml-auto inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 sm:hidden"
+                  aria-expanded={filterOpen}
+                >
+                  <span>Bộ lọc</span>
+                  <svg
+                    className={`h-4 w-4 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div
+                className={`space-y-3 ${filterOpen ? 'block' : 'hidden'} sm:block`}
+              >
+                <FundFilterTabs
+                  funds={funds}
+                  value={fundFilter}
+                  onChange={changeFundFilter}
+                />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Tìm theo ghi chú, category…"
-                  className="min-w-[200px] flex-1 rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-sm transition-colors placeholder:text-stone-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm transition-colors placeholder:text-stone-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 />
               </div>
             </div>
