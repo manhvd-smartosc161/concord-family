@@ -94,7 +94,7 @@ export default function DashboardPage() {
         })}`}
       />
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto max-w-6xl space-y-6">
           {/* Goal hero (legacy) */}
           {yearlyGoal && <GoalHero goal={yearlyGoal} />}
@@ -196,7 +196,7 @@ function GoalHero({ goal }: { goal: GoalView }) {
       </div>
 
       <div className="mb-1 flex items-baseline justify-between">
-        <span className="font-mono text-3xl font-semibold tabular-nums text-stone-900">
+        <span className="font-mono text-xl font-semibold tabular-nums text-stone-900 sm:text-2xl lg:text-3xl">
           {formatVND(goal.currentProgress)}
         </span>
         <span className="text-sm text-stone-500">
@@ -211,7 +211,7 @@ function GoalHero({ goal }: { goal: GoalView }) {
         Tính theo dòng tiền vào quỹ tiết kiệm & đầu tư trong năm
       </p>
 
-      <div className="mt-4 grid grid-cols-3 gap-4 border-t border-stone-100 pt-4">
+      <div className="mt-4 grid grid-cols-1 gap-4 border-t border-stone-100 pt-4 sm:grid-cols-3">
         <Stat
           label="Còn lại"
           value={formatVND(Math.max(0, goal.targetAmount - goal.currentProgress))}
@@ -510,7 +510,7 @@ function TxnRow({
         >
           {formatVND(t.amount, true)}
         </span>
-        <div className="invisible flex items-center gap-1 group-hover:visible">
+        <div className="flex items-center gap-1 sm:invisible sm:group-hover:visible">
           <button
             onClick={onEdit}
             aria-label="Sửa giao dịch"

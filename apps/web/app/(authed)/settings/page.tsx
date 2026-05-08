@@ -25,7 +25,7 @@ export default function SettingsPage() {
         title="Cài đặt"
         subtitle="Tài khoản, mật khẩu và quy tắc lương"
       />
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto max-w-3xl space-y-6">
           <AccountSection />
           <YearlyGoalSection />
@@ -214,7 +214,7 @@ function YearlyGoalSection() {
             ))}
           </div>
 
-          <div className="mt-5 flex items-center justify-between border-t border-stone-100 pt-4">
+          <div className="mt-5 flex flex-col items-start justify-between border-t border-stone-100 pt-4 sm:flex-row sm:items-center">
             {feedback && (
               <span
                 className={`text-xs ${
@@ -224,21 +224,21 @@ function YearlyGoalSection() {
                 {feedback.kind === 'ok' ? '✅' : '⚠️'} {feedback.msg}
               </span>
             )}
-            <div className="ml-auto flex gap-2">
+            <div className="mt-3 flex w-full gap-2 sm:ml-auto sm:mt-0 sm:w-auto sm:gap-3">
               <button
                 onClick={() => {
                   setTarget(goal?.targetAmount ?? '');
                   setFeedback(null);
                 }}
                 disabled={saving || !goal}
-                className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 disabled:opacity-50"
+                className="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 disabled:opacity-50 sm:flex-none"
               >
                 Reset
               </button>
               <button
                 onClick={onSave}
                 disabled={saving || !isDirty}
-                className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300"
+                className="flex-1 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300 sm:flex-none"
               >
                 {saving ? 'Đang lưu…' : 'Lưu'}
               </button>

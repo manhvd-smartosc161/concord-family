@@ -7,15 +7,39 @@ import type { AuthUser } from '@/features/auth/types';
 export function Header({
   user,
   onLogout,
+  onMenuClick,
 }: {
   user: AuthUser;
   onLogout: () => void;
+  onMenuClick?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [pwModalOpen, setPwModalOpen] = useState(false);
   return (
-    <header className="col-span-2 flex items-center justify-between border-b border-stone-200 bg-white/80 px-6 backdrop-blur">
+    <header className="flex h-16 items-center justify-between border-b border-stone-200 bg-white/80 px-3 backdrop-blur sm:px-4 lg:col-span-2 lg:px-6">
       <div className="flex items-center gap-3">
+        {onMenuClick && (
+          <button
+            type="button"
+            onClick={onMenuClick}
+            className="-ml-1 flex h-9 w-9 items-center justify-center rounded-lg text-stone-700 hover:bg-stone-100 lg:hidden"
+            aria-label="Mở menu"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        )}
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-700 text-base font-bold text-white shadow-sm shadow-emerald-700/20">
           C
         </div>
@@ -39,7 +63,7 @@ export function Header({
           >
             {user.name.charAt(0).toUpperCase()}
           </div>
-          <div className="text-left leading-tight">
+          <div className="hidden text-left leading-tight sm:block">
             <div className="text-sm font-medium text-stone-800">
               {user.name}
             </div>

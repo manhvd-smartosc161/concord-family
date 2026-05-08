@@ -15,6 +15,7 @@ import type { ChatSessionView, ParseAction } from '@/features/chat/types';
 import type { FundView } from '@/features/funds/types';
 import { useAuthedLayout } from '../layout';
 import { pickFundIcon } from '@/features/funds/components/fund-card';
+import { MobileDrawer } from '@/components/ui';
 
 interface PendingMessage {
   id: string;
@@ -60,6 +61,7 @@ export default function ChatPage() {
     [funds],
   );
   const [activeFundId, setActiveFundId] = useState<string | null>(null);
+  const [sessionDrawerOpen, setSessionDrawerOpen] = useState(false);
 
   // ─── Load sessions ──────────────────────────────────────────────────
   const reloadSessions = useCallback(async () => {
@@ -282,9 +284,9 @@ export default function ChatPage() {
   const isJointChat = activeFund?.type === 'joint';
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[280px_minmax(0,1fr)]">
+    <div className="flex h-full min-h-0 flex-col lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
       {/* Session sidebar */}
-      <aside className="flex h-full min-h-0 flex-col border-r border-stone-200 bg-white">
+      <aside className="hidden h-full min-h-0 flex-col border-r border-stone-200 bg-white lg:flex">
         <FundTabs
           funds={funds}
           activeId={activeFundId}
@@ -310,13 +312,14 @@ export default function ChatPage() {
       </aside>
 
       {/* Main chat panel */}
-      <div className="flex h-full min-h-0 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
         <ChatHeader
           fund={activeFund}
           session={currentSession}
+          onHistoryOpen={() => setSessionDrawerOpen(true)}
         />
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-6 sm:px-4 lg:px-6">
           <div className="mx-auto max-w-3xl space-y-4">
             {loadingMessages && (
               <div className="text-center text-sm text-stone-400">
@@ -357,43 +360,41 @@ export default function ChatPage() {
             e.preventDefault();
             void submit(input);
           }}
-          className="border-t border-stone-200 bg-white px-6 py-4"
+          className="border-t border-stone-200 bg-white px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4 lg:px-6"
         >
           <div className="mx-auto max-w-4xl">
-            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 transition-colors focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-100">
-              <textarea
-                ref={composerRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                    e.preventDefault();
-                    void submit(input);
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 transition-colors focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-100 sm:px-4 sm:py-3">
+              <div className="flex items-end gap-2">
+                <textarea
+                  ref={composerRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                      e.preventDefault();
+                      void submit(input);
+                    }
+                  }}
+                  rows={1}
+                  placeholder={
+                    activeFund
+                      ? `Gõ giao dịch cho ${activeFund.name}…`
+                      : 'Chọn một quỹ ở sidebar trái'
                   }
-                }}
-                rows={2}
-                placeholder={
-                  activeFund
-                    ? `Gõ giao dịch cho ${activeFund.name}…`
-                    : 'Chọn một quỹ ở sidebar trái'
-                }
-                className="w-full resize-none border-0 bg-transparent text-sm leading-relaxed placeholder:text-stone-400 focus:outline-none focus:ring-0"
-                style={{ minHeight: '48px', maxHeight: '200px' }}
-                disabled={isLoading || loadingMessages || !activeFundId}
-              />
-              <div className="mt-1 flex items-center justify-between">
-                <span className="text-[11px] text-stone-400">
-                  Shift+Enter để xuống dòng
-                </span>
+                  className="min-h-[36px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed placeholder:text-stone-400 focus:outline-none focus:ring-0 sm:min-h-[44px]"
+                  style={{ maxHeight: '200px' }}
+                  disabled={isLoading || loadingMessages || !activeFundId}
+                />
                 <button
                   type="submit"
                   disabled={isLoading || !input.trim() || !activeFundId}
                   aria-label="Gửi"
                   title="Gửi (Enter)"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-700 text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-95 disabled:cursor-not-allowed disabled:bg-stone-300"
+                  className="flex h-9 shrink-0 items-center justify-center rounded-full bg-emerald-700 px-3 text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-95 disabled:cursor-not-allowed disabled:bg-stone-300 sm:px-4"
                 >
+                  <span className="hidden text-sm sm:inline">Gửi</span>
                   <svg
-                    className="h-4 w-4"
+                    className="h-4 w-4 sm:hidden"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -405,6 +406,9 @@ export default function ChatPage() {
                   </svg>
                 </button>
               </div>
+              <span className="mt-1 hidden text-[11px] text-stone-400 sm:block">
+                Shift+Enter để xuống dòng
+              </span>
             </div>
             <p className="mt-2 text-[11px] text-stone-400">
               {isJointChat
@@ -416,6 +420,36 @@ export default function ChatPage() {
           </div>
         </form>
       </div>
+
+      <MobileDrawer
+        open={sessionDrawerOpen}
+        onClose={() => setSessionDrawerOpen(false)}
+        widthClass="w-[280px]"
+      >
+        <div className="flex h-full flex-col">
+          <FundTabs
+            funds={funds}
+            activeId={activeFundId}
+            onSelect={(id) => { handleTabClick(id); setSessionDrawerOpen(false); }}
+          />
+          <div className="border-b border-stone-100 p-3">
+            <button
+              onClick={() => { handleNewChat(); setSessionDrawerOpen(false); }}
+              disabled={!activeFundId}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="text-base leading-none">+</span> Cuộc trò chuyện mới
+            </button>
+          </div>
+          <SessionListDrawer
+            sessions={filteredSessions}
+            activeId={sessionIdFromUrl}
+            onDelete={handleDeleteSession}
+            fundType={activeFund?.type}
+            onPick={() => setSessionDrawerOpen(false)}
+          />
+        </div>
+      </MobileDrawer>
     </div>
   );
 }
@@ -569,37 +603,165 @@ function SessionItem({
   );
 }
 
+function SessionListDrawer({
+  sessions,
+  activeId,
+  onDelete,
+  fundType,
+  onPick,
+}: {
+  sessions: ChatSessionView[];
+  activeId: string | null;
+  onDelete: (id: string) => void;
+  fundType: 'personal' | 'joint' | undefined;
+  onPick: () => void;
+}) {
+  const grouped = useMemo(() => groupByDate(sessions), [sessions]);
+  return (
+    <div className="flex-1 overflow-y-auto px-2 py-2">
+      {sessions.length === 0 && (
+        <div className="px-3 py-6 text-center text-xs text-stone-400">
+          {fundType === 'joint'
+            ? 'Chưa có cuộc trò chuyện chung nào.'
+            : 'Chưa có cuộc trò chuyện nào.'}
+        </div>
+      )}
+      {grouped.map(({ label, items }) => (
+        <div key={label} className="mb-3">
+          <h4 className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-stone-400">
+            {label}
+          </h4>
+          <ul className="space-y-0.5">
+            {items.map((s) => (
+              <SessionItemDrawer
+                key={s.id}
+                session={s}
+                active={s.id === activeId}
+                onDelete={() => onDelete(s.id)}
+                onPick={onPick}
+              />
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SessionItemDrawer({
+  session,
+  active,
+  onDelete,
+  onPick,
+}: {
+  session: ChatSessionView;
+  active: boolean;
+  onDelete: () => void;
+  onPick: () => void;
+}) {
+  const router = useRouter();
+  return (
+    <li>
+      <div
+        className={`group flex items-center gap-1 rounded-lg pr-1 ${
+          active ? 'bg-emerald-50' : 'hover:bg-stone-100'
+        }`}
+      >
+        <button
+          onClick={() => { router.replace(`/chat?session=${session.id}`); onPick(); }}
+          className="flex-1 truncate px-3 py-2 text-left text-xs"
+          title={session.title}
+        >
+          <div
+            className={`truncate ${
+              active ? 'font-medium text-emerald-900' : 'text-stone-700'
+            }`}
+          >
+            {session.title}
+          </div>
+          <div className="text-[10px] text-stone-400">
+            {session.messageCount} tin nhắn ·{' '}
+            {formatRelative(new Date(session.lastMessageAt))}
+          </div>
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          aria-label="Xoá hội thoại"
+          className="hidden rounded p-1 text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 group-hover:block"
+        >
+          <svg
+            className="h-3.5 w-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"
+            />
+          </svg>
+        </button>
+      </div>
+    </li>
+  );
+}
+
 // ─── Chat header ──────────────────────────────────────────────────────
 
 function ChatHeader({
   fund,
   session,
+  onHistoryOpen,
 }: {
   fund: FundView | undefined;
   session: ChatSessionView | null | undefined;
+  onHistoryOpen: () => void;
 }) {
   if (!fund) {
     return (
-      <div className="border-b border-stone-200 bg-white px-6 py-3">
-        <h2 className="text-sm font-semibold text-stone-800">Chat</h2>
-        <p className="text-[11px] text-stone-500">
-          Chọn một quỹ ở sidebar trái để bắt đầu
-        </p>
+      <div className="flex items-center justify-between border-b border-stone-200 bg-white px-3 py-3 sm:px-4 lg:px-6">
+        <div>
+          <h2 className="text-sm font-semibold text-stone-800">Chat</h2>
+          <p className="text-[11px] text-stone-500">
+            Chọn một quỹ ở sidebar trái để bắt đầu
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onHistoryOpen}
+          className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 lg:hidden"
+        >
+          <span>Lịch sử</span>
+        </button>
       </div>
     );
   }
 
   const icon = pickFundIcon(fund);
   return (
-    <div className="border-b border-stone-200 bg-white px-6 py-3">
-      <h2 className="flex items-center gap-2 text-sm font-semibold text-stone-800">
-        <span>{icon}</span>
-        {session?.title ?? `${fund.name} — Cuộc trò chuyện mới`}
-      </h2>
-      <p className="text-[11px] text-stone-500">
-        {fund.name} · Parser default fund = {fund.name}
-        {fund.type === 'joint' && ' · cả vợ chồng cùng thấy'}
-      </p>
+    <div className="flex items-center justify-between border-b border-stone-200 bg-white px-3 py-3 sm:px-4 lg:px-6">
+      <div>
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-stone-800">
+          <span>{icon}</span>
+          {session?.title ?? `${fund.name} — Cuộc trò chuyện mới`}
+        </h2>
+        <p className="text-[11px] text-stone-500">
+          <span className="hidden sm:inline">{fund.name} · Parser default fund = {fund.name}</span>
+          {fund.type === 'joint' && <span className="hidden sm:inline"> · cả vợ chồng cùng thấy</span>}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onHistoryOpen}
+        className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 lg:hidden"
+      >
+        <span>Lịch sử</span>
+      </button>
     </div>
   );
 }
@@ -634,7 +796,7 @@ function EmptyState({
         </p>
       </div>
       {suggestions.length > 0 && (
-        <div className="grid w-full max-w-lg grid-cols-2 gap-2">
+        <div className="hidden flex-wrap gap-2 sm:flex">
           {suggestions.map((s) => (
             <button
               key={s}
@@ -680,7 +842,7 @@ function MessageBubble({
   const alignRight = isUser && isMine;
   return (
     <div className={`flex ${alignRight ? 'justify-end' : 'justify-start'}`}>
-      <div className="flex max-w-[85%] flex-col gap-1">
+      <div className="flex max-w-[85%] flex-col gap-1 lg:max-w-[70%]">
         {showAuthor && msg.author && (
           <div
             className={`text-[10px] font-medium uppercase tracking-wide text-stone-400 ${

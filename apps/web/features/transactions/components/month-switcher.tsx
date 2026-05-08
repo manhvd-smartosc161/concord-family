@@ -12,21 +12,21 @@ export function MonthSwitcher({
   isCurrent: boolean;
 }) {
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white p-0.5">
+    <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white p-1 sm:p-0.5">
       <button
         onClick={() => onShift(-1)}
-        className="rounded-md p-1.5 text-stone-600 transition-colors hover:bg-stone-100"
+        className="flex h-8 w-8 items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-100"
         aria-label="Tháng trước"
       >
         <Chevron dir="left" />
       </button>
-      <div className="min-w-[120px] px-3 py-1 text-center text-sm font-medium text-stone-800">
+      <div className="min-w-[100px] px-2 py-1 text-center text-xs font-medium text-stone-800 sm:min-w-[120px] sm:px-3 sm:py-1 sm:text-sm">
         Tháng {month}/{year}
       </div>
       <button
         onClick={() => onShift(1)}
         disabled={isCurrent}
-        className="rounded-md p-1.5 text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
+        className="flex h-8 w-8 items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
         aria-label="Tháng sau"
       >
         <Chevron dir="right" />

@@ -18,6 +18,7 @@ const eslintConfig = defineConfig([
       "app/(authed)/**/page.tsx",
       "features/**/components/**",
       "features/**/hooks.ts",
+      "components/ui/mobile-drawer.tsx",
     ],
     rules: {
       "react-hooks/set-state-in-effect": "off",

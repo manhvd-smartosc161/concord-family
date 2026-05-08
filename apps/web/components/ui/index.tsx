@@ -12,7 +12,7 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between border-b border-stone-200 bg-white px-6 py-4">
+    <div className="flex flex-wrap items-start justify-between gap-2 border-b border-stone-200 bg-white px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
       <div>
         <h1 className="text-lg font-semibold tracking-tight text-stone-900">
           {title}
@@ -29,7 +29,7 @@ export function PageHeader({
 export function Card({
   children,
   className = '',
-  padding = 'p-5',
+  padding = 'p-3 sm:p-5',
 }: {
   children: ReactNode;
   className?: string;
@@ -67,7 +67,7 @@ export function StatCard({
         {label}
       </div>
       <div
-        className={`mt-1 font-mono text-2xl font-semibold tabular-nums tracking-tight ${valueColor}`}
+        className={`mt-1 break-words font-mono text-lg font-semibold tabular-nums tracking-tight sm:text-xl lg:text-2xl ${valueColor}`}
       >
         {value}
       </div>
@@ -151,3 +151,5 @@ export function Skeleton({
 }) {
   return <div className={`animate-pulse rounded-md bg-stone-100 ${className}`} />;
 }
+
+export { MobileDrawer } from './mobile-drawer';

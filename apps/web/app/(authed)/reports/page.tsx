@@ -70,7 +70,7 @@ export default function ReportsPage() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto max-w-6xl space-y-6">
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -204,47 +204,54 @@ function DailyChart({ report }: { report: MonthlyReport }) {
     [report.byDay],
   );
 
+  const barChart = (
+    <BarChart data={data} margin={{ top: 8, right: 0, left: -8, bottom: 0 }}>
+      <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
+      <XAxis
+        dataKey="day"
+        tick={{ fontSize: 11, fill: '#78716c' }}
+        tickLine={false}
+        axisLine={{ stroke: '#e7e5e4' }}
+      />
+      <YAxis
+        tick={{ fontSize: 11, fill: '#78716c' }}
+        tickLine={false}
+        axisLine={{ stroke: '#e7e5e4' }}
+        tickFormatter={(v: number) => {
+          const a = Math.abs(v);
+          if (a >= 1_000_000) return `${(v / 1_000_000).toFixed(0)}M`;
+          if (a >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+          return `${v}`;
+        }}
+      />
+      <Tooltip
+        cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+        content={<ChartTooltip />}
+      />
+      <Bar
+        dataKey="Thu"
+        fill="#10b981"
+        radius={[4, 4, 0, 0]}
+        maxBarSize={28}
+      />
+      <Bar
+        dataKey="Chi"
+        fill="#f43f5e"
+        radius={[0, 0, 4, 4]}
+        maxBarSize={28}
+      />
+    </BarChart>
+  );
+
   return (
-    <div className="h-72 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 0, left: -8, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-          <XAxis
-            dataKey="day"
-            tick={{ fontSize: 11, fill: '#78716c' }}
-            tickLine={false}
-            axisLine={{ stroke: '#e7e5e4' }}
-          />
-          <YAxis
-            tick={{ fontSize: 11, fill: '#78716c' }}
-            tickLine={false}
-            axisLine={{ stroke: '#e7e5e4' }}
-            tickFormatter={(v: number) => {
-              const a = Math.abs(v);
-              if (a >= 1_000_000) return `${(v / 1_000_000).toFixed(0)}M`;
-              if (a >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
-              return `${v}`;
-            }}
-          />
-          <Tooltip
-            cursor={{ fill: 'rgba(0,0,0,0.04)' }}
-            content={<ChartTooltip />}
-          />
-          <Bar
-            dataKey="Thu"
-            fill="#10b981"
-            radius={[4, 4, 0, 0]}
-            maxBarSize={28}
-          />
-          <Bar
-            dataKey="Chi"
-            fill="#f43f5e"
-            radius={[0, 0, 4, 4]}
-            maxBarSize={28}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <>
+      <div className="lg:hidden">
+        <ResponsiveContainer width="100%" height={240}>{barChart}</ResponsiveContainer>
+      </div>
+      <div className="hidden lg:block">
+        <ResponsiveContainer width="100%" height={288}>{barChart}</ResponsiveContainer>
+      </div>
+    </>
   );
 }
 

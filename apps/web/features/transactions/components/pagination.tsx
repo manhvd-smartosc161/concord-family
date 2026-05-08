@@ -10,11 +10,11 @@ export function Pagination({
   onChange: (p: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="flex flex-wrap items-center justify-between gap-2">
       <button
         onClick={() => onChange(Math.max(0, page - 1))}
         disabled={page === 0}
-        className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-30"
+        className="flex min-h-[44px] items-center justify-center rounded-lg border border-stone-200 bg-white px-4 text-xs text-stone-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-30"
       >
         ← Trước
       </button>
@@ -24,7 +24,7 @@ export function Pagination({
       <button
         onClick={() => onChange(Math.min(total - 1, page + 1))}
         disabled={page >= total - 1}
-        className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-30"
+        className="flex min-h-[44px] items-center justify-center rounded-lg border border-stone-200 bg-white px-4 text-xs text-stone-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-30"
       >
         Tiếp →
       </button>
