@@ -14,3 +14,11 @@ body {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, sans-serif;
 }
+
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
