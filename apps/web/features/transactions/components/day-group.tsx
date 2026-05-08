@@ -26,14 +26,16 @@ export function DayGroup({
           {items.length} giao dịch
         </span>
       </div>
-      {items.map((t) => (
-        <TxnRow
-          key={t.id}
-          t={t}
-          onEdit={() => onEdit(t)}
-          onDelete={() => onDelete(t.id)}
-        />
-      ))}
+      <div className="p-3 sm:p-4">
+        {items.map((t) => (
+          <TxnRow
+            key={t.id}
+            t={t}
+            onEdit={() => onEdit(t)}
+            onDelete={() => onDelete(t.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -51,12 +53,12 @@ function TxnRow({
   const isInternal = t.category?.name === 'Chuyển nội bộ';
   return (
     <div className="group flex items-center justify-between border-b border-stone-50 py-2.5 last:border-0">
-      <div className="flex items-center gap-3">
-        <span className="text-base">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <span className="text-base flex-shrink-0">
           {t.category?.icon ?? (isExpense ? '💸' : '💰')}
         </span>
-        <div className="leading-tight">
-          <div className="text-sm text-stone-800">
+        <div className="leading-tight min-w-0 flex-1 truncate">
+          <div className="text-sm text-stone-800 truncate">
             {t.note ?? t.category?.name ?? '(không ghi chú)'}
           </div>
           <div className="text-[11px] text-stone-500">
@@ -72,9 +74,9 @@ function TxnRow({
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <span
-          className={`font-mono text-sm font-semibold tabular-nums ${
+          className={`font-mono text-sm font-semibold tabular-nums whitespace-nowrap ${
             isInternal
               ? 'text-stone-500'
               : isExpense

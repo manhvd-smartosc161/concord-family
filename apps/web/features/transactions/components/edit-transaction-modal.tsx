@@ -108,14 +108,14 @@ export function EditTransactionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button
         type="button"
         aria-label="Đóng"
         onClick={onClose}
         className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
       />
-      <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
         <div className="mb-1 flex items-start justify-between">
           <h3 className="text-base font-semibold text-stone-900">
             Sửa giao dịch
@@ -252,19 +252,19 @@ export function EditTransactionModal({
             </div>
           )}
 
-          <div className="flex justify-end gap-2 border-t border-stone-100 pt-4">
+          <div className="flex flex-col-reverse gap-2 border-t border-stone-100 pt-4 sm:flex-row sm:justify-end sm:gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50"
+              className="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 sm:w-auto"
             >
               Huỷ
             </button>
             <button
               type="submit"
               disabled={submitting || !fundId || !amountStr}
-              className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300"
+              className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300 sm:w-auto"
             >
               {submitting ? 'Đang lưu…' : 'Lưu'}
             </button>
