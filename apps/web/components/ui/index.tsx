@@ -151,3 +151,5 @@ export function Skeleton({
 }) {
   return <div className={`animate-pulse rounded-md bg-stone-100 ${className}`} />;
 }
+
+export { MobileDrawer } from './mobile-drawer';
