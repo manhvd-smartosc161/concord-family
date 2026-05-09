@@ -75,8 +75,6 @@ export default function CalendarPage() {
   const selectedItems = itemsByDate.get(selectedDate) ?? [];
   const selectedDateObj = parseIso(selectedDate);
   const selectedLunar = lunarOf(selectedDateObj);
-  const selectedLabel = `${DOW_FULL[selectedDateObj.getDay()]}, ${selectedDateObj.getDate()}/${selectedDateObj.getMonth() + 1}`;
-
   function shiftMonth(delta: number) {
     let m = month + delta;
     let y = year;
@@ -207,20 +205,37 @@ export default function CalendarPage() {
           )}
 
           <Card>
-            <div className="mb-3 flex items-baseline justify-between">
-              <div>
-                <div className="text-sm font-semibold text-stone-800">
-                  {selectedLabel}
+            <div className="mb-3 flex items-start justify-between gap-3 border-b border-stone-100 pb-3">
+              <div className="flex items-baseline gap-3">
+                <div className="font-mono text-3xl font-bold leading-none tabular-nums text-stone-900">
+                  {selectedDateObj.getDate()}
                 </div>
-                <div className="text-[11px] text-stone-500">
-                  Âm: {selectedLunar.day}/{selectedLunar.month}
-                  {selectedLunar.isFirstDay && ' · Mùng 1'}
-                  {selectedLunar.isFullMoon && ' · Rằm'}
+                <div className="leading-tight">
+                  <div className="text-sm font-semibold text-stone-800">
+                    {DOW_FULL[selectedDateObj.getDay()]},{' '}
+                    {selectedDateObj.getDate()}/
+                    {selectedDateObj.getMonth() + 1}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-stone-500">
+                    Âm: {selectedLunar.day}/{selectedLunar.month}
+                    {selectedLunar.isFirstDay && (
+                      <span className="ml-1 inline-flex items-center rounded-full bg-rose-50 px-1.5 py-0.5 text-[9px] font-semibold text-rose-600">
+                        Mùng 1
+                      </span>
+                    )}
+                    {selectedLunar.isFullMoon && (
+                      <span className="ml-1 inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold text-amber-700">
+                        Rằm
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="text-[11px] text-stone-400">
-                {selectedItems.length} sự kiện
-              </div>
+              {selectedItems.length > 0 && (
+                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                  {selectedItems.length} sự kiện
+                </span>
+              )}
             </div>
 
             {selectedItems.length === 0 ? (

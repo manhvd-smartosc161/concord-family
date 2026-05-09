@@ -35,22 +35,25 @@ export function CalendarGrid({
   const todayIso = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-stone-200/60">
-      <div className="grid grid-cols-7 border-b border-stone-100 bg-stone-50/50">
-        {DOW_LABELS.map((d) => (
+    <div className="overflow-hidden rounded-2xl bg-white p-2 shadow-sm ring-1 ring-stone-200/70 sm:p-3">
+      <div className="mb-1 grid grid-cols-7 gap-1">
+        {DOW_LABELS.map((d, i) => (
           <div
             key={d}
-            className="px-1 py-2 text-center text-[10px] font-medium uppercase tracking-wide text-stone-500"
+            className={`py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.08em] ${
+              i === 0 ? 'text-rose-400' : 'text-stone-400'
+            }`}
           >
             {d}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 gap-1">
         {cells.map((cell) => {
           const isCurrentMonth = cell.month === month;
           const isToday = cell.iso === todayIso;
           const isSelected = cell.iso === selectedDate;
+          const isSunday = cell.date.getDay() === 0;
           const items = itemsByDate.get(cell.iso) ?? [];
           const lunar = lunarOf(cell.date);
           const isLunarSpecial = lunar.isFirstDay || lunar.isFullMoon;
@@ -60,48 +63,62 @@ export function CalendarGrid({
               key={cell.iso}
               type="button"
               onClick={() => onSelect(cell.iso)}
-              className={`relative flex min-h-[58px] flex-col items-stretch border-b border-r border-stone-100 px-1 py-1 text-left transition-colors last:border-r-0 sm:min-h-[72px] ${
+              className={`group relative flex aspect-square flex-col items-center justify-start rounded-xl px-1 py-1.5 transition-all duration-150 sm:py-2 ${
                 isSelected
-                  ? 'bg-emerald-50'
+                  ? 'bg-emerald-600 shadow-md shadow-emerald-600/20'
                   : isToday
-                    ? 'bg-amber-50/40'
-                    : 'hover:bg-stone-50'
-              } ${isCurrentMonth ? '' : 'text-stone-300'}`}
+                    ? 'bg-emerald-50 ring-1 ring-inset ring-emerald-200'
+                    : isCurrentMonth
+                      ? 'hover:bg-stone-100/70 active:bg-stone-100'
+                      : ''
+              }`}
             >
-              <div className="flex items-baseline justify-between">
-                <span
-                  className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs tabular-nums sm:h-7 sm:w-7 sm:text-sm ${
-                    isToday && isCurrentMonth
-                      ? 'bg-emerald-600 font-semibold text-white'
-                      : isCurrentMonth
-                        ? 'font-medium text-stone-800'
-                        : ''
-                  }`}
-                >
-                  {cell.day}
-                </span>
-              </div>
-              <div
-                className={`mt-0.5 text-[9px] tabular-nums sm:text-[10px] ${
-                  isLunarSpecial && isCurrentMonth
-                    ? 'font-semibold text-rose-600'
-                    : 'text-stone-400'
+              <span
+                className={`text-[13px] font-semibold tabular-nums leading-none sm:text-sm ${
+                  !isCurrentMonth
+                    ? 'text-stone-300'
+                    : isSelected
+                      ? 'text-white'
+                      : isToday
+                        ? 'text-emerald-700'
+                        : isSunday
+                          ? 'text-rose-500'
+                          : 'text-stone-800'
+                }`}
+              >
+                {cell.day}
+              </span>
+              <span
+                className={`mt-0.5 text-[9px] tabular-nums leading-none sm:text-[10px] ${
+                  !isCurrentMonth
+                    ? 'text-stone-200'
+                    : isSelected
+                      ? 'text-emerald-100'
+                      : isLunarSpecial
+                        ? 'font-semibold text-rose-500'
+                        : 'text-stone-400'
                 }`}
               >
                 {lunar.day}/{lunar.month}
-              </div>
+              </span>
               {items.length > 0 && (
-                <div className="mt-auto flex items-center gap-0.5 pt-1">
+                <div className="mt-auto flex items-center justify-center gap-[3px] pb-0.5 pt-1">
                   {items.slice(0, 3).map((it, idx) => (
                     <span
                       key={idx}
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        DOT_TONE[it.kind] ?? 'bg-stone-400'
+                      className={`h-[5px] w-[5px] rounded-full ${
+                        isSelected
+                          ? 'bg-white/90'
+                          : DOT_TONE[it.kind] ?? 'bg-stone-400'
                       }`}
                     />
                   ))}
                   {items.length > 3 && (
-                    <span className="text-[9px] text-stone-500">
+                    <span
+                      className={`text-[8px] font-medium leading-none ${
+                        isSelected ? 'text-white/90' : 'text-stone-500'
+                      }`}
+                    >
                       +{items.length - 3}
                     </span>
                   )}
