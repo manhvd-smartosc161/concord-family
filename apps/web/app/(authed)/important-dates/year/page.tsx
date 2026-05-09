@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import {
@@ -11,6 +10,7 @@ import {
 } from '@/features/important-dates/api';
 import { AgendaItemCard } from '@/features/important-dates/components/agenda-item-card';
 import { ImportantDateFormModal } from '@/features/important-dates/components/important-date-form-modal';
+import { ViewTabs } from '@/features/important-dates/components/view-tabs';
 import type {
   AgendaItem,
   ImportantDateView,
@@ -191,12 +191,6 @@ export default function YearAgendaPage() {
             >
               {year + 1} →
             </button>
-            <Link
-              href="/important-dates"
-              className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
-            >
-              Sắp tới
-            </Link>
             <button
               type="button"
               onClick={openCreate}
@@ -209,6 +203,9 @@ export default function YearAgendaPage() {
       />
       <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-stone-50 to-stone-50 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
         <div className="mx-auto max-w-3xl">
+          <div className="mb-4">
+            <ViewTabs current="year" />
+          </div>
           <div className="-mx-3 mb-5 overflow-x-auto px-3 sm:mx-0 sm:px-0">
             <div className="flex gap-2 whitespace-nowrap">
               {FILTER_OPTIONS.map((opt) => {

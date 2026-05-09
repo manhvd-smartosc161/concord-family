@@ -11,6 +11,7 @@ import {
 } from '@/features/important-dates/api';
 import { AgendaItemCard } from '@/features/important-dates/components/agenda-item-card';
 import { ImportantDateFormModal } from '@/features/important-dates/components/important-date-form-modal';
+import { ViewTabs } from '@/features/important-dates/components/view-tabs';
 import type {
   AgendaItem,
   ImportantDateView,
@@ -112,6 +113,7 @@ export default function ImportantDatesPage() {
       />
       <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-stone-50 to-stone-50 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
         <div className="mx-auto max-w-2xl space-y-4">
+          <ViewTabs current="upcoming" />
           {view === null && (
             <>
               {[1, 2, 3].map((i) => (
