@@ -47,12 +47,34 @@ const MONTH_HUE: Record<number, string> = {
   12: 'from-rose-400 to-rose-600',
 };
 
+type KindFilter = 'all' | 'birthday' | 'death_anniversary' | 'anniversary' | 'other';
+
+const FILTER_OPTIONS: { value: KindFilter; icon: string; label: string }[] = [
+  { value: 'all', icon: '📋', label: 'Tất cả' },
+  { value: 'birthday', icon: '🎂', label: 'Sinh nhật' },
+  { value: 'death_anniversary', icon: '🕯', label: 'Giỗ' },
+  { value: 'anniversary', icon: '💑', label: 'Kỷ niệm' },
+  { value: 'other', icon: '📅', label: 'Khác / lễ' },
+];
+
+function matchesFilter(item: AgendaItem, filter: KindFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'other') {
+    return (
+      item.kind === 'other' ||
+      item.source === 'ai'
+    );
+  }
+  return item.kind === filter;
+}
+
 export default function YearAgendaPage() {
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const [view, setView] = useState<YearAgendaView | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ImportantDateView | null>(null);
+  const [kindFilter, setKindFilter] = useState<KindFilter>('all');
 
   async function reload() {
     setView(null);
@@ -69,10 +91,14 @@ export default function YearAgendaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year]);
 
+  const filteredItems = useMemo(() => {
+    if (!view) return [] as AgendaItem[];
+    return view.items.filter((i) => matchesFilter(i, kindFilter));
+  }, [view, kindFilter]);
+
   const grouped = useMemo(() => {
-    if (!view) return [] as { month: number; items: AgendaItem[] }[];
     const map = new Map<number, AgendaItem[]>();
-    for (const item of view.items) {
+    for (const item of filteredItems) {
       const m = parseInt(item.occursOn.slice(5, 7), 10);
       if (!map.has(m)) map.set(m, []);
       map.get(m)!.push(item);
@@ -80,7 +106,7 @@ export default function YearAgendaPage() {
     return Array.from(map.entries())
       .sort((a, b) => a[0] - b[0])
       .map(([month, items]) => ({ month, items }));
-  }, [view]);
+  }, [filteredItems]);
 
   function openCreate() {
     setEditing(null);
@@ -133,14 +159,18 @@ export default function YearAgendaPage() {
   }
 
   const total = view?.items.length ?? 0;
+  const filteredCount = filteredItems.length;
+  const subtitleText = !view
+    ? 'Đang tải…'
+    : kindFilter === 'all'
+      ? `${total} sự kiện sắp tới — group theo tháng`
+      : `${filteredCount}/${total} sự kiện (đang lọc)`;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
         title={`Cả năm ${year}`}
-        subtitle={
-          view ? `${total} sự kiện sắp tới — group theo tháng` : 'Đang tải…'
-        }
+        subtitle={subtitleText}
         actions={
           <div className="flex items-center gap-2">
             {year > currentYear && (
@@ -179,6 +209,29 @@ export default function YearAgendaPage() {
       />
       <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-stone-50 to-stone-50 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
         <div className="mx-auto max-w-3xl">
+          <div className="-mx-3 mb-5 overflow-x-auto px-3 sm:mx-0 sm:px-0">
+            <div className="flex gap-2 whitespace-nowrap">
+              {FILTER_OPTIONS.map((opt) => {
+                const active = kindFilter === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setKindFilter(opt.value)}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                      active
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'bg-white text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50'
+                    }`}
+                  >
+                    <span>{opt.icon}</span>
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {view === null && (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -196,6 +249,18 @@ export default function YearAgendaPage() {
               />
             </Card>
           )}
+
+          {view !== null &&
+            view.items.length > 0 &&
+            filteredItems.length === 0 && (
+              <Card>
+                <EmptyState
+                  icon="🔍"
+                  title="Không có sự kiện khớp filter"
+                  description="Đổi loại khác hoặc bấm 'Tất cả' để xem hết."
+                />
+              </Card>
+            )}
 
           <div className="space-y-12">
             {grouped.map(({ month, items }) => (
