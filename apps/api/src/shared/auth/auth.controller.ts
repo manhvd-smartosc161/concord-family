@@ -4,20 +4,33 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { User } from '../../modules/users/entities/user.entity';
+import { UsersService } from '../../modules/users/users.service';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { AuthUserDto, LoginResponseDto } from './auth.types';
 
 @Controller('api/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
+
+  /** POST /api/auth/register — tạo tài khoản mới, trả về token + user. */
+  @Post('register')
+  register(@Body() dto: RegisterDto): Promise<LoginResponseDto> {
+    return this.authService.register(dto);
+  }
 
   /** POST /api/auth/login — returns { accessToken, user }. */
   @Post('login')
@@ -30,6 +43,17 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: User): AuthUserDto {
     return this.authService.toAuthUser(user);
+  }
+
+  /** PATCH /api/auth/me — update profile fields (name, birthdate). */
+  @UseGuards(JwtAuthGuard)
+  @Patch('me')
+  async updateProfile(
+    @CurrentUser() user: User,
+    @Body() dto: UpdateProfileDto,
+  ): Promise<AuthUserDto> {
+    const updated = await this.usersService.updateProfile(user.id, dto);
+    return this.authService.toAuthUser(updated);
   }
 
   /** POST /api/auth/change-password — body: { currentPassword, newPassword }. */
