@@ -1,5 +1,13 @@
 import { apiFetch } from '@/lib/api-client';
-import type { AuthUser, LoginResponse } from './types';
+import type { AuthUser, LoginResponse, RegisterPayload } from './types';
+
+export function register(payload: RegisterPayload): Promise<LoginResponse> {
+  return apiFetch<LoginResponse>('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    auth: false,
+  });
+}
 
 export function login(email: string, password: string): Promise<LoginResponse> {
   return apiFetch<LoginResponse>('/api/auth/login', {
@@ -11,6 +19,16 @@ export function login(email: string, password: string): Promise<LoginResponse> {
 
 export function me(): Promise<AuthUser> {
   return apiFetch<AuthUser>('/api/auth/me');
+}
+
+export function updateProfile(payload: {
+  name?: string;
+  birthdate?: string | null;
+}): Promise<AuthUser> {
+  return apiFetch<AuthUser>('/api/auth/me', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function changePassword(

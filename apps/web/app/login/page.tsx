@@ -1,6 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ApiError, setToken } from '@/lib/api-client';
 import { login } from '@/features/auth/api';
@@ -8,6 +9,8 @@ import { useAuth } from '@/features/auth/hooks';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next');
   const auth = useAuth(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,17 +18,25 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (auth.status === 'authed') router.replace('/dashboard');
-  }, [auth.status, router]);
+    if (auth.status === 'authed') {
+      router.replace(next ?? (auth.user.familyId ? '/dashboard' : '/family/setup'));
+    }
+  }, [auth, next, router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
-      const { accessToken } = await login(email.trim(), password);
-      setToken(accessToken);
-      router.replace('/dashboard');
+      const res = await login(email.trim(), password);
+      setToken(res.accessToken);
+      if (next) {
+        router.replace(next);
+      } else if (!res.user.familyId) {
+        router.replace('/family/setup');
+      } else {
+        router.replace('/dashboard');
+      }
     } catch (err) {
       const msg =
         err instanceof ApiError
@@ -36,16 +47,6 @@ export default function LoginPage() {
       setError(msg);
     } finally {
       setSubmitting(false);
-    }
-  }
-
-  function fillDemo(role: 'husband' | 'wife') {
-    if (role === 'husband') {
-      setEmail('manhvd161@gmail.com');
-      setPassword('concord-manh');
-    } else {
-      setEmail('thuydung.td1998@gmail.com');
-      setPassword('concord-wife');
     }
   }
 
@@ -135,33 +136,13 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Dev hint */}
-          <div className="mt-6 border-t border-stone-100 pt-4">
-            <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-stone-400">
-              Tài khoản demo (dev)
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => fillDemo('husband')}
-                className="flex-1 rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs text-stone-700 transition-colors hover:border-emerald-200 hover:bg-emerald-50"
-              >
-                Mạnh (chồng)
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemo('wife')}
-                className="flex-1 rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs text-stone-700 transition-colors hover:border-amber-200 hover:bg-amber-50"
-              >
-                Vợ
-              </button>
-            </div>
-          </div>
+          <p className="mt-4 text-center text-xs text-stone-500">
+            Chưa có tài khoản?{' '}
+            <Link href="/register" className="font-medium text-emerald-700 hover:underline">
+              Đăng ký
+            </Link>
+          </p>
         </div>
-
-        <p className="mt-6 text-center text-[11px] text-stone-400">
-          MVP Tuần 1 · Concord Couple Finance
-        </p>
       </div>
     </main>
   );
