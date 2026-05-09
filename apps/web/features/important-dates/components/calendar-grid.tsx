@@ -71,7 +71,7 @@ export function CalendarGrid({
               <span
                 className={`flex h-7 w-7 items-center justify-center rounded-full text-[13px] tabular-nums transition-colors sm:h-8 sm:w-8 sm:text-sm ${
                   isSelected
-                    ? 'bg-stone-900 font-semibold text-white'
+                    ? 'bg-sky-600 font-semibold text-white shadow-sm shadow-sky-600/30'
                     : isToday
                       ? 'bg-emerald-600 font-semibold text-white shadow-sm shadow-emerald-600/30'
                       : !isCurrentMonth
