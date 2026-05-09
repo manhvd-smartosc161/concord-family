@@ -12,6 +12,7 @@ import {
   sendChat,
 } from '@/features/chat/api';
 import type { ChatSessionView, ParseAction } from '@/features/chat/types';
+import { createImportantDate } from '@/features/important-dates/api';
 import type { FundView } from '@/features/funds/types';
 import { useAuthedLayout } from '../layout';
 import { pickFundIcon } from '@/features/funds/components/fund-card';
@@ -42,6 +43,56 @@ const SUGGESTIONS_BY_FUND: Record<string, string[]> = {
   ],
 };
 
+type ImportantDateConfirmState =
+  | { kind: 'confirmed'; id: string; loggedAt: string }
+  | { kind: 'dismissed' };
+
+function loadImportantDateState(
+  msgId: string,
+  actIdx: number,
+): ImportantDateConfirmState | null {
+  if (typeof window === 'undefined') return null;
+  const raw = window.localStorage.getItem(`concord_imp_date_${msgId}_${actIdx}`);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as ImportantDateConfirmState;
+  } catch {
+    return null;
+  }
+}
+
+function saveImportantDateState(
+  msgId: string,
+  actIdx: number,
+  state: ImportantDateConfirmState,
+): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(
+    `concord_imp_date_${msgId}_${actIdx}`,
+    JSON.stringify(state),
+  );
+}
+
+function rehydrateAction(
+  msgId: string,
+  actIdx: number,
+  action: ParseAction,
+): ParseAction {
+  if (action.kind !== 'important_date_proposed') return action;
+  const state = loadImportantDateState(msgId, actIdx);
+  if (!state) return action;
+  if (state.kind === 'confirmed') {
+    return {
+      kind: 'important_date_logged',
+      id: state.id,
+      name: action.name,
+      date: action.date,
+      type: action.type,
+    };
+  }
+  return { kind: 'important_date_dismissed' };
+}
+
 export default function ChatPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,6 +101,21 @@ export default function ChatPage() {
   const { user, funds, reloadFunds } = useAuthedLayout();
   const [sessions, setSessions] = useState<ChatSessionView[]>([]);
   const [messages, setMessages] = useState<PendingMessage[]>([]);
+  const mutateAction = useCallback(
+    (msgId: string, actIdx: number, next: ParseAction) => {
+      setMessages((ms) =>
+        ms.map((m) =>
+          m.id !== msgId
+            ? m
+            : {
+                ...m,
+                actions: m.actions?.map((a, i) => (i === actIdx ? next : a)),
+              },
+        ),
+      );
+    },
+    [],
+  );
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -114,7 +180,9 @@ export default function ChatPage() {
               id: m.id,
               role: m.role,
               text: m.text,
-              actions: m.actions ?? undefined,
+              actions: m.actions
+                ? m.actions.map((a, idx) => rehydrateAction(m.id, idx, a))
+                : undefined,
               usage: m.usage ?? undefined,
               author: m.author,
             }),
@@ -339,6 +407,7 @@ export default function ChatPage() {
                 msg={m}
                 showAuthor={isJointChat}
                 currentUserId={user.id}
+                onMutate={mutateAction}
               />
             ))}
             {isLoading && (
@@ -818,10 +887,12 @@ function MessageBubble({
   msg,
   showAuthor,
   currentUserId,
+  onMutate,
 }: {
   msg: PendingMessage;
   showAuthor: boolean;
   currentUserId: string;
+  onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
 }) {
   if (msg.role === 'system') {
     return (
@@ -865,7 +936,13 @@ function MessageBubble({
           {msg.actions && msg.actions.length > 0 && (
             <div className={`space-y-1.5 ${msg.text ? 'mt-2' : ''}`}>
               {msg.actions.map((a, i) => (
-                <ActionCard key={i} action={a} />
+                <ActionCard
+                  key={i}
+                  action={a}
+                  messageId={msg.id}
+                  actionIndex={i}
+                  onMutate={onMutate}
+                />
               ))}
             </div>
           )}
@@ -880,7 +957,17 @@ function MessageBubble({
   );
 }
 
-function ActionCard({ action }: { action: ParseAction }) {
+function ActionCard({
+  action,
+  messageId,
+  actionIndex,
+  onMutate,
+}: {
+  action: ParseAction;
+  messageId: string;
+  actionIndex: number;
+  onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
+}) {
   if (action.kind === 'logged') {
     const isExpense = action.amount < 0;
     return (
@@ -946,19 +1033,178 @@ function ActionCard({ action }: { action: ParseAction }) {
       <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
         <span className="font-medium">✨ Đã tạo category: {action.name}</span>
         <span>
-          {action.parentName ? ` (thuộc ${action.parentName})` : ' (danh mục cha)'}
+          {action.parentName
+            ? ` (thuộc ${action.parentName})`
+            : ' (danh mục cha)'}
         </span>
         <span className="text-stone-500">
-          {' '}— {action.isEssential ? 'thiết yếu' : 'không thiết yếu'}
+          {' '}
+          — {action.isEssential ? 'thiết yếu' : 'không thiết yếu'}
         </span>
       </div>
     );
   }
+  if (action.kind === 'important_date_proposed') {
+    return (
+      <ImportantDateProposedCard
+        action={action}
+        messageId={messageId}
+        actionIndex={actionIndex}
+        onMutate={onMutate}
+      />
+    );
+  }
+  if (action.kind === 'important_date_logged') {
+    return (
+      <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
+        ✅ Đã thêm: <span className="font-medium">{action.name}</span>
+        <span className="ml-1 text-stone-500">
+          — {formatImportantDate(action.date)}
+        </span>
+      </div>
+    );
+  }
+  if (action.kind === 'important_date_dismissed') {
+    return (
+      <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-500">
+        ⊘ Đã bỏ qua đề xuất ngày
+      </div>
+    );
+  }
+  if (action.kind === 'tool_error') {
+    return (
+      <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-900">
+        ⚠️ {action.message}
+      </div>
+    );
+  }
+  return null;
+}
+
+function ImportantDateProposedCard({
+  action,
+  messageId,
+  actionIndex,
+  onMutate,
+}: {
+  action: Extract<ParseAction, { kind: 'important_date_proposed' }>;
+  messageId: string;
+  actionIndex: number;
+  onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
+}) {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const icon = importantDateIcon(action.type);
+  const dateLabel = formatImportantDate(action.date, action.isLunar);
+  const reminderLabel = formatReminderDays(action.remindDaysBefore);
+
+  async function handleConfirm() {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const created = await createImportantDate({
+        name: action.name,
+        type: action.type,
+        date: action.date,
+        isLunar: action.isLunar,
+        remindDaysBefore: action.remindDaysBefore,
+        notes: action.notes ?? undefined,
+      });
+      saveImportantDateState(messageId, actionIndex, {
+        kind: 'confirmed',
+        id: created.id,
+        loggedAt: new Date().toISOString(),
+      });
+      onMutate(messageId, actionIndex, {
+        kind: 'important_date_logged',
+        id: created.id,
+        name: created.name,
+        date: created.date,
+        type: created.type,
+      });
+    } catch (err) {
+      const msg =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : 'Lỗi không xác định';
+      setError(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function handleDismiss() {
+    saveImportantDateState(messageId, actionIndex, { kind: 'dismissed' });
+    onMutate(messageId, actionIndex, { kind: 'important_date_dismissed' });
+  }
+
   return (
-    <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-900">
-      ⚠️ {action.message}
+    <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2.5 text-xs text-sky-900">
+      <div className="flex items-center gap-1.5 font-semibold">
+        {icon} <span>Đề xuất ngày quan trọng</span>
+      </div>
+      <div className="mt-1 font-medium text-stone-800">{action.name}</div>
+      <div className="mt-0.5 text-[11px] text-stone-600">
+        {dateLabel}
+        {action.notes ? ` · ${action.notes}` : ''}
+      </div>
+      <div className="mt-0.5 text-[11px] text-stone-500">
+        Nhắc: {reminderLabel}
+      </div>
+      {error && (
+        <div className="mt-1.5 text-[11px] text-rose-700">⚠️ {error}</div>
+      )}
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={submitting}
+          className="rounded-md bg-emerald-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+        >
+          {submitting ? 'Đang lưu…' : 'Xác nhận'}
+        </button>
+        <button
+          type="button"
+          onClick={handleDismiss}
+          disabled={submitting}
+          className="rounded-md border border-stone-300 bg-white px-3 py-1 text-[11px] text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+        >
+          Bỏ qua
+        </button>
+      </div>
     </div>
   );
+}
+
+function importantDateIcon(
+  type: 'birthday' | 'death_anniversary' | 'anniversary' | 'other',
+): string {
+  switch (type) {
+    case 'birthday':
+      return '🎂';
+    case 'death_anniversary':
+      return '🕯';
+    case 'anniversary':
+      return '💑';
+    default:
+      return '📅';
+  }
+}
+
+function formatImportantDate(iso: string, isLunar = false): string {
+  const [y, m, d] = iso.split('-');
+  if (!y || !m || !d) return iso;
+  const formatted = `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
+  return isLunar ? `${formatted} (âm)` : formatted;
+}
+
+function formatReminderDays(days: number[]): string {
+  if (days.length === 0) return 'không nhắc';
+  const labels = days.map((d) => (d === 0 ? 'hôm đó' : `${d} ngày trước`));
+  return labels.join(' + ');
 }
 
 // ─── Date helpers ─────────────────────────────────────────────────────
