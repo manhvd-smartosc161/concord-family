@@ -1095,9 +1095,13 @@ function ImportantDateProposedCard({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const safeReminders =
+    Array.isArray(action.remindDaysBefore) && action.remindDaysBefore.length > 0
+      ? action.remindDaysBefore
+      : [0, 2];
   const icon = importantDateIcon(action.type);
   const dateLabel = formatImportantDate(action.date, action.isLunar);
-  const reminderLabel = formatReminderDays(action.remindDaysBefore);
+  const reminderLabel = formatReminderDays(safeReminders);
 
   async function handleConfirm() {
     setSubmitting(true);
@@ -1107,8 +1111,8 @@ function ImportantDateProposedCard({
         name: action.name,
         type: action.type,
         date: action.date,
-        isLunar: action.isLunar,
-        remindDaysBefore: action.remindDaysBefore,
+        isLunar: action.isLunar ?? false,
+        remindDaysBefore: safeReminders,
         notes: action.notes ?? undefined,
       });
       saveImportantDateState(messageId, actionIndex, {
@@ -1201,8 +1205,8 @@ function formatImportantDate(iso: string, isLunar = false): string {
   return isLunar ? `${formatted} (âm)` : formatted;
 }
 
-function formatReminderDays(days: number[]): string {
-  if (days.length === 0) return 'không nhắc';
+function formatReminderDays(days: number[] | undefined | null): string {
+  if (!days || days.length === 0) return 'không nhắc';
   const labels = days.map((d) => (d === 0 ? 'hôm đó' : `${d} ngày trước`));
   return labels.join(' + ');
 }

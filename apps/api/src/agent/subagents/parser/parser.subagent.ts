@@ -313,8 +313,12 @@ export class ParserSubagent {
             name: input.name,
             type: input.type,
             date: input.date,
-            isLunar: input.isLunar,
-            remindDaysBefore: input.remindDaysBefore,
+            isLunar: input.isLunar ?? false,
+            remindDaysBefore:
+              Array.isArray(input.remindDaysBefore) &&
+              input.remindDaysBefore.length > 0
+                ? input.remindDaysBefore
+                : [0, 2],
             notes: input.notes ?? null,
           });
         }
