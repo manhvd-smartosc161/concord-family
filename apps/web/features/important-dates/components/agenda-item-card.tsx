@@ -150,41 +150,44 @@ export function AgendaItemCard({
       />
       <div className="flex h-full items-stretch pl-1">
         <div
-          className={`flex w-[88px] shrink-0 flex-col items-center justify-center border-r ${stampBg} ${stampText}`}
+          className={`flex w-[64px] shrink-0 flex-col items-center justify-center border-r sm:w-[88px] ${stampBg} ${stampText}`}
         >
-          <div className="font-mono text-[28px] font-semibold leading-none tabular-nums">
+          <div className="font-mono text-[22px] font-semibold leading-none tabular-nums sm:text-[28px]">
             {String(day).padStart(2, '0')}
           </div>
-          <div className="mt-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.18em] opacity-75">
+          <div className="mt-1 font-mono text-[9px] font-medium uppercase tracking-[0.16em] opacity-75 sm:mt-1.5 sm:text-[10px] sm:tracking-[0.18em]">
             {weekday}
           </div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.22em] opacity-60">
-            tháng {monthShort}
+          <div className="font-mono text-[8px] uppercase tracking-[0.18em] opacity-60 sm:text-[9px] sm:tracking-[0.22em]">
+            th {monthShort}
           </div>
         </div>
 
-        <div className="relative flex min-w-0 flex-1 flex-col p-3 sm:p-4 sm:pr-3">
-          <div className="flex flex-wrap items-center gap-2 pr-32">
-            <span className="text-base leading-none">
+        <div className="relative flex min-w-0 flex-1 flex-col gap-2 p-3 sm:p-4 sm:pr-3">
+          <div className="flex min-w-0 items-center gap-2 pr-20 sm:pr-32">
+            <span className="shrink-0 text-base leading-none">
               {ICONS[item.kind] ?? '📌'}
             </span>
-            <h3 className="text-[15px] font-semibold leading-snug text-stone-900">
+            <h3 className="min-w-0 flex-1 truncate text-[15px] font-semibold leading-snug text-stone-900">
               {item.name}
             </h3>
-            <Badge tone={style.badgeTone}>
-              {TYPE_LABEL[item.kind] ?? item.kind}
-            </Badge>
             {!isUser && (
-              <span className="inline-flex items-center rounded-full bg-stone-900 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-white">
+              <span className="shrink-0 rounded-full bg-stone-900 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-white">
                 AI
               </span>
             )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge tone={style.badgeTone}>
+              {TYPE_LABEL[item.kind] ?? item.kind}
+            </Badge>
             {isUser && item.isLunar && <Badge tone="sky">Âm lịch</Badge>}
             <span
               className={
                 imminent
-                  ? 'inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 ring-1 ring-emerald-300'
-                  : 'inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-600 ring-1 ring-stone-200'
+                  ? 'inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 ring-1 ring-emerald-300'
+                  : 'inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-600 ring-1 ring-stone-200'
               }
             >
               {imminent && (
@@ -216,13 +219,13 @@ export function AgendaItemCard({
             </p>
           )}
 
-          <div className="absolute right-3 top-3 flex items-center gap-2">
+          <div className="absolute right-2 top-2 flex items-center gap-1 sm:right-3 sm:top-3 sm:gap-2">
             {isUser && (
               <>
                 <IconButton label="Sửa" onClick={onEdit} tone="amber">
                   <svg
-                    width="15"
-                    height="15"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                   >
@@ -242,8 +245,8 @@ export function AgendaItemCard({
                 </IconButton>
                 <IconButton label="Xoá" onClick={onDelete} tone="rose">
                   <svg
-                    width="15"
-                    height="15"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                   >
@@ -263,12 +266,11 @@ export function AgendaItemCard({
               onClick={handleTest}
               disabled={sending}
               tone="emerald"
-              size="lg"
             >
               {sending ? (
                 <svg
-                  width="18"
-                  height="18"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   className="animate-spin"
@@ -285,8 +287,8 @@ export function AgendaItemCard({
                 </svg>
               ) : (
                 <svg
-                  width="18"
-                  height="18"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   className="transition-transform group-hover/btn:rotate-[12deg]"
@@ -318,14 +320,12 @@ function IconButton({
   onClick,
   disabled,
   tone,
-  size = 'sm',
   children,
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
   tone: 'emerald' | 'amber' | 'rose';
-  size?: 'sm' | 'lg';
   children: React.ReactNode;
 }) {
   const toneClass = {
@@ -336,7 +336,6 @@ function IconButton({
     rose:
       'bg-rose-50 text-rose-600 ring-rose-200 hover:bg-rose-100 hover:ring-rose-400 hover:text-rose-700',
   }[tone];
-  const sizeClass = size === 'lg' ? 'h-9 w-9' : 'h-7 w-7';
   return (
     <div className="group/btn relative">
       <button
@@ -344,7 +343,7 @@ function IconButton({
         onClick={onClick}
         disabled={disabled}
         aria-label={label}
-        className={`flex ${sizeClass} cursor-pointer items-center justify-center rounded-full ring-1 transition-all ${toneClass} hover:shadow-sm disabled:cursor-wait disabled:opacity-60`}
+        className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-full ring-1 transition-all sm:h-8 sm:w-8 ${toneClass} hover:shadow-sm disabled:cursor-wait disabled:opacity-60`}
       >
         {children}
       </button>
