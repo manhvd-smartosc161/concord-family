@@ -102,7 +102,7 @@ export class ParserSubagent {
 
     const response = await this.anthropic.client.messages.create({
       model: this.anthropic.fastModel,
-      max_tokens: 1024,
+      max_tokens: 4096,
       system: [
         // Static portion → cacheable (saves ~90% of input cost on repeat calls).
         {
@@ -350,33 +350,46 @@ export class ParserSubagent {
             });
           }
         } else if (block.name === 'propose_important_date') {
-          const input = block.input as ProposeImportantDateInput;
-          const isLunar = input.isLunar ?? false;
-          const duplicate = await this.findDuplicateImportantDate(
-            input.name,
-            input.date,
-            isLunar,
-          );
-          if (duplicate) {
-            actions.push({
-              kind: 'important_date_already_exists',
-              name: duplicate.name,
-              date: duplicate.date,
-              isLunar: duplicate.isLunar,
-            });
-          } else {
-            actions.push({
-              kind: 'important_date_proposed',
-              name: input.name,
-              type: input.type,
-              date: input.date,
+          try {
+            const input = block.input as ProposeImportantDateInput;
+            if (!input?.name || !input?.date) {
+              throw new Error('thiếu name hoặc date');
+            }
+            const isLunar = input.isLunar ?? false;
+            const duplicate = await this.findDuplicateImportantDate(
+              input.name,
+              input.date,
               isLunar,
-              remindDaysBefore:
-                Array.isArray(input.remindDaysBefore) &&
-                input.remindDaysBefore.length > 0
-                  ? input.remindDaysBefore
-                  : [0, 2],
-              notes: input.notes ?? null,
+            );
+            if (duplicate) {
+              actions.push({
+                kind: 'important_date_already_exists',
+                name: duplicate.name,
+                date: duplicate.date,
+                isLunar: duplicate.isLunar,
+              });
+            } else {
+              actions.push({
+                kind: 'important_date_proposed',
+                name: input.name,
+                type: input.type ?? 'other',
+                date: input.date,
+                isLunar,
+                remindDaysBefore:
+                  Array.isArray(input.remindDaysBefore) &&
+                  input.remindDaysBefore.length > 0
+                    ? input.remindDaysBefore
+                    : [0, 2],
+                notes: input.notes ?? null,
+              });
+            }
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`propose_important_date failed: ${msg}`);
+            actions.push({
+              kind: 'tool_error',
+              toolName: 'propose_important_date',
+              message: msg,
             });
           }
         }
