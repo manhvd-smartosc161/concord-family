@@ -7,7 +7,7 @@ import { IsNull, Repository } from 'typeorm';
 import { Category } from '../../../modules/categories/entities/category.entity';
 import { CategoriesService } from '../../../modules/categories/categories.service';
 import { Fund } from '../../../modules/funds/entities/fund.entity';
-import { ImportantDatesService } from '../../../modules/important-dates/important-dates.service';
+import { ImportantDate } from '../../../modules/important-dates/entities/important-date.entity';
 import { TransactionsService } from '../../../modules/transactions/transactions.service';
 import { User } from '../../../modules/users/entities/user.entity';
 import { AnthropicService } from '../../core/anthropic.service';
@@ -78,11 +78,12 @@ export class ParserSubagent {
     private readonly anthropic: AnthropicService,
     private readonly transactionsService: TransactionsService,
     private readonly categoriesService: CategoriesService,
-    private readonly importantDatesService: ImportantDatesService,
     @InjectRepository(Fund)
     private readonly fundRepo: Repository<Fund>,
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
+    @InjectRepository(ImportantDate)
+    private readonly importantDateRepo: Repository<ImportantDate>,
   ) {
     const skillPath = path.join(__dirname, 'skill.md');
     this.skill = fs.readFileSync(skillPath, 'utf8');
@@ -177,7 +178,9 @@ export class ParserSubagent {
         ]
       : [];
 
-    const existingDates = await this.importantDatesService.list();
+    const existingDates = await this.importantDateRepo.find({
+      order: { date: 'ASC' },
+    });
     const existingDatesLines = existingDates.length
       ? existingDates.map((d) => {
           const lunar = d.isLunar ? ' (âm)' : '';
@@ -226,7 +229,7 @@ export class ParserSubagent {
     date: string,
     isLunar: boolean,
   ): Promise<{ name: string; date: string; isLunar: boolean } | null> {
-    const all = await this.importantDatesService.list();
+    const all = await this.importantDateRepo.find();
     const normName = name.trim().toLowerCase();
     const monthDay = date.slice(5);
     for (const d of all) {
