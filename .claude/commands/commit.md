@@ -2,7 +2,14 @@
 description: Group changes thành commit nhỏ theo scope, message conventional, không commit secrets
 ---
 
-Tôi muốn commit thay đổi hiện tại. Làm các bước sau:
+## Quy tắc kích hoạt (đọc trước khi làm bất cứ gì)
+
+- **CHỈ commit khi user chủ động gọi `/commit`.** Không tự động commit giữa lúc làm task, không commit "tiện thể" sau khi sửa xong 1 file, không gợi ý commit khi user chưa hỏi.
+- **Trong các turn không có `/commit`:** tuyệt đối KHÔNG chạy `git commit`, `git add`, hay bất kỳ thao tác nào tạo commit. Chỉ đọc git state (`git status`, `git diff`) là được phép khi cần để hiểu context.
+- **Code phải xong trước khi commit.** Khi user gọi `/commit`, ngầm hiểu là toàn bộ thay đổi đang dở đã hoàn tất theo ý user. Nếu thấy dấu hiệu code chưa xong (TODO mới thêm, file rỗng, test fail rõ ràng, import chưa dùng do refactor dở), STOP và hỏi user trước khi commit — đừng đoán.
+- Nếu giữa task user nói "ok đoạn này ổn" hay khen kết quả → KHÔNG suy diễn thành "commit luôn đi". Đợi `/commit` rõ ràng.
+
+## Khi user gọi `/commit`, làm các bước sau:
 
 1. Chạy song song:
    - `git status`
