@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../../shared/common/base.entity';
 import { bigintTransformer } from '../../../shared/common/transformers';
 import { Transaction } from '../../transactions/entities/transaction.entity';
@@ -9,6 +9,10 @@ export type FundPurpose = 'spending' | 'savings' | 'investment';
 
 @Entity('funds')
 export class Fund extends BaseEntity {
+  @Index()
+  @Column({ type: 'uuid', name: 'family_id' })
+  familyId!: string;
+
   @Column({ type: 'varchar', length: 100 })
   name!: string;
 
@@ -31,7 +35,7 @@ export class Fund extends BaseEntity {
   balance!: number;
 
   /**
-   * 'spending' = 3 quỹ chi tiêu gốc (Mạnh/Vợ/Chung), không thể archive.
+   * 'spending' = 3 quỹ chi tiêu gốc (chồng/vợ/chung), không thể archive.
    * 'savings'  = quỹ tiết kiệm user tự tạo gắn mục tiêu (Du lịch, Tiết kiệm năm, ...).
    * 'investment' = quỹ đầu tư (chứng khoán, bất động sản, ...).
    */

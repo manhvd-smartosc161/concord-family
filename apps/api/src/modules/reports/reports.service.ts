@@ -73,7 +73,7 @@ export class ReportsService {
     }
 
     const allTxns = await this.txnRepo.find({
-      where: { fundId: In(fundIds), date: Between(start, end) },
+      where: { familyId: user.familyId!, fundId: In(fundIds), date: Between(start, end) },
       relations: { category: true },
     });
     // Internal transfers (eg "đưa vợ tiền lương" → góp Quỹ Chung) cancel out

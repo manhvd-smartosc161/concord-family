@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../shared/auth/decorators/current-user.decorator';
+import { FamilyRequiredGuard } from '../../shared/auth/guards/family-required.guard';
 import { JwtAuthGuard } from '../../shared/auth/guards/jwt-auth.guard';
 import { UpdateSalaryRuleDto } from './dto/update-salary-rule.dto';
 import { User } from '../users/entities/user.entity';
@@ -8,7 +9,7 @@ import {
   type SalaryRuleView,
 } from './salary-rules.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FamilyRequiredGuard)
 @Controller('api/salary-rules')
 export class SalaryRulesController {
   constructor(private readonly service: SalaryRulesService) {}

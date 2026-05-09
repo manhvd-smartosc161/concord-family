@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../shared/common/base.entity';
 import { bigintTransformer } from '../../../shared/common/transformers';
 import { User } from '../../users/entities/user.entity';
@@ -11,6 +11,10 @@ import { User } from '../../users/entities/user.entity';
  */
 @Entity('salary_rules')
 export class SalaryRule extends BaseEntity {
+  @Index()
+  @Column({ type: 'uuid', name: 'family_id' })
+  familyId!: string;
+
   @Column({ name: 'user_id', type: 'uuid' })
   userId!: string;
 

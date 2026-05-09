@@ -61,43 +61,45 @@ export class ImportantDatesService {
     private readonly yearlyAi: YearlyAiService,
   ) {}
 
-  async list(): Promise<ImportantDateView[]> {
-    const all = await this.repo.find();
+  async list(familyId: string): Promise<ImportantDateView[]> {
+    const all = await this.repo.find({ where: { familyId } });
     return all
       .map((e) => this.toView(e))
       .sort((a, b) => a.daysUntilNext - b.daysUntilNext);
   }
 
   async create(
-    userId: string,
+    user: { id: string; familyId: string },
     dto: CreateImportantDateDto,
   ): Promise<ImportantDateView> {
     const dedup = Array.from(new Set(dto.remindDaysBefore)).sort(
       (a, b) => a - b,
     );
     const entity = this.repo.create({
+      familyId: user.familyId,
       name: dto.name,
       type: dto.type,
       date: dto.date.slice(0, 10),
       isLunar: dto.isLunar,
       remindDaysBefore: dedup,
       notes: dto.notes ?? null,
-      createdById: userId,
+      createdById: user.id,
     });
     return this.toView(await this.repo.save(entity));
   }
 
-  async findOne(id: string): Promise<ImportantDateView> {
-    const e = await this.repo.findOne({ where: { id } });
+  async findOne(id: string, familyId: string): Promise<ImportantDateView> {
+    const e = await this.repo.findOne({ where: { id, familyId } });
     if (!e) throw new NotFoundException();
     return this.toView(e);
   }
 
   async update(
     id: string,
+    familyId: string,
     dto: UpdateImportantDateDto,
   ): Promise<ImportantDateView> {
-    const e = await this.repo.findOne({ where: { id } });
+    const e = await this.repo.findOne({ where: { id, familyId } });
     if (!e) throw new NotFoundException();
     if (dto.name !== undefined) e.name = dto.name;
     if (dto.type !== undefined) e.type = dto.type;
@@ -112,14 +114,14 @@ export class ImportantDatesService {
     return this.toView(await this.repo.save(e));
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.repo.delete(id);
+  async remove(id: string, familyId: string): Promise<void> {
+    const result = await this.repo.delete({ id, familyId });
     if (result.affected === 0) throw new NotFoundException();
   }
 
-  async listUpcoming(limit = 10): Promise<UpcomingView> {
+  async listUpcoming(familyId: string, limit = 10): Promise<UpcomingView> {
     const today = todayInTimezone(TZ);
-    const all = await this.collectAgenda(today, today.getUTCFullYear());
+    const all = await this.collectAgenda(familyId, today, today.getUTCFullYear());
     const future = all.items.filter((i) => i.daysUntil >= 0);
     future.sort((a, b) => a.daysUntil - b.daysUntil);
     return {
@@ -128,10 +130,10 @@ export class ImportantDatesService {
     };
   }
 
-  async listForYear(year: number): Promise<YearAgendaView> {
-    await this.yearlyAi.ensureCache(year);
+  async listForYear(familyId: string, year: number): Promise<YearAgendaView> {
+    await this.yearlyAi.ensureCache(year, familyId);
     const today = todayInTimezone(TZ);
-    const collected = await this.collectAgenda(today, year, { fullYear: true });
+    const collected = await this.collectAgenda(familyId, today, year, { fullYear: true });
     const future = collected.items.filter((i) => i.daysUntil >= 0);
     future.sort((a, b) => a.occursOn.localeCompare(b.occursOn));
     return {
@@ -142,12 +144,13 @@ export class ImportantDatesService {
   }
 
   private async collectAgenda(
+    familyId: string,
     today: Date,
     year: number,
     opts: { fullYear?: boolean } = {},
   ): Promise<{ items: AgendaItem[]; aiGeneratedAt: string | null }> {
     const items: AgendaItem[] = [];
-    const all = await this.repo.find();
+    const all = await this.repo.find({ where: { familyId } });
 
     for (const e of all) {
       const dates = opts.fullYear
@@ -174,7 +177,7 @@ export class ImportantDatesService {
     const years = opts.fullYear ? [year] : [year, year + 1];
     let aiGeneratedAt: string | null = null;
     for (const y of years) {
-      const cache = await this.yearlyAi.findCache(y);
+      const cache = await this.yearlyAi.findCache(y, familyId);
       if (!cache) continue;
       if (y === year) aiGeneratedAt = cache.generatedAt.toISOString();
       for (const ai of cache.items) {
@@ -197,9 +200,10 @@ export class ImportantDatesService {
   }
 
   async findDueOn(
+    familyId: string,
     today: Date,
   ): Promise<{ entry: ImportantDate; daysBefore: number }[]> {
-    const all = await this.repo.find();
+    const all = await this.repo.find({ where: { familyId } });
     const due: { entry: ImportantDate; daysBefore: number }[] = [];
     for (const e of all) {
       const occurrence = resolveOccurrenceForYear(e, today.getUTCFullYear());

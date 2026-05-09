@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { User } from '../users/entities/user.entity';
 import { Category } from './entities/category.entity';
 
 export interface CreateCategoryInput {
@@ -17,25 +18,27 @@ export class CategoriesService {
     private readonly categoryRepo: Repository<Category>,
   ) {}
 
-  async createCategory(input: CreateCategoryInput): Promise<Category> {
+  async createCategory(input: CreateCategoryInput, user: User): Promise<Category> {
+    const familyId = user.familyId!;
     const trimmedName = input.name.trim();
 
     const existing = await this.categoryRepo
       .createQueryBuilder('c')
-      .where('LOWER(c.name) = LOWER(:name)', { name: trimmedName })
+      .where('c.family_id = :familyId', { familyId })
+      .andWhere('LOWER(c.name) = LOWER(:name)', { name: trimmedName })
       .getOne();
     if (existing) return existing;
 
     let parentId: string | null = null;
     if (input.parentName) {
-      const parent = await this.resolveByName(input.parentName);
-      // Only top-level categories can be parents (max depth = 2)
+      const parent = await this.resolveByName(input.parentName, familyId);
       if (parent && parent.parentId === null) {
         parentId = parent.id;
       }
     }
 
     const created = this.categoryRepo.create({
+      familyId,
       name: trimmedName,
       icon: input.icon?.trim() || null,
       isEssential: input.isEssential,
@@ -44,17 +47,19 @@ export class CategoriesService {
     return this.categoryRepo.save(created);
   }
 
-  private async resolveByName(name: string): Promise<Category | null> {
+  private async resolveByName(name: string, familyId: string): Promise<Category | null> {
     const trimmed = name.trim();
     if (!trimmed) return null;
     const exact = await this.categoryRepo
       .createQueryBuilder('c')
-      .where('LOWER(c.name) = LOWER(:n)', { n: trimmed })
+      .where('c.family_id = :familyId', { familyId })
+      .andWhere('LOWER(c.name) = LOWER(:n)', { n: trimmed })
       .getOne();
     if (exact) return exact;
     return this.categoryRepo
       .createQueryBuilder('c')
-      .where('c.name ILIKE :n', { n: `%${trimmed}%` })
+      .where('c.family_id = :familyId', { familyId })
+      .andWhere('c.name ILIKE :n', { n: `%${trimmed}%` })
       .orderBy('LENGTH(c.name)', 'ASC')
       .getOne();
   }

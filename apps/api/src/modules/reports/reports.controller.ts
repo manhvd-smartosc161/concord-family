@@ -7,6 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../../shared/auth/decorators/current-user.decorator';
+import { FamilyRequiredGuard } from '../../shared/auth/guards/family-required.guard';
 import { JwtAuthGuard } from '../../shared/auth/guards/jwt-auth.guard';
 import { User } from '../users/entities/user.entity';
 import {
@@ -15,7 +16,7 @@ import {
   type ReportScope,
 } from './reports.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FamilyRequiredGuard)
 @Controller('api/reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}

@@ -26,19 +26,19 @@ export class YearlyAiService {
     private readonly repo: Repository<YearlyAiCache>,
   ) {}
 
-  async findCache(year: number): Promise<YearlyAiCache | null> {
-    return this.repo.findOne({ where: { year } });
+  async findCache(year: number, familyId: string): Promise<YearlyAiCache | null> {
+    return this.repo.findOne({ where: { year, familyId } });
   }
 
-  async ensureCache(year: number): Promise<YearlyAiCache> {
-    const existing = await this.repo.findOne({ where: { year } });
+  async ensureCache(year: number, familyId: string): Promise<YearlyAiCache> {
+    const existing = await this.repo.findOne({ where: { year, familyId } });
     if (existing) return existing;
-    return this.regenerate(year);
+    return this.regenerate(year, familyId);
   }
 
-  async regenerate(year: number): Promise<YearlyAiCache> {
+  async regenerate(year: number, familyId: string): Promise<YearlyAiCache> {
     const items = await this.callAi(year);
-    const existing = await this.repo.findOne({ where: { year } });
+    const existing = await this.repo.findOne({ where: { year, familyId } });
     if (existing) {
       existing.items = items;
       existing.generatedAt = new Date();
@@ -46,6 +46,7 @@ export class YearlyAiService {
     }
     return this.repo.save(
       this.repo.create({
+        familyId,
         year,
         items,
         generatedAt: new Date(),

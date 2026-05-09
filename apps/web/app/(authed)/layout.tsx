@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Header } from '@/components/layout/header';
 import { Sidebar } from '@/components/layout/sidebar';
@@ -31,6 +31,7 @@ export default function AuthedLayout({
 }) {
   const auth = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [funds, setFunds] = useState<FundView[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -44,8 +45,19 @@ export default function AuthedLayout({
   }, []);
 
   useEffect(() => {
-    if (auth.status === 'authed') void reloadFunds();
-  }, [auth.status, reloadFunds]);
+    if (auth.status === 'authed' && auth.user.familyId) void reloadFunds();
+  }, [auth.status, auth, reloadFunds]);
+
+  useEffect(() => {
+    if (
+      auth.status === 'authed' &&
+      !auth.user.familyId &&
+      !pathname.startsWith('/family/setup') &&
+      !pathname.startsWith('/invite/')
+    ) {
+      router.replace('/family/setup');
+    }
+  }, [auth.status, auth, pathname, router]);
 
   if (auth.status === 'loading') {
     return (
@@ -58,6 +70,38 @@ export default function AuthedLayout({
     );
   }
   if (auth.status === 'unauthed') return null;
+
+  if (!auth.user.familyId) {
+    return (
+      <LayoutContext.Provider value={{ user: auth.user, funds, reloadFunds }}>
+        <div className="flex min-h-screen flex-col bg-stone-50">
+          <header className="flex items-center justify-between border-b border-stone-200 bg-white px-4 py-2.5 sm:px-6">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-700 text-sm font-bold text-white">
+                C
+              </div>
+              <span className="text-sm font-semibold text-stone-800">
+                Concord
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="hidden text-xs text-stone-500 sm:inline">
+                {auth.user.email}
+              </span>
+              <button
+                type="button"
+                onClick={() => logout(router)}
+                className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          </header>
+          <main className="flex-1">{children}</main>
+        </div>
+      </LayoutContext.Provider>
+    );
+  }
 
   return (
     <LayoutContext.Provider value={{ user: auth.user, funds, reloadFunds }}>

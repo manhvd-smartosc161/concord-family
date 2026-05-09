@@ -17,6 +17,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CurrentUser } from '../../shared/auth/decorators/current-user.decorator';
+import { FamilyRequiredGuard } from '../../shared/auth/guards/family-required.guard';
 import { JwtAuthGuard } from '../../shared/auth/guards/jwt-auth.guard';
 import { NotificationsService } from '../../shared/notifications/notifications.service';
 import { User } from '../users/entities/user.entity';
@@ -36,7 +37,7 @@ import {
   todayInTimezone,
 } from './lib/lunar';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FamilyRequiredGuard)
 @Controller('api/important-dates')
 export class ImportantDatesController {
   constructor(
@@ -48,21 +49,27 @@ export class ImportantDatesController {
   ) {}
 
   @Get()
-  list(): Promise<ImportantDateView[]> {
-    return this.service.list();
+  list(@CurrentUser() user: User): Promise<ImportantDateView[]> {
+    return this.service.list(user.familyId!);
   }
 
   @Get('upcoming')
-  upcoming(@Query('limit') limitRaw?: string): Promise<UpcomingView> {
+  upcoming(
+    @CurrentUser() user: User,
+    @Query('limit') limitRaw?: string,
+  ): Promise<UpcomingView> {
     const parsed = limitRaw ? parseInt(limitRaw, 10) : 10;
     const limit =
       Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 100) : 10;
-    return this.service.listUpcoming(limit);
+    return this.service.listUpcoming(user.familyId!, limit);
   }
 
   @Get('year/:year')
-  year(@Param('year', ParseIntPipe) year: number): Promise<YearAgendaView> {
-    return this.service.listForYear(year);
+  year(
+    @CurrentUser() user: User,
+    @Param('year', ParseIntPipe) year: number,
+  ): Promise<YearAgendaView> {
+    return this.service.listForYear(user.familyId!, year);
   }
 
   @Post()
@@ -70,26 +77,33 @@ export class ImportantDatesController {
     @CurrentUser() user: User,
     @Body() dto: CreateImportantDateDto,
   ): Promise<ImportantDateView> {
-    return this.service.create(user.id, dto);
+    return this.service.create({ id: user.id, familyId: user.familyId! }, dto);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<ImportantDateView> {
-    return this.service.findOne(id);
+  findOne(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ImportantDateView> {
+    return this.service.findOne(id, user.familyId!);
   }
 
   @Patch(':id')
   update(
+    @CurrentUser() user: User,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateImportantDateDto,
   ): Promise<ImportantDateView> {
-    return this.service.update(id, dto);
+    return this.service.update(id, user.familyId!, dto);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.service.remove(id);
+  remove(
+    @CurrentUser() user: User,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    return this.service.remove(id, user.familyId!);
   }
 
   @Post('_test-tick')

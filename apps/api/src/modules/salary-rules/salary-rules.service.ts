@@ -29,7 +29,9 @@ export class SalaryRulesService {
   ) {}
 
   async findForUser(user: User): Promise<SalaryRuleView> {
-    const rule = await this.repo.findOneBy({ userId: user.id });
+    const rule = await this.repo.findOne({
+      where: { familyId: user.familyId!, userId: user.id },
+    });
     if (!rule) throw new NotFoundException('Chưa thiết lập rule lương');
     return this.toView(rule);
   }
@@ -53,7 +55,9 @@ export class SalaryRulesService {
     ) {
       throw new BadRequestException('Số cố định không thể âm');
     }
-    const rule = await this.repo.findOneBy({ userId: user.id });
+    const rule = await this.repo.findOne({
+      where: { familyId: user.familyId!, userId: user.id },
+    });
     if (!rule) throw new NotFoundException('Chưa thiết lập rule lương');
     rule.pctToPersonal = dto.pctToPersonal;
     rule.pctToJoint = dto.pctToJoint;

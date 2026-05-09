@@ -15,6 +15,10 @@ import { ChatMessage } from './chat-message.entity';
 @Index(['fundId', 'lastMessageAt'])
 @Index(['createdById', 'lastMessageAt'])
 export class ChatSession extends BaseEntity {
+  @Index()
+  @Column({ type: 'uuid', name: 'family_id' })
+  familyId!: string;
+
   /** Fund this conversation belongs to. Joint fund sessions are visible to both spouses. */
   @Column({ name: 'fund_id', type: 'uuid' })
   fundId!: string;

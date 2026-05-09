@@ -96,6 +96,29 @@ export default function DashboardPage() {
 
       <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto max-w-6xl space-y-6">
+          {funds.length === 0 && !loading && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">🏠</span>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-amber-900">
+                    Mời vợ/chồng tham gia gia đình
+                  </div>
+                  <p className="mt-1 text-xs text-amber-800">
+                    Sau khi 2 người cùng tham gia, hệ thống sẽ tự tạo 3 quỹ
+                    chi tiêu (Chồng / Vợ / Chung) để bắt đầu.
+                  </p>
+                  <Link
+                    href="/family/invite"
+                    className="mt-3 inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700"
+                  >
+                    Gửi link mời ngay →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Goal hero (legacy) */}
           {yearlyGoal && <GoalHero goal={yearlyGoal} />}
           {loading && !yearlyGoal && envelopes.length === 0 && (

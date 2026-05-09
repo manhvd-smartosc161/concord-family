@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../shared/common/base.entity';
 import { bigintTransformer } from '../../../shared/common/transformers';
 import { User } from '../../users/entities/user.entity';
@@ -8,6 +8,10 @@ export type GoalType = 'save' | 'spend_under';
 
 @Entity('goals')
 export class Goal extends BaseEntity {
+  @Index()
+  @Column({ type: 'uuid', name: 'family_id' })
+  familyId!: string;
+
   /** NULL = goal chung của 2 vợ chồng (vd: tiết kiệm 150tr/năm). */
   @Column({ name: 'user_id', type: 'uuid', nullable: true })
   userId!: string | null;
