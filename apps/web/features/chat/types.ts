@@ -16,8 +16,30 @@ export type ParseAction =
     }
   | { kind: 'deleted'; id: string }
   | { kind: 'clarify'; question: string }
-  | { kind: 'category_created'; name: string; isEssential: boolean; parentName: string | null }
-  | { kind: 'tool_error'; toolName: string; message: string };
+  | {
+      kind: 'category_created';
+      name: string;
+      isEssential: boolean;
+      parentName: string | null;
+    }
+  | { kind: 'tool_error'; toolName: string; message: string }
+  | {
+      kind: 'important_date_proposed';
+      name: string;
+      type: 'birthday' | 'death_anniversary' | 'anniversary' | 'other';
+      date: string;
+      isLunar: boolean;
+      remindDaysBefore: number[];
+      notes: string | null;
+    }
+  | {
+      kind: 'important_date_logged';
+      id: string;
+      name: string;
+      date: string;
+      type: 'birthday' | 'death_anniversary' | 'anniversary' | 'other';
+    }
+  | { kind: 'important_date_dismissed' };
 
 export interface ChatResponse {
   reply: string;
