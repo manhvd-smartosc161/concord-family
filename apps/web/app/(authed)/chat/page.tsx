@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
 import {
@@ -94,6 +94,14 @@ function rehydrateAction(
 }
 
 export default function ChatPage() {
+  return (
+    <Suspense fallback={null}>
+      <ChatInner />
+    </Suspense>
+  );
+}
+
+function ChatInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionIdFromUrl = searchParams.get('session');

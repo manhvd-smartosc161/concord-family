@@ -2,13 +2,21 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { ApiError, setToken } from '@/lib/api-client';
 import { register } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/hooks';
 import type { UserGender } from '@/features/auth/types';
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterInner />
+    </Suspense>
+  );
+}
+
+function RegisterInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get('next');

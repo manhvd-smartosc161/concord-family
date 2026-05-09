@@ -2,12 +2,20 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { ApiError, setToken } from '@/lib/api-client';
 import { login } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/hooks';
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginInner />
+    </Suspense>
+  );
+}
+
+function LoginInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get('next');
