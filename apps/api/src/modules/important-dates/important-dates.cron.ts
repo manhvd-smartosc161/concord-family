@@ -17,16 +17,14 @@ export class ImportantDatesCron implements OnModuleInit {
     private readonly yearlyAi: YearlyAiService,
   ) {}
 
-  async onModuleInit(): Promise<void> {
+  onModuleInit(): void {
     const today = todayInTimezone(TZ);
     const year = today.getUTCFullYear();
-    try {
-      await this.yearlyAi.ensureCache(year);
-    } catch (err) {
+    void this.yearlyAi.ensureCache(year).catch((err: unknown) => {
       this.logger.warn(
         `boot warm AI cache failed for ${year}: ${(err as Error).message}`,
       );
-    }
+    });
   }
 
   @Cron('0 8 * * *', { timeZone: TZ })
