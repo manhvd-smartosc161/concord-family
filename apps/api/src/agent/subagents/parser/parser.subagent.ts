@@ -7,6 +7,7 @@ import { IsNull, Repository } from 'typeorm';
 import { Category } from '../../../modules/categories/entities/category.entity';
 import { CategoriesService } from '../../../modules/categories/categories.service';
 import { Fund } from '../../../modules/funds/entities/fund.entity';
+import { ImportantDatesService } from '../../../modules/important-dates/important-dates.service';
 import { TransactionsService } from '../../../modules/transactions/transactions.service';
 import { User } from '../../../modules/users/entities/user.entity';
 import { AnthropicService } from '../../core/anthropic.service';
@@ -53,6 +54,12 @@ export type ParseAction =
       isLunar: boolean;
       remindDaysBefore: number[];
       notes: string | null;
+    }
+  | {
+      kind: 'important_date_already_exists';
+      name: string;
+      date: string;
+      isLunar: boolean;
     };
 
 export interface ParseResult {
@@ -71,6 +78,7 @@ export class ParserSubagent {
     private readonly anthropic: AnthropicService,
     private readonly transactionsService: TransactionsService,
     private readonly categoriesService: CategoriesService,
+    private readonly importantDatesService: ImportantDatesService,
     @InjectRepository(Fund)
     private readonly fundRepo: Repository<Fund>,
     @InjectRepository(Category)
@@ -169,6 +177,14 @@ export class ParserSubagent {
         ]
       : [];
 
+    const existingDates = await this.importantDatesService.list();
+    const existingDatesLines = existingDates.length
+      ? existingDates.map((d) => {
+          const lunar = d.isLunar ? ' (âm)' : '';
+          return `  - "${d.name}" — ${d.date}${lunar} (${d.type})`;
+        })
+      : ['  (chưa có ngày nào trong hệ thống)'];
+
     return [
       '## Current Context',
       '',
@@ -195,7 +211,31 @@ export class ParserSubagent {
       '',
       '### Giao dịch user vừa log (để update_transaction / delete_transaction)',
       ...recentLines,
+      '',
+      '### Ngày quan trọng đã có trong hệ thống',
+      ...existingDatesLines,
+      '',
+      '> Khi gọi propose_important_date, kiểm tra xem ngày đó đã có trong list trên chưa.',
+      '> Nếu name + date trùng (cùng tên + cùng ngày DD/MM) → KHÔNG propose lại; thay vào đó reply text "X đã có trong danh sách rồi".',
+      '> KHÔNG re-propose nội dung từ history (turn cũ). Chỉ xử lý các ngày user nhắc trong CURRENT message.',
     ].join('\n');
+  }
+
+  private async findDuplicateImportantDate(
+    name: string,
+    date: string,
+    isLunar: boolean,
+  ): Promise<{ name: string; date: string; isLunar: boolean } | null> {
+    const all = await this.importantDatesService.list();
+    const normName = name.trim().toLowerCase();
+    const monthDay = date.slice(5);
+    for (const d of all) {
+      if (d.isLunar !== isLunar) continue;
+      if (d.date.slice(5) !== monthDay) continue;
+      if (d.name.trim().toLowerCase() !== normName) continue;
+      return { name: d.name, date: d.date, isLunar: d.isLunar };
+    }
+    return null;
   }
 
   private async handleResponse(
@@ -308,19 +348,34 @@ export class ParserSubagent {
           }
         } else if (block.name === 'propose_important_date') {
           const input = block.input as ProposeImportantDateInput;
-          actions.push({
-            kind: 'important_date_proposed',
-            name: input.name,
-            type: input.type,
-            date: input.date,
-            isLunar: input.isLunar ?? false,
-            remindDaysBefore:
-              Array.isArray(input.remindDaysBefore) &&
-              input.remindDaysBefore.length > 0
-                ? input.remindDaysBefore
-                : [0, 2],
-            notes: input.notes ?? null,
-          });
+          const isLunar = input.isLunar ?? false;
+          const duplicate = await this.findDuplicateImportantDate(
+            input.name,
+            input.date,
+            isLunar,
+          );
+          if (duplicate) {
+            actions.push({
+              kind: 'important_date_already_exists',
+              name: duplicate.name,
+              date: duplicate.date,
+              isLunar: duplicate.isLunar,
+            });
+          } else {
+            actions.push({
+              kind: 'important_date_proposed',
+              name: input.name,
+              type: input.type,
+              date: input.date,
+              isLunar,
+              remindDaysBefore:
+                Array.isArray(input.remindDaysBefore) &&
+                input.remindDaysBefore.length > 0
+                  ? input.remindDaysBefore
+                  : [0, 2],
+              notes: input.notes ?? null,
+            });
+          }
         }
       }
     }

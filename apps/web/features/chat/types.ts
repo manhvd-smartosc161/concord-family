@@ -39,7 +39,13 @@ export type ParseAction =
       date: string;
       type: 'birthday' | 'death_anniversary' | 'anniversary' | 'other';
     }
-  | { kind: 'important_date_dismissed' };
+  | { kind: 'important_date_dismissed' }
+  | {
+      kind: 'important_date_already_exists';
+      name: string;
+      date: string;
+      isLunar: boolean;
+    };
 
 export interface ChatResponse {
   reply: string;
