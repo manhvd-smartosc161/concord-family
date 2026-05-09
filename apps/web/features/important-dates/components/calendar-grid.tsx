@@ -48,7 +48,7 @@ export function CalendarGrid({
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 pb-3">
         {cells.map((cell, idx) => {
           const isCurrentMonth = cell.month === month;
           const isToday = cell.iso === todayIso;
@@ -64,7 +64,7 @@ export function CalendarGrid({
               key={cell.iso}
               type="button"
               onClick={() => onSelect(cell.iso)}
-              className={`group relative flex h-14 flex-col items-center justify-start pt-1.5 transition-colors sm:h-16 ${
+              className={`group relative flex h-16 flex-col items-center justify-start pt-1.5 transition-colors sm:h-[72px] ${
                 isFirstRow ? '' : 'border-t border-stone-100/70'
               } ${isCurrentMonth ? 'hover:bg-stone-50/60' : ''}`}
             >
@@ -95,11 +95,11 @@ export function CalendarGrid({
                 {lunar.day}/{lunar.month}
               </span>
               {items.length > 0 && (
-                <div className="absolute bottom-1 flex items-center justify-center gap-[3px]">
+                <div className="absolute bottom-1.5 flex items-center justify-center gap-1">
                   {items.slice(0, 3).map((it, i) => (
                     <span
                       key={i}
-                      className={`h-1 w-1 rounded-full ${
+                      className={`h-2 w-2 rounded-full ${
                         DOT_TONE[it.kind] ?? 'bg-stone-400'
                       }`}
                     />
