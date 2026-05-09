@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Badge } from "@/components/ui";
+import { lunarOf } from "../lib/lunar";
 import type { AgendaItem, AgendaItemKind } from "../types";
 
 const ICONS: Record<AgendaItemKind, string> = {
@@ -128,6 +129,21 @@ export function AgendaItemCard({
   const days = item.daysUntil;
   const imminent = days >= 0 && days <= 2;
 
+  let lunarHint: string | null = null;
+  if (item.isLunar) {
+    const [y, m, d] = item.occursOn.split("-").map(Number);
+    const info = lunarOf(new Date(y, m - 1, d));
+    const label =
+      info.day === 1
+        ? `Mùng 1 tháng ${info.month} âm`
+        : info.day === 15
+        ? `Rằm tháng ${info.month} âm`
+        : `Ngày ${info.day}/${info.month} âm`;
+    if (label !== item.name && label !== item.notes) {
+      lunarHint = label;
+    }
+  }
+
   const dayHint =
     days === 0
       ? "Hôm nay"
@@ -213,10 +229,15 @@ export function AgendaItemCard({
               </div>
             )}
 
-            {item.notes && (
-              <p className="hidden border-l-2 border-stone-200 pl-3 text-xs italic text-stone-500 sm:block">
-                {item.notes}
-              </p>
+            {(item.notes || lunarHint) && (
+              <div className="hidden flex-col gap-0.5 border-l-2 border-stone-200 pl-3 sm:flex">
+                {item.notes && (
+                  <p className="text-xs italic text-stone-500">{item.notes}</p>
+                )}
+                {lunarHint && !item.notes && (
+                  <p className="text-xs italic text-stone-500">{lunarHint}</p>
+                )}
+              </div>
             )}
           </div>
         </div>
