@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { setToken } from '@/lib/api-client';
 import { acceptInvitation, createFamily } from '@/features/families/api';
 import { useAuthedLayout } from '../../layout';
@@ -9,6 +9,14 @@ import { useAuthedLayout } from '../../layout';
 type Mode = 'choose' | 'create' | 'join';
 
 export default function FamilySetupPage() {
+  return (
+    <Suspense fallback={null}>
+      <FamilySetupInner />
+    </Suspense>
+  );
+}
+
+function FamilySetupInner() {
   const router = useRouter();
   const params = useSearchParams();
   const { user } = useAuthedLayout();
