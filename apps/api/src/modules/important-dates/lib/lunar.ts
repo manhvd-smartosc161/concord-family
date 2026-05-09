@@ -30,7 +30,11 @@ export function daysBetweenUtc(a: Date, b: Date): number {
   return Math.round(ms / 86_400_000);
 }
 
-export function lunarOf(date: Date): { year: number; month: number; day: number } {
+export function lunarOf(date: Date): {
+  year: number;
+  month: number;
+  day: number;
+} {
   const solar = Solar.fromYmd(
     date.getUTCFullYear(),
     date.getUTCMonth() + 1,

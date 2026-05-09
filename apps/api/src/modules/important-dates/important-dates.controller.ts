@@ -53,11 +53,10 @@ export class ImportantDatesController {
   }
 
   @Get('upcoming')
-  upcoming(
-    @Query('limit') limitRaw?: string,
-  ): Promise<UpcomingView> {
+  upcoming(@Query('limit') limitRaw?: string): Promise<UpcomingView> {
     const parsed = limitRaw ? parseInt(limitRaw, 10) : 10;
-    const limit = Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 100) : 10;
+    const limit =
+      Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 100) : 10;
     return this.service.listUpcoming(limit);
   }
 
@@ -122,7 +121,12 @@ export class ImportantDatesController {
   @Post('notify-ai-date')
   async notifyAiDate(
     @Body()
-    body: { name: string; date: string; notes?: string | null; kind?: string },
+    body: {
+      name: string;
+      date: string;
+      notes?: string | null;
+      kind?: string;
+    },
   ): Promise<{ ok: true }> {
     const target = new Date(`${body.date.slice(0, 10)}T00:00:00Z`);
     const today = todayInTimezone('Asia/Ho_Chi_Minh');
