@@ -37,7 +37,7 @@ Cả 2 app organize theo **feature-first**: mỗi feature là 1 vertical slice t
 
 ## Business rules (load-bearing — không được vi phạm)
 
-- **Three spending funds**: Mạnh (chồng cá nhân), Wife cá nhân, Joint/Chung — đây là **quỹ chi tiêu**
+- **Three spending funds**: Chồng cá nhân, Vợ cá nhân, Joint/Chung — đây là **quỹ chi tiêu**
   (`purpose='spending'`). Dòng tiền liên tục: lương về, chi tiêu hằng ngày, chuyển nội bộ giữa các quỹ.
   **Không thể archive**. Không tạo thêm spending fund — 3 cái này là cố định.
 

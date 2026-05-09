@@ -39,7 +39,7 @@ description: Group changes thành commit nhỏ theo scope, message conventional,
    Type: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `style`.
    Scope: `api`, `web`, `db`, `agent`, `auth`, `infra`.
 
-   **NGÔN NGỮ COMMIT: TIẾNG ANH BẮT BUỘC.** Subject + body đều English. Quoted strings từ codebase/UI (vd `"đi chợ"`, `"Quỹ Mạnh"`) được giữ nguyên tiếng Việt vì đó là content thực, KHÔNG phải commentary. Mọi giải thích/lý do phải English.
+   **NGÔN NGỮ COMMIT: TIẾNG ANH BẮT BUỘC.** Subject + body đều English. Quoted strings từ codebase/UI (vd `"đi chợ"`, `"Quỹ Chồng"`) được giữ nguyên tiếng Việt vì đó là content thực, KHÔNG phải commentary. Mọi giải thích/lý do phải English.
 
 5. Stage từng group bằng `git add <file>` (KHÔNG dùng `git add -A` hay `git add .`), commit từng cái một, mỗi commit dùng HEREDOC để format đẹp.
 

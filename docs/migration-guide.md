@@ -56,7 +56,7 @@ Rename enum values theo business logic mới:
 
 | Giá trị cũ | Giá trị mới | Ý nghĩa |
 |-----------|------------|---------|
-| `general` | `spending` | 3 quỹ chi tiêu gốc (Mạnh/Vợ/Chung) — không archive được |
+| `general` | `spending` | 3 quỹ chi tiêu gốc (Chồng/Vợ/Chung) — không archive được |
 | `envelope` | `savings` | Quỹ tiết kiệm có mục tiêu (du lịch, khẩn cấp, …) |
 | *(mới)* | `investment` | Quỹ đầu tư dài hạn (chứng khoán, BĐS, …) |
 
@@ -83,7 +83,7 @@ pnpm --filter api migration:run
 # 4. Verify
 psql concord_db -c "SELECT name FROM migrations ORDER BY timestamp;"
 psql concord_db -c "SELECT name, purpose FROM funds;"
-# Kỳ vọng: 3 rows spending (Mạnh/Vợ/Chung) + các envelope nếu đã tạo
+# Kỳ vọng: 3 rows spending (Chồng/Vợ/Chung) + các envelope nếu đã tạo
 ```
 
 ---
