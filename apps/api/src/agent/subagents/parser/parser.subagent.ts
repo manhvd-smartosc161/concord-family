@@ -144,15 +144,17 @@ export class ParserSubagent {
           return `  - id=\`${t.id}\` · ${t.fund.name} · ${sign}${abs}đ · ${cat}${note} · log lúc ${ts}`;
         })
       : ['  (chưa có giao dịch nào trước đó)'];
-    // Funds the user can WRITE to: their personal + joint.
-    const writableFunds = await this.fundRepo.find({
-      where: [{ ownerId: user.id }, { ownerId: IsNull() }],
+    const allFamilyFunds = await this.fundRepo.find({
+      where: { familyId: user.familyId! },
       order: { type: 'ASC', name: 'ASC' },
     });
+    const writableFunds = allFamilyFunds.filter(
+      (f) => f.type === 'joint' || f.ownerId === user.id,
+    );
 
     // Top-level categories with their children (compact tree).
     const tops = await this.categoryRepo.find({
-      where: { parentId: IsNull() },
+      where: { familyId: user.familyId!, parentId: IsNull() },
       order: { name: 'ASC' },
     });
     const tree: string[] = [];
@@ -179,6 +181,7 @@ export class ParserSubagent {
       : [];
 
     const existingDates = await this.importantDateRepo.find({
+      where: { familyId: user.familyId! },
       order: { date: 'ASC' },
     });
     const existingDatesLines = existingDates.length
@@ -228,8 +231,9 @@ export class ParserSubagent {
     name: string,
     date: string,
     isLunar: boolean,
+    familyId: string,
   ): Promise<{ name: string; date: string; isLunar: boolean } | null> {
-    const all = await this.importantDateRepo.find();
+    const all = await this.importantDateRepo.find({ where: { familyId } });
     const normName = name.trim().toLowerCase();
     const monthDay = date.slice(5);
     for (const d of all) {
@@ -333,7 +337,7 @@ export class ParserSubagent {
               icon: input.icon,
               isEssential: input.isEssential,
               parentName: input.parentName,
-            });
+            }, user);
             actions.push({
               kind: 'category_created',
               name: category.name,
@@ -360,6 +364,7 @@ export class ParserSubagent {
               input.name,
               input.date,
               isLunar,
+              user.familyId!,
             );
             if (duplicate) {
               actions.push({

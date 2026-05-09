@@ -54,7 +54,8 @@ export class ChatSessionsService {
       .createQueryBuilder('s')
       .innerJoin('s.fund', 'f')
       .leftJoin('s.messages', 'm')
-      .where('(f.type = :joint OR f.owner_id = :userId)', {
+      .where('s.family_id = :familyId', { familyId: user.familyId! })
+      .andWhere('(f.type = :joint OR f.owner_id = :userId)', {
         joint: 'joint',
         userId: user.id,
       })
@@ -88,7 +89,9 @@ export class ChatSessionsService {
     fundId: string,
     title?: string,
   ): Promise<ChatSessionView> {
-    const fund = await this.fundRepo.findOneBy({ id: fundId });
+    const fund = await this.fundRepo.findOne({
+      where: { id: fundId, familyId: user.familyId! },
+    });
     if (!fund) throw new BadRequestException('Quỹ không tồn tại');
     if (fund.type === 'personal' && fund.ownerId !== user.id) {
       throw new ForbiddenException(
@@ -97,6 +100,7 @@ export class ChatSessionsService {
     }
 
     const session = this.sessionRepo.create({
+      familyId: user.familyId!,
       fundId: fund.id,
       createdById: user.id,
       title: title?.slice(0, 200) || 'Cuộc trò chuyện mới',
@@ -191,7 +195,7 @@ export class ChatSessionsService {
    */
   async findAccessible(user: User, sessionId: string): Promise<ChatSession> {
     const session = await this.sessionRepo.findOne({
-      where: { id: sessionId },
+      where: { id: sessionId, familyId: user.familyId! },
       relations: { fund: true },
     });
     if (!session) {

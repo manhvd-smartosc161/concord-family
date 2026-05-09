@@ -38,7 +38,10 @@ export class GoalsService {
   /** All goals visible to this user — couple goals + their own personal goals. */
   async listForUser(user: User): Promise<GoalView[]> {
     const goals = await this.goalRepo.find({
-      where: [{ userId: IsNull() }, { userId: user.id }],
+      where: [
+        { familyId: user.familyId!, userId: IsNull() },
+        { familyId: user.familyId!, userId: user.id },
+      ],
       order: { startDate: 'ASC' },
     });
 
@@ -50,10 +53,10 @@ export class GoalsService {
     return views;
   }
 
-  async upsertYearlySavings(targetAmount: number): Promise<GoalView> {
+  async upsertYearlySavings(user: User, targetAmount: number): Promise<GoalView> {
     const year = new Date().getFullYear();
     let goal = await this.goalRepo.findOne({
-      where: { userId: IsNull(), period: 'year', type: 'save' },
+      where: { familyId: user.familyId!, userId: IsNull(), period: 'year', type: 'save' },
     });
     if (goal) {
       goal.targetAmount = targetAmount;
@@ -63,6 +66,7 @@ export class GoalsService {
     } else {
       goal = await this.goalRepo.save(
         this.goalRepo.create({
+          familyId: user.familyId!,
           userId: null,
           targetAmount,
           period: 'year',
@@ -91,19 +95,17 @@ export class GoalsService {
 
     let fundIds: string[];
     if (isCoupleSave) {
-      // Chỉ track quỹ tiết kiệm + đầu tư — KHÔNG phải quỹ chi tiêu.
-      // Tiết kiệm thực = dòng tiền vào quỹ tiết kiệm/đầu tư (qua Chuyển nội bộ).
       fundIds = (
         await this.fundRepo.find({
-          where: { purpose: In(['savings', 'investment']) },
+          where: { familyId: g.familyId, purpose: In(['savings', 'investment']) },
         })
       ).map((f) => f.id);
     } else if (g.userId) {
       fundIds = (
-        await this.fundRepo.find({ where: { ownerId: g.userId } })
+        await this.fundRepo.find({ where: { familyId: g.familyId, ownerId: g.userId } })
       ).map((f) => f.id);
     } else {
-      fundIds = (await this.fundRepo.find()).map((f) => f.id);
+      fundIds = (await this.fundRepo.find({ where: { familyId: g.familyId } })).map((f) => f.id);
     }
 
     const allTxns = fundIds.length

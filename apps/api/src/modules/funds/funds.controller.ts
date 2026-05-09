@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../../shared/auth/decorators/current-user.decorator';
+import { FamilyRequiredGuard } from '../../shared/auth/guards/family-required.guard';
 import { JwtAuthGuard } from '../../shared/auth/guards/jwt-auth.guard';
 import { User } from '../users/entities/user.entity';
 import { CreateEnvelopeDto } from './dto/create-envelope.dto';
@@ -17,7 +18,7 @@ import { SetOpeningBalanceDto } from './dto/set-opening-balance.dto';
 import { UpdateEnvelopeDto } from './dto/update-envelope.dto';
 import { FundsService, type FundView } from './funds.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FamilyRequiredGuard)
 @Controller('api/funds')
 export class FundsController {
   constructor(private readonly fundsService: FundsService) {}
@@ -45,29 +46,35 @@ export class FundsController {
   }
 
   @Post('envelopes')
-  createEnvelope(@Body() dto: CreateEnvelopeDto): Promise<FundView> {
-    return this.fundsService.createEnvelope(dto);
+  createEnvelope(
+    @CurrentUser() user: User,
+    @Body() dto: CreateEnvelopeDto,
+  ): Promise<FundView> {
+    return this.fundsService.createEnvelope(user, dto);
   }
 
   @Patch('envelopes/:fundId')
   updateEnvelope(
+    @CurrentUser() user: User,
     @Param('fundId', ParseUUIDPipe) fundId: string,
     @Body() dto: UpdateEnvelopeDto,
   ): Promise<FundView> {
-    return this.fundsService.updateEnvelope(fundId, dto);
+    return this.fundsService.updateEnvelope(user, fundId, dto);
   }
 
   @Post('envelopes/:fundId/archive')
   archiveEnvelope(
+    @CurrentUser() user: User,
     @Param('fundId', ParseUUIDPipe) fundId: string,
   ): Promise<FundView> {
-    return this.fundsService.archiveEnvelope(fundId);
+    return this.fundsService.archiveEnvelope(user, fundId);
   }
 
   @Post('envelopes/:fundId/unarchive')
   unarchiveEnvelope(
+    @CurrentUser() user: User,
     @Param('fundId', ParseUUIDPipe) fundId: string,
   ): Promise<FundView> {
-    return this.fundsService.unarchiveEnvelope(fundId);
+    return this.fundsService.unarchiveEnvelope(user, fundId);
   }
 }

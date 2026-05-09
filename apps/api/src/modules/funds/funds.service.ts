@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, IsNull, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Transaction } from '../transactions/entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
 import type { CreateEnvelopeDto } from './dto/create-envelope.dto';
@@ -58,9 +58,12 @@ export class FundsService {
   ) {}
 
   async listForUser(user: User): Promise<FundView[]> {
-    const funds = await this.fundRepo.find({
-      where: { archivedAt: IsNull() },
+    const allFunds = await this.fundRepo.find({
+      where: { familyId: user.familyId! },
     });
+    const funds = allFunds
+      .filter((f) => f.archivedAt === null)
+      .filter((f) => f.type === 'joint' || f.ownerId === user.id);
     // Order: chi tiêu chung (joint spending) → tiết kiệm/đầu tư → cá nhân.
     funds.sort((a, b) => {
       const order = (f: Fund) => {
@@ -77,7 +80,7 @@ export class FundsService {
     });
 
     const openings = await this.txnRepo.find({
-      where: { note: OPENING_BALANCE_NOTE },
+      where: { familyId: user.familyId!, note: OPENING_BALANCE_NOTE },
     });
     const openingByFundId = new Map<string, number>();
     for (const t of openings) openingByFundId.set(t.fundId, t.amount);
@@ -115,11 +118,14 @@ export class FundsService {
 
   async listEnvelopes(user: User): Promise<FundView[]> {
     const funds = await this.fundRepo.find({
-      where: { purpose: In(['savings', 'investment']) },
+      where: [
+        { familyId: user.familyId!, purpose: 'savings' },
+        { familyId: user.familyId!, purpose: 'investment' },
+      ],
       order: { archivedAt: 'ASC', displayOrder: 'ASC', name: 'ASC' },
     });
     const openings = await this.txnRepo.find({
-      where: { note: OPENING_BALANCE_NOTE },
+      where: { familyId: user.familyId!, note: OPENING_BALANCE_NOTE },
     });
     const openingByFundId = new Map<string, number>();
     for (const t of openings) openingByFundId.set(t.fundId, t.amount);
@@ -138,7 +144,8 @@ export class FundsService {
         .createQueryBuilder('t')
         .select('t.fund_id', 'fundId')
         .addSelect('SUM(t.amount)::bigint', 'total')
-        .where('t.fund_id IN (:...ids)', { ids: envIdsNeedMonth })
+        .where('t.family_id = :familyId', { familyId: user.familyId! })
+        .andWhere('t.fund_id IN (:...ids)', { ids: envIdsNeedMonth })
         .andWhere('t.date >= :start', { start: monthStart })
         .andWhere('t.amount > 0')
         .andWhere('(t.note IS NULL OR t.note <> :marker)', {
@@ -214,11 +221,14 @@ export class FundsService {
     };
   }
 
-  async createEnvelope(dto: CreateEnvelopeDto): Promise<FundView> {
+  async createEnvelope(user: User, dto: CreateEnvelopeDto): Promise<FundView> {
     const trimmed = dto.name.trim();
     if (!trimmed) throw new BadRequestException('Tên quỹ không được rỗng');
 
-    const dup = await this.fundRepo.findOneBy({ name: trimmed });
+    const dup = await this.fundRepo.findOneBy({
+      name: trimmed,
+      familyId: user.familyId!,
+    });
     if (dup)
       throw new BadRequestException(
         `Đã có quỹ tên "${trimmed}". Đặt tên khác đi.`,
@@ -226,13 +236,15 @@ export class FundsService {
 
     const last = await this.fundRepo
       .createQueryBuilder('f')
-      .where('f.purpose IN (:...purposes)', {
+      .where('f.family_id = :familyId', { familyId: user.familyId! })
+      .andWhere('f.purpose IN (:...purposes)', {
         purposes: ['savings', 'investment'],
       })
       .orderBy('f.display_order', 'DESC')
       .getOne();
 
     const created = this.fundRepo.create({
+      familyId: user.familyId!,
       name: trimmed,
       type: 'joint',
       ownerId: null,
@@ -249,10 +261,14 @@ export class FundsService {
   }
 
   async updateEnvelope(
+    user: User,
     fundId: string,
     dto: UpdateEnvelopeDto,
   ): Promise<FundView> {
-    const fund = await this.fundRepo.findOneBy({ id: fundId });
+    const fund = await this.fundRepo.findOneBy({
+      id: fundId,
+      familyId: user.familyId!,
+    });
     if (!fund) throw new NotFoundException('Quỹ không tồn tại');
     if (fund.purpose === 'spending')
       throw new BadRequestException('Không thể sửa quỹ chi tiêu gốc');
@@ -262,7 +278,10 @@ export class FundsService {
       if (!t) throw new BadRequestException('Tên không được rỗng');
       const dup = await this.fundRepo
         .createQueryBuilder('f')
-        .where('f.name = :n AND f.id <> :id', { n: t, id: fundId })
+        .where(
+          'f.name = :n AND f.id <> :id AND f.family_id = :familyId',
+          { n: t, id: fundId, familyId: user.familyId! },
+        )
         .getOne();
       if (dup)
         throw new BadRequestException(`Đã có quỹ tên "${t}". Đặt tên khác đi.`);
@@ -279,8 +298,11 @@ export class FundsService {
     return this.envelopeView(fund.id);
   }
 
-  async archiveEnvelope(fundId: string): Promise<FundView> {
-    const fund = await this.fundRepo.findOneBy({ id: fundId });
+  async archiveEnvelope(user: User, fundId: string): Promise<FundView> {
+    const fund = await this.fundRepo.findOneBy({
+      id: fundId,
+      familyId: user.familyId!,
+    });
     if (!fund) throw new NotFoundException('Quỹ không tồn tại');
     if (fund.purpose === 'spending')
       throw new BadRequestException('Không thể archive quỹ chi tiêu gốc');
@@ -289,8 +311,11 @@ export class FundsService {
     return this.envelopeView(fund.id);
   }
 
-  async unarchiveEnvelope(fundId: string): Promise<FundView> {
-    const fund = await this.fundRepo.findOneBy({ id: fundId });
+  async unarchiveEnvelope(user: User, fundId: string): Promise<FundView> {
+    const fund = await this.fundRepo.findOneBy({
+      id: fundId,
+      familyId: user.familyId!,
+    });
     if (!fund) throw new NotFoundException('Quỹ không tồn tại');
     if (fund.purpose === 'spending')
       throw new BadRequestException('Quỹ chi tiêu gốc không thể unarchive');
@@ -320,7 +345,10 @@ export class FundsService {
     fundId: string,
     amount: number,
   ): Promise<FundView> {
-    const fund = await this.fundRepo.findOneBy({ id: fundId });
+    const fund = await this.fundRepo.findOneBy({
+      id: fundId,
+      familyId: user.familyId!,
+    });
     if (!fund) throw new NotFoundException('Quỹ không tồn tại');
     if (fund.type === 'personal' && fund.ownerId !== user.id) {
       throw new ForbiddenException(
@@ -345,6 +373,7 @@ export class FundsService {
       } else {
         await manager.save(
           manager.create(Transaction, {
+            familyId: user.familyId!,
             userId: user.id,
             fundId: fund.id,
             categoryId: null,

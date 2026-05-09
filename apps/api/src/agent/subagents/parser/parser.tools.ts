@@ -16,7 +16,7 @@ export const logTransactionTool: Anthropic.Tool = {
       fundName: {
         type: 'string',
         description:
-          'Tên quỹ chính xác trong context (vd "Quỹ Mạnh", "Quỹ Vợ", "Quỹ Chung").',
+          'Tên quỹ EXACT từ list "Quỹ user CÓ THỂ ghi vào" trong context. KHÔNG bịa.',
       },
       amount: {
         type: 'number',

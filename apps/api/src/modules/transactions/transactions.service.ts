@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, IsNull, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Category } from '../categories/entities/category.entity';
 import { Fund } from '../funds/entities/fund.entity';
 import { OPENING_BALANCE_NOTE } from '../funds/opening-balance.constants';
@@ -71,10 +71,13 @@ export class TransactionsService {
     user: User,
     rawText: string,
   ): Promise<AgentLogResult> {
-    const fund = await this.fundRepo.findOneBy({ name: input.fundName });
+    const fund = await this.fundRepo.findOneBy({
+      name: input.fundName,
+      familyId: user.familyId!,
+    });
     if (!fund) {
       throw new BadRequestException(
-        `Fund "${input.fundName}" không tồn tại. Quỹ hợp lệ: Quỹ Mạnh, Quỹ Vợ, Quỹ Chung.`,
+        `Fund "${input.fundName}" không tồn tại. Hãy dùng đúng tên quỹ trong context.`,
       );
     }
     if (fund.type === 'personal' && fund.ownerId !== user.id) {
@@ -92,6 +95,7 @@ export class TransactionsService {
 
     return this.dataSource.transaction(async (manager) => {
       const created = manager.create(Transaction, {
+        familyId: user.familyId!,
         userId: user.id,
         fundId: fund.id,
         categoryId: category?.id ?? null,
@@ -228,10 +232,13 @@ export class TransactionsService {
     const dto: UpdateTransactionDto = {};
 
     if (patch.fundName !== undefined) {
-      const fund = await this.fundRepo.findOneBy({ name: patch.fundName });
+      const fund = await this.fundRepo.findOneBy({
+        name: patch.fundName,
+        familyId: user.familyId!,
+      });
       if (!fund) {
         throw new BadRequestException(
-          `Fund "${patch.fundName}" không tồn tại. Quỹ hợp lệ: Quỹ Mạnh, Quỹ Vợ, Quỹ Chung.`,
+          `Fund "${patch.fundName}" không tồn tại. Hãy dùng đúng tên quỹ trong context.`,
         );
       }
       dto.fundId = fund.id;
@@ -295,9 +302,11 @@ export class TransactionsService {
    */
   async visibleFundIds(user: User): Promise<string[]> {
     const funds = await this.fundRepo.find({
-      where: [{ ownerId: user.id }, { ownerId: IsNull() }],
+      where: { familyId: user.familyId! },
     });
-    return funds.map((f) => f.id);
+    return funds
+      .filter((f) => f.type === 'joint' || f.ownerId === user.id)
+      .map((f) => f.id);
   }
 
   /** Recent transactions visible to the user, joined with fund + category. */
@@ -310,7 +319,8 @@ export class TransactionsService {
       .leftJoinAndSelect('t.fund', 'fund')
       .leftJoinAndSelect('t.category', 'category')
       .leftJoinAndSelect('t.user', 'user')
-      .where('t.fund_id IN (:...fundIds)', { fundIds })
+      .where('t.family_id = :familyId', { familyId: user.familyId! })
+      .andWhere('t.fund_id IN (:...fundIds)', { fundIds })
       .andWhere('(t.note IS NULL OR t.note <> :marker)', {
         marker: OPENING_BALANCE_NOTE,
       })
@@ -358,7 +368,8 @@ export class TransactionsService {
       .leftJoinAndSelect('t.fund', 'fund')
       .leftJoinAndSelect('t.category', 'category')
       .leftJoinAndSelect('t.user', 'user')
-      .where('t.fund_id IN (:...fundIds)', { fundIds })
+      .where('t.family_id = :familyId', { familyId: user.familyId! })
+      .andWhere('t.fund_id IN (:...fundIds)', { fundIds })
       .andWhere('(t.note IS NULL OR t.note <> :marker)', {
         marker: OPENING_BALANCE_NOTE,
       });
@@ -383,7 +394,6 @@ export class TransactionsService {
     return { items: rows.map(toTransactionView), total };
   }
 
-  /** Last N txns user vừa log (để agent biết id khi cần update/delete). */
   async lastLoggedByUser(userId: string, limit = 5): Promise<Transaction[]> {
     return this.txnRepo
       .createQueryBuilder('t')

@@ -14,6 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../../shared/auth/decorators/current-user.decorator';
+import { FamilyRequiredGuard } from '../../shared/auth/guards/family-required.guard';
 import { JwtAuthGuard } from '../../shared/auth/guards/jwt-auth.guard';
 import { User } from '../users/entities/user.entity';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
@@ -22,7 +23,7 @@ import {
   type TransactionView,
 } from './transactions.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FamilyRequiredGuard)
 @Controller('api/transactions')
 export class TransactionsController {
   constructor(private readonly txnService: TransactionsService) {}

@@ -1,7 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CurrentUser } from '../../shared/auth/decorators/current-user.decorator';
+import { FamilyRequiredGuard } from '../../shared/auth/guards/family-required.guard';
 import { JwtAuthGuard } from '../../shared/auth/guards/jwt-auth.guard';
+import { User } from '../users/entities/user.entity';
 import { Category } from './entities/category.entity';
 
 export interface CategoryView {
@@ -13,7 +16,7 @@ export interface CategoryView {
   isEssential: boolean;
 }
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FamilyRequiredGuard)
 @Controller('api/categories')
 export class CategoriesController {
   constructor(
@@ -23,8 +26,9 @@ export class CategoriesController {
 
   /** GET /api/categories — flat list with parent reference for grouping. */
   @Get()
-  async list(): Promise<CategoryView[]> {
+  async list(@CurrentUser() user: User): Promise<CategoryView[]> {
     const rows = await this.repo.find({
+      where: { familyId: user.familyId! },
       relations: { parent: true },
       order: { name: 'ASC' },
     });
