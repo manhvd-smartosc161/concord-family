@@ -8,6 +8,8 @@ import { Budget } from './modules/budgets/entities/budget.entity';
 import { Category } from './modules/categories/entities/category.entity';
 import { ChatMessage } from './modules/chat/entities/chat-message.entity';
 import { ChatSession } from './modules/chat/entities/chat-session.entity';
+import { Family } from './modules/families/entities/family.entity';
+import { FamilyInvitation } from './modules/families/entities/family-invitation.entity';
 import { Fund } from './modules/funds/entities/fund.entity';
 import { Goal } from './modules/goals/entities/goal.entity';
 import { ImportantDate } from './modules/important-dates/entities/important-date.entity';
@@ -25,6 +27,8 @@ dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
 
 export const entities = [
   User,
+  Family,
+  FamilyInvitation,
   SalaryRule,
   Fund,
   Category,

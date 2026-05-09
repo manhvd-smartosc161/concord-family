@@ -12,6 +12,10 @@ import { Transaction } from '../../transactions/entities/transaction.entity';
 @Entity('categories')
 export class Category extends BaseEntity {
   @Index()
+  @Column({ type: 'uuid', name: 'family_id' })
+  familyId!: string;
+
+  @Index()
   @Column({ type: 'varchar', length: 100 })
   name!: string;
 

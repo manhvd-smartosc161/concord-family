@@ -17,6 +17,10 @@ export type TransactionSource =
 @Index(['fundId', 'date'])
 @Index(['userId', 'date'])
 export class Transaction extends BaseEntity {
+  @Index()
+  @Column({ type: 'uuid', name: 'family_id' })
+  familyId!: string;
+
   @Column({ name: 'user_id', type: 'uuid' })
   userId!: string;
 

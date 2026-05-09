@@ -11,6 +11,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { DatabaseModule } from './infra/database/database.module';
 import { FundsModule } from './modules/funds/funds.module';
 import { GoalsModule } from './modules/goals/goals.module';
+import { FamiliesModule } from './modules/families/families.module';
 import { ImportantDatesModule } from './modules/important-dates/important-dates.module';
 import { NotificationsModule } from './shared/notifications/notifications.module';
 import { ReportsModule } from './modules/reports/reports.module';
@@ -40,6 +41,7 @@ import { UsersModule } from './modules/users/users.module';
     AgentModule,
     ChatModule,
     NotificationsModule,
+    FamiliesModule,
     ImportantDatesModule,
   ],
   controllers: [AppController],

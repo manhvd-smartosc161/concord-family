@@ -17,8 +17,12 @@ export interface AiDateItem {
 }
 
 @Entity('yearly_ai_dates_cache')
+@Index(['familyId', 'year'], { unique: true })
 export class YearlyAiCache extends BaseEntity {
-  @Index({ unique: true })
+  @Index()
+  @Column({ type: 'uuid', name: 'family_id' })
+  familyId!: string;
+
   @Column({ type: 'int' })
   year!: number;
 

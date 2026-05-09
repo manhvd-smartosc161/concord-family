@@ -9,6 +9,10 @@ export type ImportantDateType =
 
 @Entity('important_dates')
 export class ImportantDate extends BaseEntity {
+  @Index()
+  @Column({ type: 'uuid', name: 'family_id' })
+  familyId!: string;
+
   @Column({ type: 'varchar', length: 120 })
   name!: string;
 
