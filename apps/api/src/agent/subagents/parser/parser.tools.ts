@@ -146,12 +146,60 @@ export const createCategoryTool: Anthropic.Tool = {
   },
 };
 
+export const proposeImportantDateTool: Anthropic.Tool = {
+  name: 'propose_important_date',
+  description:
+    'Đề xuất tạo 1 ngày quan trọng (sinh nhật / giỗ / kỷ niệm). ' +
+    'Đây là PROPOSAL — chưa lưu DB. User sẽ confirm ở FE. ' +
+    'Nếu user nói NHIỀU ngày trong 1 message, gọi tool này NHIỀU LẦN, mỗi lần 1 ngày.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string',
+        description:
+          'Tên ngày, tiếng Việt, ≤120 chars. Vd: "Sinh nhật vợ", "Giỗ bố", "Kỷ niệm cưới".',
+      },
+      type: {
+        type: 'string',
+        enum: ['birthday', 'death_anniversary', 'anniversary', 'other'],
+        description:
+          '"birthday" cho sinh nhật, "death_anniversary" cho giỗ/ngày mất, ' +
+          '"anniversary" cho kỷ niệm/ngày cưới/đám hỏi, "other" cho các loại khác.',
+      },
+      date: {
+        type: 'string',
+        description:
+          'Ngày, định dạng ISO 8601 YYYY-MM-DD (vd "2026-12-25"). Lấy năm hiện tại nếu user không nói rõ.',
+      },
+      isLunar: {
+        type: 'boolean',
+        description:
+          'true nếu user nói "âm", "âm lịch", "ÂL". false nếu dương lịch hoặc không rõ.',
+      },
+      remindDaysBefore: {
+        type: 'array',
+        items: { type: 'integer', minimum: 0, maximum: 60 },
+        description:
+          'Mảng số ngày nhắc trước (0 = hôm đó). MẶC ĐỊNH dùng [0, 2] khi propose từ chat.',
+      },
+      notes: {
+        type: 'string',
+        description:
+          'Ghi chú tuỳ chọn (≤2000 chars). Bỏ trống nếu user không nói.',
+      },
+    },
+    required: ['name', 'type', 'date', 'isLunar', 'remindDaysBefore'],
+  },
+};
+
 export const parserTools: Anthropic.Tool[] = [
   logTransactionTool,
   askClarificationTool,
   updateTransactionTool,
   deleteTransactionTool,
   createCategoryTool,
+  proposeImportantDateTool,
 ];
 
 // ─── Input types (mirror of input_schema for type safety in executor) ─────
@@ -185,4 +233,13 @@ export interface CreateCategoryInput {
   icon?: string;
   isEssential: boolean;
   parentName?: string;
+}
+
+export interface ProposeImportantDateInput {
+  name: string;
+  type: 'birthday' | 'death_anniversary' | 'anniversary' | 'other';
+  date: string;
+  isLunar: boolean;
+  remindDaysBefore: number[];
+  notes?: string;
 }
