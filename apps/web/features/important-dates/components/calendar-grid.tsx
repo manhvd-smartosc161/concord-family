@@ -35,12 +35,12 @@ export function CalendarGrid({
   const todayIso = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white p-2 shadow-sm ring-1 ring-stone-200/70 sm:p-3">
-      <div className="mb-1 grid grid-cols-7 gap-1">
+    <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200/70">
+      <div className="grid grid-cols-7 border-b border-stone-100">
         {DOW_LABELS.map((d, i) => (
           <div
             key={d}
-            className={`py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.08em] ${
+            className={`py-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.1em] ${
               i === 0 ? 'text-rose-400' : 'text-stone-400'
             }`}
           >
@@ -48,8 +48,8 @@ export function CalendarGrid({
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1">
-        {cells.map((cell) => {
+      <div className="grid grid-cols-7">
+        {cells.map((cell, idx) => {
           const isCurrentMonth = cell.month === month;
           const isToday = cell.iso === todayIso;
           const isSelected = cell.iso === selectedDate;
@@ -57,33 +57,28 @@ export function CalendarGrid({
           const items = itemsByDate.get(cell.iso) ?? [];
           const lunar = lunarOf(cell.date);
           const isLunarSpecial = lunar.isFirstDay || lunar.isFullMoon;
+          const isFirstRow = idx < 7;
 
           return (
             <button
               key={cell.iso}
               type="button"
               onClick={() => onSelect(cell.iso)}
-              className={`group relative flex aspect-square flex-col items-center justify-start rounded-xl px-1 py-1.5 transition-all duration-150 sm:py-2 ${
-                isSelected
-                  ? 'bg-emerald-600 shadow-md shadow-emerald-600/20'
-                  : isToday
-                    ? 'bg-emerald-50 ring-1 ring-inset ring-emerald-200'
-                    : isCurrentMonth
-                      ? 'hover:bg-stone-100/70 active:bg-stone-100'
-                      : ''
-              }`}
+              className={`group relative flex h-14 flex-col items-center justify-start pt-1.5 transition-colors sm:h-16 ${
+                isFirstRow ? '' : 'border-t border-stone-100/70'
+              } ${isCurrentMonth ? 'hover:bg-stone-50/60' : ''}`}
             >
               <span
-                className={`text-[13px] font-semibold tabular-nums leading-none sm:text-sm ${
-                  !isCurrentMonth
-                    ? 'text-stone-300'
-                    : isSelected
-                      ? 'text-white'
-                      : isToday
-                        ? 'text-emerald-700'
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-[13px] tabular-nums transition-colors sm:h-8 sm:w-8 sm:text-sm ${
+                  isSelected
+                    ? 'bg-stone-900 font-semibold text-white'
+                    : isToday
+                      ? 'bg-emerald-600 font-semibold text-white shadow-sm shadow-emerald-600/30'
+                      : !isCurrentMonth
+                        ? 'font-normal text-stone-300'
                         : isSunday
-                          ? 'text-rose-500'
-                          : 'text-stone-800'
+                          ? 'font-medium text-rose-500'
+                          : 'font-medium text-stone-800'
                 }`}
               >
                 {cell.day}
@@ -92,33 +87,25 @@ export function CalendarGrid({
                 className={`mt-0.5 text-[9px] tabular-nums leading-none sm:text-[10px] ${
                   !isCurrentMonth
                     ? 'text-stone-200'
-                    : isSelected
-                      ? 'text-emerald-100'
-                      : isLunarSpecial
-                        ? 'font-semibold text-rose-500'
-                        : 'text-stone-400'
+                    : isLunarSpecial
+                      ? 'font-semibold text-rose-500'
+                      : 'text-stone-400'
                 }`}
               >
                 {lunar.day}/{lunar.month}
               </span>
               {items.length > 0 && (
-                <div className="mt-auto flex items-center justify-center gap-[3px] pb-0.5 pt-1">
-                  {items.slice(0, 3).map((it, idx) => (
+                <div className="absolute bottom-1 flex items-center justify-center gap-[3px]">
+                  {items.slice(0, 3).map((it, i) => (
                     <span
-                      key={idx}
-                      className={`h-[5px] w-[5px] rounded-full ${
-                        isSelected
-                          ? 'bg-white/90'
-                          : DOT_TONE[it.kind] ?? 'bg-stone-400'
+                      key={i}
+                      className={`h-1 w-1 rounded-full ${
+                        DOT_TONE[it.kind] ?? 'bg-stone-400'
                       }`}
                     />
                   ))}
                   {items.length > 3 && (
-                    <span
-                      className={`text-[8px] font-medium leading-none ${
-                        isSelected ? 'text-white/90' : 'text-stone-500'
-                      }`}
-                    >
+                    <span className="text-[8px] font-medium leading-none text-stone-500">
                       +{items.length - 3}
                     </span>
                   )}
