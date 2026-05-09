@@ -113,7 +113,7 @@ export function ImportantDateFormModal({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Sinh nhật vợ, Giỗ bố vợ..."
+              placeholder="Sinh nhật vợ, Giỗ chạp,..."
               className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               maxLength={120}
             />
