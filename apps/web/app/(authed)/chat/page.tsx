@@ -935,15 +935,30 @@ function MessageBubble({
           {msg.text && <div className="whitespace-pre-wrap">{msg.text}</div>}
           {msg.actions && msg.actions.length > 0 && (
             <div className={`space-y-1.5 ${msg.text ? 'mt-2' : ''}`}>
-              {msg.actions.map((a, i) => (
-                <ActionCard
-                  key={i}
-                  action={a}
-                  messageId={msg.id}
-                  actionIndex={i}
-                  onMutate={onMutate}
-                />
-              ))}
+              {groupActionsForRender(msg.actions).map((g, gi) =>
+                g.kind === 'batch' ? (
+                  <ImportantDateBatchCard
+                    key={`b-${gi}`}
+                    items={g.items.map((it) => ({
+                      action: it.action as Extract<
+                        ParseAction,
+                        { kind: 'important_date_proposed' }
+                      >,
+                      actionIndex: it.idx,
+                    }))}
+                    messageId={msg.id}
+                    onMutate={onMutate}
+                  />
+                ) : (
+                  <ActionCard
+                    key={`s-${g.idx}`}
+                    action={g.action}
+                    messageId={msg.id}
+                    actionIndex={g.idx}
+                    onMutate={onMutate}
+                  />
+                ),
+              )}
             </div>
           )}
           {!isUser && msg.usage && (
@@ -1089,6 +1104,161 @@ function ActionCard({
     );
   }
   return null;
+}
+
+type GroupedActions =
+  | { kind: 'single'; action: ParseAction; idx: number }
+  | {
+      kind: 'batch';
+      items: { action: ParseAction; idx: number }[];
+    };
+
+function groupActionsForRender(actions: ParseAction[]): GroupedActions[] {
+  const out: GroupedActions[] = [];
+  let i = 0;
+  while (i < actions.length) {
+    const a = actions[i];
+    if (a.kind === 'important_date_proposed') {
+      const items: { action: ParseAction; idx: number }[] = [];
+      while (
+        i < actions.length &&
+        actions[i].kind === 'important_date_proposed'
+      ) {
+        items.push({ action: actions[i], idx: i });
+        i++;
+      }
+      if (items.length === 1) {
+        out.push({ kind: 'single', action: items[0].action, idx: items[0].idx });
+      } else {
+        out.push({ kind: 'batch', items });
+      }
+    } else {
+      out.push({ kind: 'single', action: a, idx: i });
+      i++;
+    }
+  }
+  return out;
+}
+
+function ImportantDateBatchCard({
+  items,
+  messageId,
+  onMutate,
+}: {
+  items: {
+    action: Extract<ParseAction, { kind: 'important_date_proposed' }>;
+    actionIndex: number;
+  }[];
+  messageId: string;
+  onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
+}) {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleConfirm() {
+    setSubmitting(true);
+    setError(null);
+    const errors: string[] = [];
+    for (const { action, actionIndex } of items) {
+      try {
+        const created = await createImportantDate({
+          name: action.name,
+          type: action.type,
+          date: action.date,
+          isLunar: action.isLunar ?? false,
+          remindDaysBefore:
+            Array.isArray(action.remindDaysBefore) &&
+            action.remindDaysBefore.length > 0
+              ? action.remindDaysBefore
+              : [0, 2],
+          notes: action.notes ?? undefined,
+        });
+        saveImportantDateState(messageId, actionIndex, {
+          kind: 'confirmed',
+          id: created.id,
+          loggedAt: new Date().toISOString(),
+        });
+        onMutate(messageId, actionIndex, {
+          kind: 'important_date_logged',
+          id: created.id,
+          name: created.name,
+          date: created.date,
+          type: created.type,
+        });
+      } catch (err) {
+        const msg =
+          err instanceof ApiError
+            ? err.message
+            : err instanceof Error
+              ? err.message
+              : 'Lỗi không xác định';
+        errors.push(`${action.name}: ${msg}`);
+      }
+    }
+    setSubmitting(false);
+    if (errors.length > 0) setError(errors.join(' · '));
+  }
+
+  function handleDismissAll() {
+    for (const { actionIndex } of items) {
+      saveImportantDateState(messageId, actionIndex, { kind: 'dismissed' });
+      onMutate(messageId, actionIndex, { kind: 'important_date_dismissed' });
+    }
+  }
+
+  return (
+    <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2.5 text-xs text-sky-900">
+      <div className="flex items-center gap-1.5 font-semibold">
+        🗓 <span>Đề xuất {items.length} ngày quan trọng</span>
+      </div>
+      <ul className="mt-2 space-y-1.5">
+        {items.map(({ action }, i) => (
+          <li
+            key={i}
+            className="flex items-start gap-2 rounded-md bg-white/70 px-2 py-1.5"
+          >
+            <span className="mt-0.5 text-sm leading-none">
+              {importantDateIcon(action.type)}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[12px] font-medium text-stone-800">
+                {action.name}
+              </div>
+              <div className="mt-0.5 text-[11px] text-stone-500">
+                {formatImportantDate(action.date, action.isLunar)}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {error && (
+        <div className="mt-2 text-[11px] text-rose-700">⚠️ {error}</div>
+      )}
+      <div className="mt-2.5 flex gap-2">
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={submitting}
+          className="rounded-md bg-emerald-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+        >
+          {submitting
+            ? `Đang lưu… (${items.length})`
+            : `Xác nhận tất cả (${items.length})`}
+        </button>
+        <button
+          type="button"
+          onClick={handleDismissAll}
+          disabled={submitting}
+          className="rounded-md border border-stone-300 bg-white px-3 py-1 text-[11px] text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+        >
+          Bỏ qua
+        </button>
+      </div>
+      <div className="mt-1.5 text-[10px] italic text-stone-500">
+        Sai chỗ nào? Reply bảo AI sửa lại.
+      </div>
+    </div>
+  );
 }
 
 function ImportantDateProposedCard({
