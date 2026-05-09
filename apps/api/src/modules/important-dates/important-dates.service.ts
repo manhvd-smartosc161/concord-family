@@ -121,7 +121,10 @@ export class ImportantDatesService {
 
   async listUpcoming(familyId: string, limit = 10): Promise<UpcomingView> {
     const today = todayInTimezone(TZ);
-    const all = await this.collectAgenda(familyId, today, today.getUTCFullYear());
+    const year = today.getUTCFullYear();
+    await this.yearlyAi.ensureCache(year, familyId);
+    await this.yearlyAi.ensureCache(year + 1, familyId);
+    const all = await this.collectAgenda(familyId, today, year);
     const future = all.items.filter((i) => i.daysUntil >= 0);
     future.sort((a, b) => a.daysUntil - b.daysUntil);
     return {

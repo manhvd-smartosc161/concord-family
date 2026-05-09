@@ -29,6 +29,9 @@ export class YearlyAiCache extends BaseEntity {
   @Column({ type: 'jsonb' })
   items!: AiDateItem[];
 
+  @Column({ type: 'int', default: 0 })
+  version!: number;
+
   @Column({ type: 'timestamptz', name: 'generated_at' })
   generatedAt!: Date;
 }
