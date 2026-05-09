@@ -54,12 +54,6 @@ export type ParseAction =
       isLunar: boolean;
       remindDaysBefore: number[];
       notes: string | null;
-    }
-  | {
-      kind: 'important_date_already_exists';
-      name: string;
-      date: string;
-      isLunar: boolean;
     };
 
 export interface ParseResult {
@@ -222,7 +216,7 @@ export class ParserSubagent {
       ...existingDatesLines,
       '',
       '> Khi gọi propose_important_date, kiểm tra xem ngày đó đã có trong list trên chưa.',
-      '> Nếu name + date trùng (cùng tên + cùng ngày DD/MM) → KHÔNG propose lại; thay vào đó reply text "X đã có trong danh sách rồi".',
+      '> Nếu name + date trùng (cùng tên + cùng ngày DD/MM) → KHÔNG propose lại và KHÔNG nhắc tới ngày đó trong reply (BE sẽ tự bỏ qua, đừng làm noise).',
       '> KHÔNG re-propose nội dung từ history (turn cũ). Chỉ xử lý các ngày user nhắc trong CURRENT message.',
     ].join('\n');
   }
@@ -366,14 +360,7 @@ export class ParserSubagent {
               isLunar,
               user.familyId!,
             );
-            if (duplicate) {
-              actions.push({
-                kind: 'important_date_already_exists',
-                name: duplicate.name,
-                date: duplicate.date,
-                isLunar: duplicate.isLunar,
-              });
-            } else {
+            if (!duplicate) {
               actions.push({
                 kind: 'important_date_proposed',
                 name: input.name,

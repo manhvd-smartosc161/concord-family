@@ -1094,16 +1094,6 @@ function ActionCard({
       </div>
     );
   }
-  if (action.kind === 'important_date_already_exists') {
-    return (
-      <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-600">
-        ℹ️ <span className="font-medium">{action.name}</span> đã có sẵn
-        <span className="ml-1 text-stone-500">
-          — {formatImportantDate(action.date, action.isLunar)}
-        </span>
-      </div>
-    );
-  }
   if (action.kind === 'tool_error') {
     return (
       <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-900">
