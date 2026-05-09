@@ -129,6 +129,7 @@ export class ImportantDatesService {
   }
 
   async listForYear(year: number): Promise<YearAgendaView> {
+    await this.yearlyAi.ensureCache(year);
     const today = todayInTimezone(TZ);
     const collected = await this.collectAgenda(today, year, { fullYear: true });
     const future = collected.items.filter((i) => i.daysUntil >= 0);
