@@ -15,6 +15,7 @@ import {
   CreateCategoryInput,
   DeleteTransactionInput,
   LogTransactionInput,
+  ProposeImportantDateInput,
   UpdateTransactionInput,
   parserTools,
 } from './parser.tools';
@@ -43,7 +44,16 @@ export type ParseAction =
       isEssential: boolean;
       parentName: string | null;
     }
-  | { kind: 'tool_error'; toolName: string; message: string };
+  | { kind: 'tool_error'; toolName: string; message: string }
+  | {
+      kind: 'important_date_proposed';
+      name: string;
+      type: 'birthday' | 'death_anniversary' | 'anniversary' | 'other';
+      date: string;
+      isLunar: boolean;
+      remindDaysBefore: number[];
+      notes: string | null;
+    };
 
 export interface ParseResult {
   reply: string;
@@ -296,6 +306,17 @@ export class ParserSubagent {
               message: msg,
             });
           }
+        } else if (block.name === 'propose_important_date') {
+          const input = block.input as ProposeImportantDateInput;
+          actions.push({
+            kind: 'important_date_proposed',
+            name: input.name,
+            type: input.type,
+            date: input.date,
+            isLunar: input.isLunar,
+            remindDaysBefore: input.remindDaysBefore,
+            notes: input.notes ?? null,
+          });
         }
       }
     }
