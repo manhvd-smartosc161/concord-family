@@ -44,8 +44,9 @@ export class EmailService implements OnModuleInit {
         text: message.text,
         html: message.html,
       });
+      const headers = resp.headers as Record<string, string | undefined>;
       this.logger.log(
-        `sent to ${to} (status ${resp.statusCode}, id=${resp.headers['x-message-id'] ?? '?'})`,
+        `sent to ${to} (status ${resp.statusCode}, id=${headers['x-message-id'] ?? '?'})`,
       );
       return true;
     } catch (err) {
