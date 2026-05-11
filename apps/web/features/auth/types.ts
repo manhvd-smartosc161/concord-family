@@ -9,6 +9,7 @@ export interface AuthUser {
   gender: UserGender;
   familyId: string | null;
   birthdate: string | null;
+  avatarUrl: string | null;
 }
 
 export interface LoginResponse {

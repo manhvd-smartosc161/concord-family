@@ -40,3 +40,12 @@ export async function changePassword(
     body: JSON.stringify({ currentPassword, newPassword }),
   });
 }
+
+export function uploadAvatar(file: File): Promise<AuthUser> {
+  const form = new FormData();
+  form.append('file', file);
+  return apiFetch<AuthUser>('/api/auth/me/avatar', {
+    method: 'POST',
+    body: form,
+  });
+}
