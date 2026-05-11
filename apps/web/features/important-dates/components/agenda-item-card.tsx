@@ -230,7 +230,7 @@ export function AgendaItemCard({
             )}
 
             {(item.notes || lunarHint) && (
-              <div className="hidden flex-col gap-0.5 border-l-2 border-stone-200 pl-3 sm:flex">
+              <div className="flex flex-col gap-0.5 border-l-2 border-stone-200 pl-3">
                 {item.notes && (
                   <p className="text-xs italic text-stone-500">{item.notes}</p>
                 )}
