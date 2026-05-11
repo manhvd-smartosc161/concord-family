@@ -14,6 +14,7 @@ interface LayoutCtx {
   user: AuthUser;
   funds: FundView[];
   reloadFunds: () => Promise<void>;
+  reloadUser: () => Promise<void>;
 }
 
 const LayoutContext = createContext<LayoutCtx | null>(null);
@@ -29,7 +30,7 @@ export default function AuthedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const auth = useAuth();
+  const { state: auth, reloadUser } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [funds, setFunds] = useState<FundView[]>([]);
@@ -73,7 +74,7 @@ export default function AuthedLayout({
 
   if (!auth.user.familyId) {
     return (
-      <LayoutContext.Provider value={{ user: auth.user, funds, reloadFunds }}>
+      <LayoutContext.Provider value={{ user: auth.user, funds, reloadFunds, reloadUser }}>
         <div className="flex min-h-screen flex-col bg-stone-50">
           <header className="flex items-center justify-between border-b border-stone-200 bg-white px-4 py-2.5 sm:px-6">
             <div className="flex items-center gap-2">
@@ -104,7 +105,7 @@ export default function AuthedLayout({
   }
 
   return (
-    <LayoutContext.Provider value={{ user: auth.user, funds, reloadFunds }}>
+    <LayoutContext.Provider value={{ user: auth.user, funds, reloadFunds, reloadUser }}>
       <div className="flex h-screen flex-col lg:hidden">
         <Header
           user={auth.user}

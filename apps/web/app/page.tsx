@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/hooks';
 
 export default function Home() {
   const router = useRouter();
-  const auth = useAuth(false);
+  const { state: auth } = useAuth(false);
 
   useEffect(() => {
     if (auth.status === 'loading') return;

@@ -15,7 +15,7 @@ export default function InviteTokenPage({
 }) {
   const { token } = use(params);
   const router = useRouter();
-  const auth = useAuth(false);
+  const { state: auth } = useAuth(false);
   const [preview, setPreview] = useState<InvitationPreview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [accepting, setAccepting] = useState(false);

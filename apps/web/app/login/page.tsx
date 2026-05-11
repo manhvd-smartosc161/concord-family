@@ -19,7 +19,7 @@ function LoginInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get('next');
-  const auth = useAuth(false);
+  const { state: auth } = useAuth(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
