@@ -17,6 +17,7 @@ export interface AuthUserDto {
   gender: 'male' | 'female';
   familyId: string | null;
   birthdate: string | null;
+  avatarUrl: string | null;
 }
 
 export interface LoginResponseDto {

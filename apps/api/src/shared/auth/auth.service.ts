@@ -55,6 +55,7 @@ export class AuthService {
       gender: user.gender,
       familyId: user.familyId,
       birthdate: user.birthdate,
+      avatarUrl: user.avatarUrl,
     };
   }
 
