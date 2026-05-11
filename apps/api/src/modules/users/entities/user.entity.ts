@@ -30,6 +30,9 @@ export class User extends BaseEntity {
   @Column({ type: 'date', nullable: true })
   birthdate!: string | null;
 
+  @Column({ type: 'varchar', length: 500, name: 'avatar_url', nullable: true })
+  avatarUrl!: string | null;
+
   @OneToMany(() => Fund, (fund) => fund.owner)
   ownedFunds!: Fund[];
 
