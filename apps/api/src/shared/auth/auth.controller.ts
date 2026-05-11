@@ -77,12 +77,11 @@ export class AuthController {
     }
 
     const newUrl = await this.avatarService.upload(user.id, file.buffer, file.mimetype);
-
-    if (user.avatarUrl) {
-      await this.avatarService.delete(user.avatarUrl);
-    }
-
+    const oldUrl = user.avatarUrl;
     const updated = await this.usersService.updateProfile(user.id, { avatarUrl: newUrl });
+    if (oldUrl) {
+      await this.avatarService.delete(oldUrl);
+    }
     return this.authService.toAuthUser(updated);
   }
 

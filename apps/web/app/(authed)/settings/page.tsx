@@ -120,6 +120,7 @@ function AccountSection() {
           birthdate: birthdate || null,
         });
       }
+      await reloadUser();
       if (avatarPreview) URL.revokeObjectURL(avatarPreview);
       setAvatarFile(null);
       setAvatarPreview(null);
@@ -127,7 +128,6 @@ function AccountSection() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Lỗi không xác định');
     } finally {
-      await reloadUser();
       setSaving(false);
     }
   }
