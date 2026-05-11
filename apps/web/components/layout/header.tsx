@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChangePasswordModal } from '@/features/auth/components/change-password-modal';
+import { UserAvatar } from '@/features/auth/components/user-avatar';
 import type { AuthUser } from '@/features/auth/types';
 
 export function Header({
@@ -54,15 +55,7 @@ export function Header({
           onClick={() => setOpen((v) => !v)}
           className="flex items-center gap-2.5 rounded-lg border border-transparent px-2 py-1.5 transition-colors hover:border-stone-200 hover:bg-stone-50"
         >
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-              user.role === 'husband'
-                ? 'bg-emerald-100 text-emerald-800'
-                : 'bg-amber-100 text-amber-800'
-            }`}
-          >
-            {user.name.charAt(0).toUpperCase()}
-          </div>
+          <UserAvatar user={user} size={32} />
           <div className="hidden text-left leading-tight sm:block">
             <div className="text-sm font-medium text-stone-800">
               {user.name}
