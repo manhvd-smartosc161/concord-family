@@ -24,13 +24,14 @@ export class UsersService {
 
   async updateProfile(
     userId: string,
-    dto: { name?: string; birthdate?: string | null },
+    dto: { name?: string; birthdate?: string | null; avatarUrl?: string | null },
   ): Promise<User> {
     const user = await this.repo.findOneByOrFail({ id: userId });
     if (dto.name !== undefined) user.name = dto.name;
     if (dto.birthdate !== undefined) {
       user.birthdate = dto.birthdate ? dto.birthdate.slice(0, 10) : null;
     }
+    if (dto.avatarUrl !== undefined) user.avatarUrl = dto.avatarUrl;
     return this.repo.save(user);
   }
 

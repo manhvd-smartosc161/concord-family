@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -6,10 +7,14 @@ import {
   HttpStatus,
   Patch,
   Post,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { User } from '../../modules/users/entities/user.entity';
 import { UsersService } from '../../modules/users/users.service';
+import { AvatarService } from '../avatar/avatar.service';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -19,33 +24,33 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { AuthUserDto, LoginResponseDto } from './auth.types';
 
+const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_BYTES = 5 * 1024 * 1024;
+
 @Controller('api/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly avatarService: AvatarService,
   ) {}
 
-  /** POST /api/auth/register — tạo tài khoản mới, trả về token + user. */
   @Post('register')
   register(@Body() dto: RegisterDto): Promise<LoginResponseDto> {
     return this.authService.register(dto);
   }
 
-  /** POST /api/auth/login — returns { accessToken, user }. */
   @Post('login')
   login(@Body() dto: LoginDto): Promise<LoginResponseDto> {
     return this.authService.login(dto);
   }
 
-  /** GET /api/auth/me — returns current user (protected by JWT). */
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@CurrentUser() user: User): AuthUserDto {
     return this.authService.toAuthUser(user);
   }
 
-  /** PATCH /api/auth/me — update profile fields (name, birthdate). */
   @UseGuards(JwtAuthGuard)
   @Patch('me')
   async updateProfile(
@@ -56,7 +61,31 @@ export class AuthController {
     return this.authService.toAuthUser(updated);
   }
 
-  /** POST /api/auth/change-password — body: { currentPassword, newPassword }. */
+  @UseGuards(JwtAuthGuard)
+  @Post('me/avatar')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAvatar(
+    @CurrentUser() user: User,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<AuthUserDto> {
+    if (!file) throw new BadRequestException('No file uploaded');
+    if (!ALLOWED_MIME.includes(file.mimetype)) {
+      throw new BadRequestException('Only JPEG, PNG, or WebP images are allowed');
+    }
+    if (file.size > MAX_BYTES) {
+      throw new BadRequestException('File must be under 5MB');
+    }
+
+    const newUrl = await this.avatarService.upload(user.id, file.buffer, file.mimetype);
+
+    if (user.avatarUrl) {
+      await this.avatarService.delete(user.avatarUrl);
+    }
+
+    const updated = await this.usersService.updateProfile(user.id, { avatarUrl: newUrl });
+    return this.authService.toAuthUser(updated);
+  }
+
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('change-password')
