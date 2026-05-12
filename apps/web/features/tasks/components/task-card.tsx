@@ -4,22 +4,16 @@ import { useState } from 'react';
 import type { Task, TaskStatus, UpdateTaskInput } from '../types';
 
 const CATEGORY_CONFIG = {
-  shopping: { label: 'Mua sắm', color: 'bg-blue-100 text-blue-700' },
-  chores: { label: 'Việc nhà', color: 'bg-orange-100 text-orange-700' },
-  finance: { label: 'Tài chính', color: 'bg-green-100 text-green-700' },
-  goal: { label: 'Mục tiêu', color: 'bg-purple-100 text-purple-700' },
+  shopping: { label: 'Mua sắm', accent: 'bg-sky-500', pill: 'bg-sky-50 text-sky-700 ring-sky-200' },
+  chores:   { label: 'Việc nhà', accent: 'bg-amber-400', pill: 'bg-amber-50 text-amber-700 ring-amber-200' },
+  finance:  { label: 'Tài chính', accent: 'bg-emerald-500', pill: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
+  goal:     { label: 'Mục tiêu', accent: 'bg-violet-500', pill: 'bg-violet-50 text-violet-700 ring-violet-200' },
 } as const;
 
 const NEXT_STATUS: Record<TaskStatus, TaskStatus | null> = {
   todo: 'in_progress',
   in_progress: 'done',
   done: null,
-};
-
-const NEXT_STATUS_LABEL: Record<TaskStatus, string> = {
-  todo: '▶ Bắt đầu',
-  in_progress: '✓ Xong',
-  done: '',
 };
 
 interface Props {
@@ -35,6 +29,7 @@ export function TaskCard({ task, onUpdate, onDelete }: Props) {
 
   const cat = CATEGORY_CONFIG[task.category];
   const nextStatus = NEXT_STATUS[task.status];
+  const isDone = task.status === 'done';
 
   async function handleStatusAdvance() {
     if (!nextStatus) return;
@@ -51,71 +46,96 @@ export function TaskCard({ task, onUpdate, onDelete }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-3 shadow-sm">
-      <div className="flex items-start justify-between gap-2">
-        <button
-          type="button"
-          className="flex-1 text-left"
-          onClick={() => setExpanded((v) => !v)}
-        >
-          <p className={`text-sm font-medium text-stone-800 ${task.status === 'done' ? 'line-through opacity-50' : ''}`}>
-            {task.title}
-          </p>
-        </button>
-        <button
-          type="button"
-          onClick={() => onDelete(task.id)}
-          className="shrink-0 text-xs text-stone-300 hover:text-red-400"
-          aria-label="Xóa"
-        >
-          ✕
-        </button>
-      </div>
+    <div className={`group relative flex gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-stone-100 transition-all hover:shadow-md hover:ring-stone-200 ${isDone ? 'opacity-60' : ''}`}>
+      <div className={`mt-0.5 w-1 shrink-0 self-stretch rounded-full ${cat.accent}`} />
 
-      <div className="mt-2 flex items-center gap-2">
-        <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${cat.color}`}>
-          {cat.label}
-        </span>
-        {nextStatus && (
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
           <button
             type="button"
-            disabled={saving}
-            onClick={handleStatusAdvance}
-            className="ml-auto rounded px-2 py-0.5 text-[10px] font-medium text-stone-500 hover:bg-stone-100 disabled:opacity-50"
+            className="flex-1 text-left"
+            onClick={() => setExpanded((v) => !v)}
           >
-            {NEXT_STATUS_LABEL[task.status]}
+            <p className={`text-sm font-medium leading-snug text-stone-800 ${isDone ? 'line-through' : ''}`}>
+              {task.title}
+            </p>
+            {task.note && !expanded && (
+              <p className="mt-0.5 truncate text-xs text-stone-400">{task.note}</p>
+            )}
           </button>
-        )}
-      </div>
+          <button
+            type="button"
+            onClick={() => onDelete(task.id)}
+            className="shrink-0 rounded p-0.5 text-stone-300 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-50 hover:text-red-400"
+            aria-label="Xóa"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M9 3L3 9M3 3l6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
 
-      {expanded && (
-        <div className="mt-2 border-t border-stone-100 pt-2">
-          <textarea
-            className="w-full rounded border border-stone-200 p-2 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-emerald-400"
-            rows={2}
-            placeholder="Ghi chú..."
-            value={editNote}
-            onChange={(e) => setEditNote(e.target.value)}
-          />
-          <div className="mt-1 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => { setExpanded(false); setEditNote(task.note ?? ''); }}
-              className="text-xs text-stone-400 hover:text-stone-600"
-            >
-              Hủy
-            </button>
+        <div className="mt-2 flex items-center gap-1.5">
+          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset ${cat.pill}`}>
+            {cat.label}
+          </span>
+          {nextStatus && (
             <button
               type="button"
               disabled={saving}
-              onClick={handleNoteSave}
-              className="rounded bg-emerald-600 px-2 py-0.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+              onClick={handleStatusAdvance}
+              className="ml-auto flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2.5 py-0.5 text-[10px] font-medium text-stone-600 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-40"
             >
-              Lưu
+              {task.status === 'todo' ? (
+                <>
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><polygon points="2,1 7,4 2,7"/></svg>
+                  Bắt đầu
+                </>
+              ) : (
+                <>
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  Xong
+                </>
+              )}
             </button>
-          </div>
+          )}
+          {isDone && (
+            <span className="ml-auto flex items-center gap-1 text-[10px] text-emerald-600">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Hoàn thành
+            </span>
+          )}
         </div>
-      )}
+
+        {expanded && (
+          <div className="mt-2.5 border-t border-stone-100 pt-2.5">
+            <textarea
+              className="w-full resize-none rounded-lg border border-stone-200 bg-stone-50 p-2 text-xs text-stone-700 placeholder-stone-400 focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              rows={2}
+              placeholder="Ghi chú..."
+              value={editNote}
+              onChange={(e) => setEditNote(e.target.value)}
+            />
+            <div className="mt-1.5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => { setExpanded(false); setEditNote(task.note ?? ''); }}
+                className="rounded-lg px-2.5 py-1 text-xs text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={handleNoteSave}
+                className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
+              >
+                Lưu
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
