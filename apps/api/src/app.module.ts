@@ -13,6 +13,7 @@ import { FundsModule } from './modules/funds/funds.module';
 import { GoalsModule } from './modules/goals/goals.module';
 import { FamiliesModule } from './modules/families/families.module';
 import { ImportantDatesModule } from './modules/important-dates/important-dates.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { NotificationsModule } from './shared/notifications/notifications.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SalaryRulesModule } from './modules/salary-rules/salary-rules.module';
@@ -43,6 +44,7 @@ import { UsersModule } from './modules/users/users.module';
     NotificationsModule,
     FamiliesModule,
     ImportantDatesModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
