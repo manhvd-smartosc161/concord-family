@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Bar,
   BarChart,
@@ -25,6 +26,7 @@ import {
 } from '@/components/ui';
 
 export default function ReportsPage() {
+  const t = useTranslations('reports');
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1); // 1-indexed
@@ -58,8 +60,8 @@ export default function ReportsPage() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
-        title="Báo cáo tháng"
-        subtitle="Tổng quan thu chi + breakdown theo mục"
+        title={t('title')}
+        subtitle={t('subtitle')}
         actions={
           <MonthSwitcher
             year={year}
@@ -75,24 +77,25 @@ export default function ReportsPage() {
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard
-              label="Thu nhập"
+              label={t('income')}
               value={report ? formatVND(report.income) : '—'}
               tone="positive"
             />
             <StatCard
-              label="Chi tiêu"
+              label={t('expense')}
               value={report ? `−${formatVND(report.expense)}` : '—'}
               tone="negative"
             />
             <StatCard
-              label="Net"
+              label={t('net')}
               value={report ? formatVND(report.net, true) : '—'}
               tone={
                 !report ? 'default' : report.net >= 0 ? 'positive' : 'negative'
               }
+              hint={t('net_hint')}
             />
             <StatCard
-              label="Số giao dịch"
+              label={report ? t('txn_count', { count: report.txnCount }) : '—'}
               value={report ? `${report.txnCount}` : '—'}
               tone="neutral"
             />
@@ -101,7 +104,7 @@ export default function ReportsPage() {
           {/* Chart */}
           <Card>
             <h3 className="mb-4 text-sm font-semibold text-stone-800">
-              Thu chi theo ngày
+              {t('current_month')}
             </h3>
             {loading && <Skeleton className="h-72 w-full" />}
             {!loading && report && (
@@ -112,7 +115,7 @@ export default function ReportsPage() {
           {/* Category breakdown */}
           <Card>
             <h3 className="mb-4 text-sm font-semibold text-stone-800">
-              Chi tiêu theo mục
+              {t('expense_by_category')}
             </h3>
             {loading && (
               <div className="space-y-2">
@@ -124,8 +127,8 @@ export default function ReportsPage() {
             {!loading && report && report.byCategory.length === 0 && (
               <EmptyState
                 icon="📭"
-                title="Chưa có chi tiêu nào trong tháng này"
-                description="Vào tab Chat để bắt đầu log giao dịch."
+                title={t('no_data')}
+                description={t('no_data_desc')}
               />
             )}
             {!loading && report && report.byCategory.length > 0 && (
@@ -151,12 +154,13 @@ function MonthSwitcher({
   onShift: (delta: number) => void;
   isCurrent: boolean;
 }) {
+  const tReports = useTranslations('reports');
   return (
     <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white p-0.5">
       <button
         onClick={() => onShift(-1)}
         className="rounded-md p-1.5 text-stone-600 transition-colors hover:bg-stone-100"
-        aria-label="Tháng trước"
+        aria-label={tReports('current_month')}
       >
         <ChevronIcon dir="left" />
       </button>
@@ -167,7 +171,7 @@ function MonthSwitcher({
         onClick={() => onShift(1)}
         disabled={isCurrent}
         className="rounded-md p-1.5 text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
-        aria-label="Tháng sau"
+        aria-label={tReports('current_month')}
       >
         <ChevronIcon dir="right" />
       </button>
