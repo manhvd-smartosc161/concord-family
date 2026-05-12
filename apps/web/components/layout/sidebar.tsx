@@ -2,35 +2,43 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { FundCard } from "@/features/funds/components/fund-card";
 import type { FundView } from "@/features/funds/types";
 
-const NAV_GROUPS = [
-  {
-    label: "Tổng quan",
-    items: [
-      { href: "/dashboard", label: "Tổng quan", icon: "📊" },
-      { href: "/chat", label: "Trợ lý AI", icon: "✨" },
-    ],
-  },
-  {
-    label: "Tài chính",
-    items: [
-      { href: "/transactions", label: "Giao dịch", icon: "💳" },
-      { href: "/reports", label: "Báo cáo", icon: "📈" },
-      { href: "/goals", label: "Tiết kiệm & Đầu tư", icon: "🏦" },
-      { href: "/finance-settings", label: "Cài đặt", icon: "⚙️" },
-    ],
-  },
-  {
-    label: "Gia đình",
-    items: [
-      { href: "/weekly", label: "Công việc", icon: "✅" },
-      { href: "/important-dates", label: "Ngày kỷ niệm", icon: "🗓️" },
-      { href: "/family/invite", label: "Thành viên", icon: "👨‍👩‍👦" },
-    ],
-  },
-];
+type NavGroup = {
+  label: string;
+  items: Array<{ href: string; label: string; icon: string }>;
+};
+
+function getNavGroups(t: ReturnType<typeof useTranslations>): NavGroup[] {
+  return [
+    {
+      label: t("overview"),
+      items: [
+        { href: "/dashboard", label: t("overview"), icon: "📊" },
+        { href: "/chat", label: t("ai_assistant"), icon: "✨" },
+      ],
+    },
+    {
+      label: t("finance"),
+      items: [
+        { href: "/transactions", label: t("transactions"), icon: "💳" },
+        { href: "/reports", label: t("reports"), icon: "📈" },
+        { href: "/goals", label: t("savings_investment"), icon: "🏦" },
+        { href: "/finance-settings", label: t("settings"), icon: "⚙️" },
+      ],
+    },
+    {
+      label: t("family_group"),
+      items: [
+        { href: "/weekly", label: t("tasks"), icon: "✅" },
+        { href: "/important-dates", label: t("anniversaries"), icon: "🗓️" },
+        { href: "/family/invite", label: t("members"), icon: "👨‍👩‍👦" },
+      ],
+    },
+  ];
+}
 
 export function Sidebar({
   funds,
@@ -40,6 +48,8 @@ export function Sidebar({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+  const navGroups = getNavGroups(t);
 
   function NavItem({
     href,
@@ -70,7 +80,7 @@ export function Sidebar({
   return (
     <aside className="flex flex-col overflow-y-auto border-r border-stone-100 bg-white">
       <nav className="flex-1 px-3 py-4">
-        {NAV_GROUPS.map((group) => (
+        {navGroups.map((group) => (
           <div key={group.label} className="mb-5">
             <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-stone-400">
               {group.label}
@@ -87,7 +97,7 @@ export function Sidebar({
       <div className="border-t border-stone-100 px-3 py-3">
         <div className="mb-4 space-y-2">
           <p className="px-3 text-[10px] font-semibold uppercase tracking-widest text-stone-400">
-            Quỹ của bạn
+            {t("your_funds")}
           </p>
           {funds.length === 0
             ? [1, 2].map((i) => (
