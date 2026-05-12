@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { familyMembers } from '@/features/auth/api';
 import type { AuthUser } from '@/features/auth/types';
 import { createTask, deleteTask, listTasks, updateTask } from '../api';
@@ -35,16 +35,17 @@ function addWeeks(weekYear: string, delta: number): string {
   return getISOWeek(d);
 }
 
-function formatWeekLabel(weekYear: string): string {
+function formatWeekLabel(weekYear: string, locale: string): string {
   const d = parseWeek(weekYear);
   const end = new Date(d);
   end.setDate(d.getDate() + 6);
-  const fmt = (dt: Date) => dt.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' });
+  const fmt = (dt: Date) => dt.toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', { day: 'numeric', month: 'short' });
   return `${fmt(d)} – ${fmt(end)}`;
 }
 
 export function TaskBoard() {
   const t = useTranslations('tasks');
+  const locale = useLocale();
   const STATUSES: { status: TaskStatus; label: string; dot: string; badgeBg: string; badgeText: string }[] = [
     { status: 'todo',        label: t('status_todo'),        dot: 'bg-stone-300',   badgeBg: 'bg-stone-100',   badgeText: 'text-stone-500'   },
     { status: 'in_progress', label: t('status_in_progress'), dot: 'bg-amber-400',   badgeBg: 'bg-amber-100',   badgeText: 'text-amber-700'   },
@@ -97,8 +98,8 @@ export function TaskBoard() {
       <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-3 lg:px-6">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-base font-semibold text-stone-900">Tuần này</h1>
-            <p className="text-xs text-stone-400">{formatWeekLabel(currentWeek)}</p>
+            <h1 className="text-base font-semibold text-stone-900">{t('this_week')}</h1>
+            <p className="text-xs text-stone-400">{formatWeekLabel(currentWeek, locale)}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <button

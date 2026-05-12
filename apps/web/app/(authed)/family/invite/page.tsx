@@ -70,12 +70,7 @@ export default function FamilyInvitePage() {
   }
 
   async function onLeave() {
-    if (
-      !confirm(
-        'Bạn chắc chắn muốn thoát gia đình? Quỹ riêng và chat của bạn sẽ bị xoá vĩnh viễn.',
-      )
-    )
-      return;
+    if (!confirm(t('leave_confirm'))) return;
     setLeaving(true);
     setError(null);
     try {
@@ -107,7 +102,7 @@ export default function FamilyInvitePage() {
               🏠 {view.family.name} — {t('invite_title')}
             </h1>
             <p className="mt-1 text-xs text-stone-500">
-              {view.members.length}/2 thành viên ·{' '}
+              {t('members_count', { count: view.members.length })} ·{' '}
               {isComplete ? t('complete') : t('waiting_spouse')}
             </p>
           </div>
@@ -117,7 +112,7 @@ export default function FamilyInvitePage() {
               onClick={() => setEditingFamily(true)}
               className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 hover:bg-stone-50"
             >
-              ✏️ Sửa
+              ✏️ {t('edit')}
             </button>
           )}
         </div>
@@ -136,7 +131,7 @@ export default function FamilyInvitePage() {
 
         <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="text-xs font-semibold uppercase tracking-wide text-stone-400">
-            Thành viên
+            {t('members_section')}
           </div>
           <ul className="mt-3 divide-y divide-stone-100">
             {view.members.map((m) => {
@@ -167,7 +162,7 @@ export default function FamilyInvitePage() {
             })}
             {!isComplete && (
               <li className="py-3 text-sm italic text-stone-400">
-                (chỗ trống — đợi vợ/chồng tham gia)
+                {t('waiting_spouse_slot')}
               </li>
             )}
           </ul>
@@ -179,7 +174,7 @@ export default function FamilyInvitePage() {
               <span className="text-xl">💍</span>
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wide text-stone-400">
-                  Ngày cưới
+                  {t('wedding_date_section')}
                 </div>
                 <div className="text-sm font-medium text-stone-800">
                   {formatDate(view.family.weddingDate)}
@@ -196,7 +191,7 @@ export default function FamilyInvitePage() {
           >
             <div>
               <label className="mb-1.5 block text-xs font-medium text-stone-700">
-                Mời vợ/chồng qua email
+                {t('invite_email_label')}
               </label>
               <input
                 type="email"
@@ -226,11 +221,10 @@ export default function FamilyInvitePage() {
         {!isComplete && invitation && (
           <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:p-5">
             <div className="text-sm font-medium text-emerald-900">
-              ✅ Đã gửi email mời tới <strong>{invitation.email}</strong>
+              ✅ {t('invite_sent')} <strong>{invitation.email}</strong>
             </div>
             <p className="text-xs text-emerald-800">
-              Nếu vợ/chồng không nhận được (kiểm tra Spam), có thể copy link
-              bên dưới gửi tay (Zalo/Messenger):
+              {t('invite_fallback_hint')}
             </p>
             <div className="flex items-center gap-2 rounded-lg border border-emerald-300 bg-white p-2">
               <input
@@ -243,11 +237,11 @@ export default function FamilyInvitePage() {
                 onClick={copyLink}
                 className="rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700"
               >
-                {copied ? '✓ Đã copy' : 'Copy'}
+                {copied ? t('copied') : t('copy')}
               </button>
             </div>
             <p className="text-[11px] italic text-emerald-700">
-              Khi vợ/chồng accept link, dashboard tự cập nhật quỹ.
+              {t('invite_accepted_hint')}
             </p>
           </div>
         )}
@@ -257,9 +251,7 @@ export default function FamilyInvitePage() {
             ⚠️ {t('leave_family')}
           </div>
           <p className="mt-1 text-xs text-rose-800">
-            Quỹ riêng + chat của bạn sẽ bị xoá vĩnh viễn. Quỹ chung và dữ liệu
-            chia sẻ ở lại với người còn lại. Nếu bạn là thành viên cuối, gia
-            đình sẽ bị xoá hoàn toàn.
+            {t('leave_desc')}
           </p>
           <button
             type="button"
@@ -284,8 +276,10 @@ function MemberRow({
   canEdit: boolean;
   onEdit: () => void;
 }) {
+  const t = useTranslations('family');
+  const tAuth = useTranslations('auth');
   const roleLabel =
-    member.role === 'husband' ? 'Chồng' : member.role === 'wife' ? 'Vợ' : '—';
+    member.role === 'husband' ? tAuth('husband') : member.role === 'wife' ? tAuth('wife') : '—';
   const genderIcon = member.gender === 'male' ? '👨' : '👩';
   return (
     <li className="flex items-start gap-3 py-3">
@@ -300,7 +294,7 @@ function MemberRow({
           </span>
           {canEdit && (
             <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
-              Bạn
+              {t('you_badge')}
             </span>
           )}
         </div>
@@ -309,11 +303,11 @@ function MemberRow({
         </div>
         {member.birthdate ? (
           <div className="mt-1 text-[11px] text-stone-500">
-            🎂 Sinh nhật: {formatDate(member.birthdate)}
+            🎂 {t('birthday_label')} {formatDate(member.birthdate)}
           </div>
         ) : canEdit ? (
           <div className="mt-1 text-[11px] italic text-stone-400">
-            Chưa nhập sinh nhật
+            {t('no_birthday')}
           </div>
         ) : null}
       </div>
@@ -323,7 +317,7 @@ function MemberRow({
           onClick={onEdit}
           className="rounded-lg border border-stone-200 bg-white px-2 py-1 text-[11px] text-stone-700 hover:bg-stone-50"
         >
-          Sửa
+          {t('edit')}
         </button>
       )}
     </li>
@@ -341,6 +335,7 @@ function EditFamilyForm({
   onCancel: () => void;
   onSaved: () => void | Promise<void>;
 }) {
+  const t = useTranslations('family');
   const tCommon = useTranslations('common');
   const [name, setName] = useState(initialName);
   const [wedding, setWedding] = useState(initialWedding);
@@ -370,11 +365,11 @@ function EditFamilyForm({
       className="space-y-3 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm sm:p-5"
     >
       <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-        Sửa thông tin gia đình
+        {t('edit_family_title')}
       </div>
       <div>
         <label className="mb-1 block text-xs font-medium text-stone-700">
-          Tên gia đình
+          {t('family_name_label')}
         </label>
         <input
           type="text"
@@ -388,7 +383,7 @@ function EditFamilyForm({
       </div>
       <div>
         <label className="mb-1 block text-xs font-medium text-stone-700">
-          Ngày cưới
+          {t('wedding_label')}
         </label>
         <input
           type="date"
@@ -398,7 +393,7 @@ function EditFamilyForm({
           disabled={saving}
         />
         <p className="mt-1 text-[10px] text-stone-400">
-          Để trống nếu muốn xoá.
+          {t('wedding_clear_hint')}
         </p>
       </div>
       {err && (
@@ -438,6 +433,7 @@ function EditProfileForm({
   onCancel: () => void;
   onSaved: () => void | Promise<void>;
 }) {
+  const t = useTranslations('family');
   const tCommon = useTranslations('common');
   const [name, setName] = useState(initialName);
   const [birthdate, setBirthdate] = useState(initialBirthdate);
@@ -464,11 +460,11 @@ function EditProfileForm({
   return (
     <form onSubmit={onSubmit} className="space-y-3">
       <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-        Sửa thông tin cá nhân
+        {t('edit_profile_title')}
       </div>
       <div>
         <label className="mb-1 block text-xs font-medium text-stone-700">
-          Tên hiển thị
+          {t('display_name_label')}
         </label>
         <input
           type="text"
@@ -482,7 +478,7 @@ function EditProfileForm({
       </div>
       <div>
         <label className="mb-1 block text-xs font-medium text-stone-700">
-          Ngày sinh
+          {t('birthdate_label_form')}
         </label>
         <input
           type="date"

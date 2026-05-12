@@ -377,7 +377,7 @@ function ChatInner() {
             disabled={!activeFundId}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <span className="text-base leading-none">+</span> Cuộc trò chuyện mới
+            <span className="text-base leading-none">+</span> {t('new_chat')}
           </button>
         </div>
 
@@ -486,15 +486,15 @@ function ChatInner() {
                 </button>
               </div>
               <span className="mt-1 hidden text-[11px] text-stone-400 sm:block">
-                Shift+Enter để xuống dòng
+                {t('shift_enter_newline')}
               </span>
             </div>
             <p className="mt-2 text-[11px] text-stone-400">
               {isJointChat
-                ? '🤝 Quỹ chung — cả vợ chồng đều thấy chat này'
+                ? `🤝 ${t('joint_fund_shared')}`
                 : activeFund?.accessLevel === 'owner'
-                  ? '🔒 Quỹ riêng — chỉ bạn thấy chat này'
-                  : 'Chọn quỹ để bắt đầu'}
+                  ? `🔒 ${t('personal_fund_private')}`
+                  : t('select_fund_to_start')}
             </p>
           </div>
         </form>
@@ -517,7 +517,7 @@ function ChatInner() {
               disabled={!activeFundId}
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <span className="text-base leading-none">+</span> Cuộc trò chuyện mới
+              <span className="text-base leading-none">+</span> {t('new_chat')}
             </button>
           </div>
           <SessionListDrawer
@@ -544,6 +544,7 @@ function FundTabs({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
+  const t = useTranslations('chat');
   return (
     <div className="grid grid-cols-3 gap-1 border-b border-stone-200 p-2">
       {funds.map((f) => {
@@ -565,7 +566,7 @@ function FundTabs({
             key={f.id}
             onClick={() => !disabled && onSelect(f.id)}
             disabled={disabled}
-            title={disabled ? 'Quỹ riêng tư của người khác' : f.name}
+            title={disabled ? t('other_fund_private') : f.name}
             className={`flex flex-col items-center justify-center rounded-lg px-2 py-2 text-[11px] font-medium transition-colors ${variant}`}
           >
             <span className="mb-0.5 text-base leading-none">{icon}</span>
@@ -590,14 +591,15 @@ function SessionList({
   onDelete: (id: string) => void;
   fundType: 'personal' | 'joint' | undefined;
 }) {
+  const t = useTranslations('chat');
   const grouped = useMemo(() => groupByDate(sessions), [sessions]);
   return (
     <div className="flex-1 overflow-y-auto px-2 py-2">
       {sessions.length === 0 && (
         <div className="px-3 py-6 text-center text-xs text-stone-400">
           {fundType === 'joint'
-            ? 'Chưa có cuộc trò chuyện chung nào.'
-            : 'Chưa có cuộc trò chuyện nào.'}
+            ? t('no_joint_conversations')
+            : t('no_conversations')}
         </div>
       )}
       {grouped.map(({ label, items }) => (
@@ -630,6 +632,7 @@ function SessionItem({
   active: boolean;
   onDelete: () => void;
 }) {
+  const t = useTranslations('chat');
   const router = useRouter();
   return (
     <li>
@@ -651,7 +654,7 @@ function SessionItem({
             {session.title}
           </div>
           <div className="text-[10px] text-stone-400">
-            {session.messageCount} tin nhắn ·{' '}
+            {t('message_count', { count: session.messageCount })} ·{' '}
             {formatRelative(new Date(session.lastMessageAt))}
           </div>
         </button>
@@ -660,7 +663,7 @@ function SessionItem({
             e.stopPropagation();
             onDelete();
           }}
-          aria-label="Xoá hội thoại"
+          aria-label="Delete conversation"
           className="hidden rounded p-1 text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 group-hover:block"
         >
           <svg
@@ -695,14 +698,15 @@ function SessionListDrawer({
   fundType: 'personal' | 'joint' | undefined;
   onPick: () => void;
 }) {
+  const t = useTranslations('chat');
   const grouped = useMemo(() => groupByDate(sessions), [sessions]);
   return (
     <div className="flex-1 overflow-y-auto px-2 py-2">
       {sessions.length === 0 && (
         <div className="px-3 py-6 text-center text-xs text-stone-400">
           {fundType === 'joint'
-            ? 'Chưa có cuộc trò chuyện chung nào.'
-            : 'Chưa có cuộc trò chuyện nào.'}
+            ? t('no_joint_conversations')
+            : t('no_conversations')}
         </div>
       )}
       {grouped.map(({ label, items }) => (
@@ -738,6 +742,7 @@ function SessionItemDrawer({
   onDelete: () => void;
   onPick: () => void;
 }) {
+  const t = useTranslations('chat');
   const router = useRouter();
   return (
     <li>
@@ -759,7 +764,7 @@ function SessionItemDrawer({
             {session.title}
           </div>
           <div className="text-[10px] text-stone-400">
-            {session.messageCount} tin nhắn ·{' '}
+            {t('message_count', { count: session.messageCount })} ·{' '}
             {formatRelative(new Date(session.lastMessageAt))}
           </div>
         </button>
@@ -768,7 +773,7 @@ function SessionItemDrawer({
             e.stopPropagation();
             onDelete();
           }}
-          aria-label="Xoá hội thoại"
+          aria-label="Delete conversation"
           className="hidden rounded p-1 text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 group-hover:block"
         >
           <svg
@@ -801,13 +806,14 @@ function ChatHeader({
   session: ChatSessionView | null | undefined;
   onHistoryOpen: () => void;
 }) {
+  const t = useTranslations('chat');
   if (!fund) {
     return (
       <div className="flex items-center justify-between border-b border-stone-200 bg-white px-3 py-3 sm:px-4 lg:px-6">
         <div>
           <h2 className="text-sm font-semibold text-stone-800">Chat</h2>
           <p className="text-[11px] text-stone-500">
-            Chọn một quỹ ở sidebar trái để bắt đầu
+            {t('select_fund_prompt')}
           </p>
         </div>
         <button
@@ -815,7 +821,7 @@ function ChatHeader({
           onClick={onHistoryOpen}
           className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 lg:hidden"
         >
-          <span>Lịch sử</span>
+          <span>{t('history')}</span>
         </button>
       </div>
     );
@@ -827,11 +833,11 @@ function ChatHeader({
       <div>
         <h2 className="flex items-center gap-2 text-sm font-semibold text-stone-800">
           <span>{icon}</span>
-          {session?.title ?? `${fund.name} — Cuộc trò chuyện mới`}
+          {session?.title ?? `${fund.name} — ${t('new_chat')}`}
         </h2>
         <p className="text-[11px] text-stone-500">
-          <span className="hidden sm:inline">{fund.name} · Parser default fund = {fund.name}</span>
-          {fund.type === 'joint' && <span className="hidden sm:inline"> · cả vợ chồng cùng thấy</span>}
+          <span className="hidden sm:inline">{fund.name} · {t('parser_default', { name: fund.name })}</span>
+          {fund.type === 'joint' && <span className="hidden sm:inline"> · {t('shared_visible')}</span>}
         </p>
       </div>
       <button
@@ -839,7 +845,7 @@ function ChatHeader({
         onClick={onHistoryOpen}
         className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 lg:hidden"
       >
-        <span>Lịch sử</span>
+        <span>{t('history')}</span>
       </button>
     </div>
   );
@@ -905,6 +911,7 @@ function MessageBubble({
   currentUserId: string;
   onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
 }) {
+  const t = useTranslations('chat');
   if (msg.role === 'system') {
     return (
       <div
@@ -931,7 +938,7 @@ function MessageBubble({
               alignRight ? 'text-right' : 'text-left'
             }`}
           >
-            {isUser ? msg.author.name : `🤖 ${msg.author.name} hỏi`}
+            {isUser ? msg.author.name : `🤖 ${msg.author.name} ${t('ai_asking')}`}
           </div>
         )}
         <div

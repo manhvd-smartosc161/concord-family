@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
+
 export function MonthSwitcher({
   year,
   month,
@@ -11,23 +13,29 @@ export function MonthSwitcher({
   onShift: (delta: number) => void;
   isCurrent: boolean;
 }) {
+  const t = useTranslations('transactions');
+  const locale = useLocale();
+  const label = new Date(year, month - 1, 1).toLocaleDateString(
+    locale === 'en' ? 'en-US' : 'vi-VN',
+    { month: 'long', year: 'numeric' },
+  );
   return (
     <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white p-1 sm:p-0.5">
       <button
         onClick={() => onShift(-1)}
         className="flex h-8 w-8 items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-100"
-        aria-label="Tháng trước"
+        aria-label={t('prev_month')}
       >
         <Chevron dir="left" />
       </button>
       <div className="min-w-[100px] px-2 py-1 text-center text-xs font-medium text-stone-800 sm:min-w-[120px] sm:px-3 sm:py-1 sm:text-sm">
-        Tháng {month}/{year}
+        {label}
       </div>
       <button
         onClick={() => onShift(1)}
         disabled={isCurrent}
         className="flex h-8 w-8 items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
-        aria-label="Tháng sau"
+        aria-label={t('next_month')}
       >
         <Chevron dir="right" />
       </button>
