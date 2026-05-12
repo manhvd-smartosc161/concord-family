@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { setToken } from '@/lib/api-client';
 import { updateProfile } from '@/features/auth/api';
 import { useAuthedLayout } from '../../layout';
@@ -17,6 +18,8 @@ import type {
 } from '@/features/families/types';
 
 export default function FamilyInvitePage() {
+  const t = useTranslations('family');
+  const tCommon = useTranslations('common');
   const { user } = useAuthedLayout();
   const [view, setView] = useState<FamilyMembersView | null>(null);
   const [email, setEmail] = useState('');
@@ -88,7 +91,7 @@ export default function FamilyInvitePage() {
   if (!view) {
     return (
       <main className="flex min-h-full items-center justify-center text-sm text-stone-400">
-        Đang tải…
+        {tCommon('loading')}
       </main>
     );
   }
@@ -101,7 +104,7 @@ export default function FamilyInvitePage() {
         <div className="flex items-start justify-between gap-2">
           <div>
             <h1 className="text-xl font-semibold text-stone-900">
-              🏠 {view.family.name}
+              🏠 {view.family.name} — {t('invite_title')}
             </h1>
             <p className="mt-1 text-xs text-stone-500">
               {view.members.length}/2 thành viên ·{' '}
@@ -338,6 +341,7 @@ function EditFamilyForm({
   onCancel: () => void;
   onSaved: () => void | Promise<void>;
 }) {
+  const tCommon = useTranslations('common');
   const [name, setName] = useState(initialName);
   const [wedding, setWedding] = useState(initialWedding);
   const [saving, setSaving] = useState(false);
@@ -409,14 +413,14 @@ function EditFamilyForm({
           disabled={saving}
           className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 hover:bg-stone-50"
         >
-          Huỷ
+          {tCommon('cancel')}
         </button>
         <button
           type="submit"
           disabled={saving}
           className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 disabled:bg-stone-300"
         >
-          {saving ? 'Đang lưu…' : 'Lưu'}
+          {saving ? tCommon('saving') : tCommon('save')}
         </button>
       </div>
     </form>
@@ -434,6 +438,7 @@ function EditProfileForm({
   onCancel: () => void;
   onSaved: () => void | Promise<void>;
 }) {
+  const tCommon = useTranslations('common');
   const [name, setName] = useState(initialName);
   const [birthdate, setBirthdate] = useState(initialBirthdate);
   const [saving, setSaving] = useState(false);
@@ -499,14 +504,14 @@ function EditProfileForm({
           disabled={saving}
           className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 hover:bg-stone-50"
         >
-          Huỷ
+          {tCommon('cancel')}
         </button>
         <button
           type="submit"
           disabled={saving}
           className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 disabled:bg-stone-300"
         >
-          {saving ? 'Đang lưu…' : 'Lưu'}
+          {saving ? tCommon('saving') : tCommon('save')}
         </button>
       </div>
     </form>

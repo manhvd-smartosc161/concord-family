@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { setToken } from '@/lib/api-client';
 import { acceptInvitation, createFamily } from '@/features/families/api';
 import { useAuthedLayout } from '../../layout';
@@ -17,6 +18,8 @@ export default function FamilySetupPage() {
 }
 
 function FamilySetupInner() {
+  const t = useTranslations('family');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const params = useSearchParams();
   const { user } = useAuthedLayout();
@@ -84,10 +87,10 @@ function FamilySetupInner() {
             C
           </div>
           <h1 className="text-xl font-semibold text-stone-900">
-            Chào {user.name}!
+            {t('setup_title')}
           </h1>
           <p className="mt-1 text-sm text-stone-500">
-            Để bắt đầu, hãy tạo hoặc tham gia một gia đình.
+            {t('setup_subtitle')}
           </p>
         </div>
 
@@ -162,14 +165,14 @@ function FamilySetupInner() {
                 onClick={() => setMode('choose')}
                 className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
               >
-                ← Quay lại
+                ← {tCommon('cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="flex-1 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:bg-stone-300"
               >
-                {submitting ? 'Đang tạo…' : 'Tạo gia đình'}
+                {submitting ? tCommon('saving') : tCommon('save')}
               </button>
             </div>
           </form>
@@ -211,14 +214,14 @@ function FamilySetupInner() {
                 onClick={() => setMode('choose')}
                 className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
               >
-                ← Quay lại
+                ← {tCommon('cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="flex-1 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:bg-stone-300"
               >
-                {submitting ? 'Đang join…' : 'Tham gia'}
+                {submitting ? tCommon('loading') : tCommon('save')}
               </button>
             </div>
           </form>
