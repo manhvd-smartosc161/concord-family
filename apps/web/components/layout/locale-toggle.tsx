@@ -14,29 +14,26 @@ export function LocaleToggle() {
   }
 
   return (
-    <div className="flex items-center overflow-hidden rounded-lg border border-stone-200 text-xs font-medium">
+    <div className="flex items-center gap-1">
       <button
         type="button"
         onClick={() => switchLocale('vi')}
-        className={`px-2 py-1 transition-colors ${
-          locale === 'vi'
-            ? 'bg-emerald-50 text-emerald-700'
-            : 'text-stone-400 hover:text-stone-600'
+        title="Tiếng Việt"
+        className={`text-lg leading-none transition-opacity ${
+          locale === 'vi' ? 'opacity-100' : 'opacity-35 hover:opacity-60'
         }`}
       >
-        VI
+        🇻🇳
       </button>
-      <span className="text-stone-200">|</span>
       <button
         type="button"
         onClick={() => switchLocale('en')}
-        className={`px-2 py-1 transition-colors ${
-          locale === 'en'
-            ? 'bg-emerald-50 text-emerald-700'
-            : 'text-stone-400 hover:text-stone-600'
+        title="English"
+        className={`text-lg leading-none transition-opacity ${
+          locale === 'en' ? 'opacity-100' : 'opacity-35 hover:opacity-60'
         }`}
       >
-        EN
+        🇬🇧
       </button>
     </div>
   );
