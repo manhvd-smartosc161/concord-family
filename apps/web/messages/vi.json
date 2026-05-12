@@ -77,7 +77,9 @@
     "email_label": "Email",
     "id_label": "ID",
     "birthdate_label": "Ngày sinh",
-    "click_edit": "✏️ Chỉnh sửa"
+    "click_edit": "✏️ Chỉnh sửa",
+    "avatar_invalid_type": "Chỉ chấp nhận JPEG, PNG hoặc WebP",
+    "avatar_too_large": "Ảnh phải nhỏ hơn 5MB"
   },
   "finance": {
     "title": "Cài đặt tài chính",

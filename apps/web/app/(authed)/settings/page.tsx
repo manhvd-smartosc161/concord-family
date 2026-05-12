@@ -85,11 +85,11 @@ function AccountSection() {
     if (!file) return;
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type)) {
-      setAvatarError('Chỉ chấp nhận JPEG, PNG hoặc WebP');
+      setAvatarError(t('avatar_invalid_type'));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setAvatarError('Ảnh phải nhỏ hơn 5MB');
+      setAvatarError(t('avatar_too_large'));
       return;
     }
     setAvatarError(null);

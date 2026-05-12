@@ -77,7 +77,9 @@
     "email_label": "Email",
     "id_label": "ID",
     "birthdate_label": "Date of birth",
-    "click_edit": "✏️ Edit"
+    "click_edit": "✏️ Edit",
+    "avatar_invalid_type": "Only JPEG, PNG or WebP accepted",
+    "avatar_too_large": "Image must be smaller than 5MB"
   },
   "finance": {
     "title": "Finance Settings",
