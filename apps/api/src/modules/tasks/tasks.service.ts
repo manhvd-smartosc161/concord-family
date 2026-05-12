@@ -6,14 +6,17 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
 
+function isoWeekYear(date: Date): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
 function currentWeekYear(): string {
-  const now = new Date(
-    new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }),
-  );
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / 86400000);
-  const week = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
-  return `${now.getFullYear()}-W${String(week).padStart(2, '0')}`;
+  return isoWeekYear(new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' })));
 }
 
 @Injectable()
@@ -39,7 +42,7 @@ export class TasksService {
       category: dto.category,
       assignee: dto.assignee,
       note: dto.note ?? null,
-      weekYear: currentWeekYear(),
+      weekYear: dto.weekYear ?? currentWeekYear(),
       status: 'todo',
     });
     return this.taskRepo.save(task);

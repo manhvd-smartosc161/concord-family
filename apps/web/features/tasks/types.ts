@@ -20,6 +20,7 @@ export interface CreateTaskInput {
   title: string;
   category: TaskCategory;
   assignee: TaskAssignee;
+  weekYear?: string;
   note?: string;
 }
 

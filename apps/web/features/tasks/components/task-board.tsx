@@ -64,7 +64,7 @@ export function TaskBoard() {
   }, [currentWeek, reload]);
 
   async function handleAdd(input: CreateTaskInput) {
-    const task = await createTask(input);
+    const task = await createTask({ ...input, weekYear: currentWeek });
     setTasks((prev) => [...prev, task]);
   }
 

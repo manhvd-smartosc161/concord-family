@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 import type { TaskAssignee, TaskCategory } from '../entities/task.entity';
 
 export class CreateTaskDto {
@@ -12,6 +12,11 @@ export class CreateTaskDto {
 
   @IsEnum(['husband', 'wife', 'both'])
   assignee!: TaskAssignee;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-W\d{2}$/)
+  weekYear?: string;
 
   @IsOptional()
   @IsString()
