@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
 import {
@@ -102,6 +103,7 @@ export default function ChatPage() {
 }
 
 function ChatInner() {
+  const t = useTranslations('chat');
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionIdFromUrl = searchParams.get('session');
@@ -425,7 +427,7 @@ function ChatInner() {
                   <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-500 [animation-delay:-0.15s]" />
                   <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-500" />
                 </span>
-                Parser đang nghĩ…
+                {t('thinking')}
               </div>
             )}
           </div>
@@ -455,8 +457,8 @@ function ChatInner() {
                   rows={1}
                   placeholder={
                     activeFund
-                      ? `Gõ giao dịch cho ${activeFund.name}…`
-                      : 'Chọn một quỹ ở sidebar trái'
+                      ? `${t('placeholder')} ${activeFund.name}…`
+                      : t('placeholder')
                   }
                   className="min-h-[36px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed placeholder:text-stone-400 focus:outline-none focus:ring-0 sm:min-h-[44px]"
                   style={{ maxHeight: '200px' }}
@@ -465,11 +467,11 @@ function ChatInner() {
                 <button
                   type="submit"
                   disabled={isLoading || !input.trim() || !activeFundId}
-                  aria-label="Gửi"
-                  title="Gửi (Enter)"
+                  aria-label={t('send')}
+                  title={`${t('send')} (Enter)`}
                   className="flex h-9 shrink-0 items-center justify-center rounded-full bg-emerald-700 px-3 text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-95 disabled:cursor-not-allowed disabled:bg-stone-300 sm:px-4"
                 >
-                  <span className="hidden text-sm sm:inline">Gửi</span>
+                  <span className="hidden text-sm sm:inline">{t('send')}</span>
                   <svg
                     className="h-4 w-4 sm:hidden"
                     viewBox="0 0 24 24"
@@ -854,6 +856,7 @@ function EmptyState({
   userName: string;
   fund: FundView | undefined;
 }) {
+  const t = useTranslations('chat');
   const suggestions = !fund
     ? []
     : SUGGESTIONS_BY_FUND[fund.type] ?? SUGGESTIONS_BY_FUND.personal;
@@ -864,12 +867,12 @@ function EmptyState({
       </div>
       <div>
         <h3 className="text-base font-semibold text-stone-800">
-          Chào {userName}!
+          {t('empty_title')} {userName}!
         </h3>
         <p className="mt-1 max-w-md text-sm text-stone-500">
           {fund
-            ? `Gõ giao dịch — Parser sẽ log vào ${fund.name}.`
-            : 'Chọn một quỹ ở sidebar trái để bắt đầu.'}
+            ? t('empty_desc')
+            : t('placeholder')}
         </p>
       </div>
       {suggestions.length > 0 && (
