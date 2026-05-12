@@ -153,7 +153,7 @@ export default function TransactionsPage() {
                   className="ml-auto inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 sm:hidden"
                   aria-expanded={filterOpen}
                 >
-                  <span>Bộ lọc</span>
+                  <span>{t('filter')}</span>
                   <svg
                     className={`h-4 w-4 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
                     fill="none"

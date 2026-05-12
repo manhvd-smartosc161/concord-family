@@ -128,7 +128,8 @@
     "day_today": "Today",
     "day_yesterday": "Yesterday",
     "amount_required": "Amount must be a positive number",
-    "all_funds_filter": "All"
+    "all_funds_filter": "All",
+    "filter": "Filter"
   },
   "goals": {
     "title": "Savings & Investment Funds",

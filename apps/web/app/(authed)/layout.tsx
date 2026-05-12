@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Header } from '@/components/layout/header';
 import { Sidebar } from '@/components/layout/sidebar';
 import { MobileDrawer } from '@/components/ui';
@@ -33,6 +34,7 @@ export default function AuthedLayout({
   const { state: auth, reloadUser } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const tCommon = useTranslations('common');
   const [funds, setFunds] = useState<FundView[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -65,7 +67,7 @@ export default function AuthedLayout({
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-2 text-stone-400">
           <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-emerald-500" />
-          <span className="text-sm">Đang xác thực…</span>
+          <span className="text-sm">{tCommon('loading')}</span>
         </div>
       </div>
     );
@@ -94,7 +96,7 @@ export default function AuthedLayout({
                 onClick={() => logout(router)}
                 className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
               >
-                Đăng xuất
+                {tCommon('logout')}
               </button>
             </div>
           </header>

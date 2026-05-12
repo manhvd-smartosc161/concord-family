@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError, clearToken, getToken } from '@/lib/api-client';
 import { me } from '@/features/auth/api';
 import type { AuthUser } from '@/features/auth/types';
@@ -17,12 +17,16 @@ export function useAuth(redirectIfUnauthed = true): {
 } {
   const [state, setState] = useState<AuthState>({ status: 'loading' });
   const router = useRouter();
+  const routerRef = useRef(router);
+  routerRef.current = router;
+  const redirectRef = useRef(redirectIfUnauthed);
+  redirectRef.current = redirectIfUnauthed;
 
   const fetchUser = useCallback(async () => {
     const token = getToken();
     if (!token) {
       setState({ status: 'unauthed' });
-      if (redirectIfUnauthed) router.replace('/login');
+      if (redirectRef.current) routerRef.current.replace('/login');
       return;
     }
     try {
@@ -31,9 +35,9 @@ export function useAuth(redirectIfUnauthed = true): {
     } catch (err: unknown) {
       if (err instanceof ApiError && err.status === 401) clearToken();
       setState({ status: 'unauthed' });
-      if (redirectIfUnauthed) router.replace('/login');
+      if (redirectRef.current) routerRef.current.replace('/login');
     }
-  }, [redirectIfUnauthed, router]);
+  }, []);
 
   useEffect(() => {
     void fetchUser();

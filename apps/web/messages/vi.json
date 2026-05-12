@@ -128,7 +128,8 @@
     "day_today": "Hôm nay",
     "day_yesterday": "Hôm qua",
     "amount_required": "Số tiền phải là số dương",
-    "all_funds_filter": "Tất cả"
+    "all_funds_filter": "Tất cả",
+    "filter": "Bộ lọc"
   },
   "goals": {
     "title": "Quỹ tiết kiệm & đầu tư",
