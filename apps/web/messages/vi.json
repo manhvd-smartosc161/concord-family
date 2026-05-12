@@ -50,7 +50,21 @@
     "current_password": "Mật khẩu hiện tại",
     "new_password": "Mật khẩu mới",
     "birthdate": "Ngày sinh",
-    "change_password_success": "Đổi mật khẩu thành công"
+    "change_password_success": "Đổi mật khẩu thành công",
+    "gender": "Giới tính",
+    "male": "Nam",
+    "female": "Nữ",
+    "birthdate_optional": "Ngày sinh (tuỳ chọn)",
+    "wedding_date_optional": "Ngày cưới (tuỳ chọn)",
+    "register_submitting": "Đang tạo…",
+    "pw_mismatch": "Mật khẩu mới và xác nhận không khớp",
+    "pw_too_short": "Mật khẩu mới tối thiểu 6 ký tự",
+    "pw_same_as_current": "Mật khẩu mới phải khác mật khẩu hiện tại",
+    "change_password_failed": "Đổi mật khẩu thất bại",
+    "change_password_hint": "Sau khi đổi, mật khẩu cũ ngưng hoạt động ngay.",
+    "pw_min_chars": "Tối thiểu 6 ký tự",
+    "register_pw_too_short": "Mật khẩu tối thiểu 8 ký tự.",
+    "register_failed": "Đăng ký thất bại"
   },
   "settings": {
     "title": "Cài đặt",
@@ -213,5 +227,15 @@
     "invite_subtitle": "Gửi link mời để vợ/chồng tham gia.",
     "setup_title": "Thiết lập gia đình",
     "setup_subtitle": "Tạo gia đình để bắt đầu quản lý tài chính cùng nhau."
+  },
+  "invite": {
+    "title": "Lời mời tham gia",
+    "invite_verb": "mời bạn tham gia gia đình",
+    "login_or_register": "Đăng nhập hoặc đăng ký để tiếp tục.",
+    "back_to_login": "Về trang đăng nhập",
+    "processing": "Đang xử lý…",
+    "invalid_link": "Link không hợp lệ",
+    "already_in_family": "Bạn đã ở trong một gia đình rồi. Hãy thoát trước nếu muốn join family khác.",
+    "accept_failed": "Accept thất bại"
   }
 }

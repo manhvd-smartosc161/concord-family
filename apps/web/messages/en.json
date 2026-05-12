@@ -50,7 +50,21 @@
     "current_password": "Current password",
     "new_password": "New password",
     "birthdate": "Date of birth",
-    "change_password_success": "Password changed successfully"
+    "change_password_success": "Password changed successfully",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "birthdate_optional": "Date of birth (optional)",
+    "wedding_date_optional": "Wedding date (optional)",
+    "register_submitting": "Creating…",
+    "pw_mismatch": "Passwords do not match",
+    "pw_too_short": "New password must be at least 6 characters",
+    "pw_same_as_current": "New password must differ from current password",
+    "change_password_failed": "Failed to change password",
+    "change_password_hint": "Your old password will stop working immediately.",
+    "pw_min_chars": "Minimum 6 characters",
+    "register_pw_too_short": "Password must be at least 8 characters.",
+    "register_failed": "Registration failed"
   },
   "settings": {
     "title": "Settings",
@@ -213,5 +227,15 @@
     "invite_subtitle": "Send an invite link for your partner to join.",
     "setup_title": "Family setup",
     "setup_subtitle": "Create your family to start managing finances together."
+  },
+  "invite": {
+    "title": "Invitation to join",
+    "invite_verb": "has invited you to join",
+    "login_or_register": "Sign in or sign up to continue.",
+    "back_to_login": "Back to login",
+    "processing": "Processing…",
+    "invalid_link": "Invalid link",
+    "already_in_family": "You are already in a family. Leave it first if you want to join another.",
+    "accept_failed": "Failed to accept invitation"
   }
 }

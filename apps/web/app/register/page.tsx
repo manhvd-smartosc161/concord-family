@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError, setToken } from '@/lib/api-client';
 import { register } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/hooks';
@@ -17,6 +18,7 @@ export default function RegisterPage() {
 }
 
 function RegisterInner() {
+  const t = useTranslations('auth');
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get('next');
@@ -41,11 +43,11 @@ function RegisterInner() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (password.length < 8) {
-      setError('Mật khẩu tối thiểu 8 ký tự.');
+      setError(t('register_pw_too_short'));
       return;
     }
     if (password !== confirm) {
-      setError('Mật khẩu xác nhận không khớp.');
+      setError(t('pw_mismatch'));
       return;
     }
     setError(null);
@@ -73,7 +75,7 @@ function RegisterInner() {
           ? err.message
           : err instanceof Error
             ? err.message
-            : 'Đăng ký thất bại';
+            : t('register_failed');
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -101,7 +103,7 @@ function RegisterInner() {
             C
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
-            Tạo tài khoản Concord
+            {t('register_title')} Concord
           </h1>
           <p className="mt-1 text-sm text-stone-500">
             Cùng vợ/chồng quản lý tài chính chung.
@@ -110,7 +112,7 @@ function RegisterInner() {
 
         <div className="rounded-2xl border border-stone-200/80 bg-white/90 p-6 shadow-xl shadow-stone-300/30 backdrop-blur sm:p-8">
           <form onSubmit={onSubmit} className="space-y-4">
-            <Field label="Email">
+            <Field label={t('email')}>
               <input
                 type="email"
                 value={email}
@@ -123,7 +125,7 @@ function RegisterInner() {
               />
             </Field>
 
-            <Field label="Mật khẩu (≥ 8 ký tự)">
+            <Field label={`${t('password')} (≥ 8 ký tự)`}>
               <input
                 type="password"
                 value={password}
@@ -135,7 +137,7 @@ function RegisterInner() {
               />
             </Field>
 
-            <Field label="Xác nhận mật khẩu">
+            <Field label={t('confirm_password')}>
               <input
                 type="password"
                 value={confirm}
@@ -146,7 +148,7 @@ function RegisterInner() {
               />
             </Field>
 
-            <Field label="Tên hiển thị">
+            <Field label={t('name')}>
               <input
                 type="text"
                 value={name}
@@ -159,24 +161,24 @@ function RegisterInner() {
               />
             </Field>
 
-            <Field label="Giới tính">
+            <Field label={t('gender')}>
               <div className="flex gap-2">
                 <GenderRadio
                   value="male"
                   current={gender}
                   onChange={setGender}
-                  label="Nam"
+                  label={t('male')}
                 />
                 <GenderRadio
                   value="female"
                   current={gender}
                   onChange={setGender}
-                  label="Nữ"
+                  label={t('female')}
                 />
               </div>
             </Field>
 
-            <Field label="Ngày sinh (tuỳ chọn)">
+            <Field label={t('birthdate_optional')}>
               <input
                 type="date"
                 value={birthdate}
@@ -186,7 +188,7 @@ function RegisterInner() {
               />
             </Field>
 
-            <Field label="Ngày cưới (tuỳ chọn)">
+            <Field label={t('wedding_date_optional')}>
               <input
                 type="date"
                 value={weddingDate}
@@ -210,17 +212,17 @@ function RegisterInner() {
               disabled={submitting}
               className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
             >
-              {submitting ? 'Đang tạo…' : 'Đăng ký'}
+              {submitting ? t('register_submitting') : t('register_link')}
             </button>
           </form>
 
           <p className="mt-4 text-center text-xs text-stone-500">
-            Đã có tài khoản?{' '}
+            {t('already_account')}{' '}
             <Link
               href="/login"
               className="font-medium text-emerald-700 hover:underline"
             >
-              Đăng nhập
+              {t('login_link')}
             </Link>
           </p>
         </div>

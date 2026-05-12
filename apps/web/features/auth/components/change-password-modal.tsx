@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { changePassword } from '@/features/auth/api';
 
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export function ChangePasswordModal({ open, onClose }: Props) {
+  const t = useTranslations('auth');
+  const tCommon = useTranslations('common');
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -44,15 +47,15 @@ export function ChangePasswordModal({ open, onClose }: Props) {
     setError(null);
 
     if (next !== confirm) {
-      setError('Mật khẩu mới và xác nhận không khớp');
+      setError(t('pw_mismatch'));
       return;
     }
     if (next.length < 6) {
-      setError('Mật khẩu mới tối thiểu 6 ký tự');
+      setError(t('pw_too_short'));
       return;
     }
     if (current === next) {
-      setError('Mật khẩu mới phải khác mật khẩu hiện tại');
+      setError(t('pw_same_as_current'));
       return;
     }
 
@@ -67,7 +70,7 @@ export function ChangePasswordModal({ open, onClose }: Props) {
           ? err.message
           : err instanceof Error
             ? err.message
-            : 'Đổi mật khẩu thất bại';
+            : t('change_password_failed');
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -81,7 +84,7 @@ export function ChangePasswordModal({ open, onClose }: Props) {
       {/* Backdrop */}
       <button
         type="button"
-        aria-label="Đóng"
+        aria-label={tCommon('close')}
         onClick={onClose}
         className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
       />
@@ -90,7 +93,7 @@ export function ChangePasswordModal({ open, onClose }: Props) {
       <div className="relative w-full max-w-md rounded-2xl bg-white p-4 shadow-2xl shadow-stone-900/20 sm:p-6">
         <div className="mb-1 flex items-start justify-between">
           <h3 className="text-base font-semibold text-stone-900">
-            Đổi mật khẩu
+            {t('change_password')}
           </h3>
           <button
             type="button"
@@ -113,31 +116,31 @@ export function ChangePasswordModal({ open, onClose }: Props) {
           </button>
         </div>
         <p className="mb-5 text-xs text-stone-500">
-          Sau khi đổi, mật khẩu cũ ngưng hoạt động ngay.
+          {t('change_password_hint')}
         </p>
 
         {success ? (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-            ✅ Đã đổi mật khẩu thành công.
+            ✅ {t('change_password_success')}.
           </div>
         ) : (
           <form onSubmit={onSubmit} className="space-y-4">
             <PasswordField
-              label="Mật khẩu hiện tại"
+              label={t('current_password')}
               value={current}
               onChange={setCurrent}
               autoFocus
               disabled={submitting}
             />
             <PasswordField
-              label="Mật khẩu mới"
+              label={t('new_password')}
               value={next}
               onChange={setNext}
-              hint="Tối thiểu 6 ký tự"
+              hint={t('pw_min_chars')}
               disabled={submitting}
             />
             <PasswordField
-              label="Xác nhận mật khẩu mới"
+              label={t('confirm_password')}
               value={confirm}
               onChange={setConfirm}
               disabled={submitting}
@@ -156,14 +159,14 @@ export function ChangePasswordModal({ open, onClose }: Props) {
                 disabled={submitting}
                 className="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 sm:w-auto"
               >
-                Huỷ
+                {tCommon('cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting || !current || !next || !confirm}
                 className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300 sm:w-auto"
               >
-                {submitting ? 'Đang đổi…' : 'Đổi mật khẩu'}
+                {submitting ? tCommon('saving') : t('change_password')}
               </button>
             </div>
           </form>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { setToken } from '@/lib/api-client';
 import { acceptInvitation, getInvitation } from '@/features/families/api';
 import { useAuth } from '@/features/auth/hooks';
@@ -13,6 +14,9 @@ export default function InviteTokenPage({
 }: {
   params: Promise<{ token: string }>;
 }) {
+  const t = useTranslations('invite');
+  const tAuth = useTranslations('auth');
+  const tCommon = useTranslations('common');
   const { token } = use(params);
   const router = useRouter();
   const { state: auth } = useAuth(false);
@@ -24,14 +28,14 @@ export default function InviteTokenPage({
     void getInvitation(token)
       .then(setPreview)
       .catch((e) =>
-        setError(e instanceof Error ? e.message : 'Link không hợp lệ'),
+        setError(e instanceof Error ? e.message : t('invalid_link')),
       );
   }, [token]);
 
   useEffect(() => {
     if (auth.status !== 'authed' || !preview || accepting) return;
     if (auth.user.familyId) {
-      setError('Bạn đã ở trong một gia đình rồi. Hãy thoát trước nếu muốn join family khác.');
+      setError(t('already_in_family'));
       return;
     }
     setAccepting(true);
@@ -41,7 +45,7 @@ export default function InviteTokenPage({
         window.location.assign('/dashboard');
       })
       .catch((e) => {
-        setError(e instanceof Error ? e.message : 'Accept thất bại');
+        setError(e instanceof Error ? e.message : t('accept_failed'));
         setAccepting(false);
       });
   }, [auth, preview, token, accepting, router]);
@@ -57,7 +61,7 @@ export default function InviteTokenPage({
             href="/login"
             className="mt-4 inline-block text-sm font-medium text-emerald-700 hover:underline"
           >
-            ← Về trang đăng nhập
+            ← {t('back_to_login')}
           </Link>
         </div>
       </main>
@@ -67,7 +71,7 @@ export default function InviteTokenPage({
   if (!preview) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-stone-50 text-sm text-stone-400">
-        Đang tải…
+        {tCommon('loading')}
       </main>
     );
   }
@@ -77,27 +81,26 @@ export default function InviteTokenPage({
       <main className="flex min-h-screen items-center justify-center bg-stone-50 px-4 py-8">
         <div className="w-full max-w-md space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
           <h1 className="text-lg font-semibold text-stone-900">
-            ✉️ Lời mời tham gia
+            ✉️ {t('title')}
           </h1>
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-            <strong>{preview.inviter.name}</strong> mời bạn tham gia gia đình{' '}
-            <strong>{preview.family.name}</strong>.
+            <strong>{preview.inviter.name}</strong> {t('invite_verb')} <strong>{preview.family.name}</strong>.
           </div>
           <p className="text-xs text-stone-500">
-            Đăng nhập hoặc đăng ký để tiếp tục.
+            {t('login_or_register')}
           </p>
           <div className="flex gap-2">
             <Link
               href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`}
               className="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2 text-center text-sm font-medium text-stone-700 hover:bg-stone-50"
             >
-              Đăng nhập
+              {tAuth('login_title')}
             </Link>
             <Link
               href={`/register?next=${encodeURIComponent(`/invite/${token}`)}`}
               className="flex-1 rounded-lg bg-emerald-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-emerald-800"
             >
-              Đăng ký
+              {tAuth('register_link')}
             </Link>
           </div>
         </div>
@@ -107,7 +110,7 @@ export default function InviteTokenPage({
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-stone-50 text-sm text-stone-400">
-      Đang xử lý…
+      {t('processing')}
     </main>
   );
 }
