@@ -32,6 +32,7 @@ import {
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
+  const tReports = useTranslations('reports');
   const locale = useLocale();
   const { user, funds, reloadFunds } = useAuthedLayout();
   const [goals, setGoals] = useState<GoalView[]>([]);
@@ -131,28 +132,22 @@ export default function DashboardPage() {
           {/* Month stats */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatCard
-              label="Tháng này — thu"
+              label={tReports('income')}
               value={report ? formatVND(report.income) : '—'}
               tone="positive"
-              hint={`${report?.txnCount ?? 0} giao dịch tổng`}
+              hint={report ? tReports('txn_count', { count: report.txnCount }) : undefined}
             />
             <StatCard
-              label="Tháng này — chi"
+              label={tReports('expense')}
               value={report ? `−${formatVND(report.expense)}` : '—'}
               tone="negative"
-              hint={
-                report
-                  ? `${report.byCategory.length} mục có chi tiêu`
-                  : undefined
-              }
+              hint={report ? tReports('categories_count', { count: report.byCategory.length }) : undefined}
             />
             <StatCard
-              label="Tháng này — net"
+              label={tReports('net')}
               value={report ? formatVND(report.net, true) : '—'}
-              tone={
-                !report ? 'default' : report.net >= 0 ? 'positive' : 'negative'
-              }
-              hint="Thu trừ chi"
+              tone={!report ? 'default' : report.net >= 0 ? 'positive' : 'negative'}
+              hint={tReports('net_hint')}
             />
           </div>
 
