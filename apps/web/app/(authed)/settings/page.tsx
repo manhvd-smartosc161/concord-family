@@ -142,7 +142,7 @@ function AccountSection() {
         <div>
           <h3 className="mb-1 text-sm font-semibold text-stone-800">Tài khoản</h3>
           {!editing && (
-            <p className="text-xs text-stone-500">
+            <p className="hidden text-xs text-stone-500 sm:block">
               Concord là couple-only — mỗi instance chỉ có 2 tài khoản (vợ + chồng).
             </p>
           )}
@@ -152,7 +152,7 @@ function AccountSection() {
             onClick={handleEnterEdit}
             className="shrink-0 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-50"
           >
-            Chỉnh sửa
+            ✏️ Chỉnh sửa
           </button>
         )}
       </div>
@@ -236,8 +236,15 @@ function AccountSection() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Ngày sinh" value={user.birthdate ?? '—'} />
-            <Field label="ID" value={user.id} mono small />
+            <Field
+              label="Ngày sinh"
+              value={
+                user.birthdate
+                  ? new Date(user.birthdate + 'T00:00:00').toLocaleDateString('vi-VN')
+                  : '—'
+              }
+            />
+            <Field label="ID" value={user.id.slice(0, 8) + '…'} mono small />
           </div>
 
           <div className="mt-5 flex justify-end border-t border-stone-100 pt-4">
