@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { UserAvatar } from '@/features/auth/components/user-avatar';
 import type { AuthUser } from '@/features/auth/types';
 import type { Task, TaskStatus, UpdateTaskInput } from '../types';
 
 const CATEGORY_CONFIG = {
-  shopping: { label: 'Mua sắm', accent: 'bg-sky-500',     pill: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200' },
-  chores:   { label: 'Việc nhà', accent: 'bg-amber-400',   pill: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' },
-  finance:  { label: 'Tài chính', accent: 'bg-emerald-500', pill: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' },
-  goal:     { label: 'Mục tiêu', accent: 'bg-violet-500',  pill: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200' },
+  shopping: { accent: 'bg-sky-500',     pill: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200' },
+  chores:   { accent: 'bg-amber-400',   pill: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' },
+  finance:  { accent: 'bg-emerald-500', pill: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' },
+  goal:     { accent: 'bg-violet-500',  pill: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200' },
 } as const;
 
 const NEXT_STATUS: Record<TaskStatus, TaskStatus | null> = {
@@ -26,6 +27,14 @@ interface Props {
 }
 
 export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
+  const t = useTranslations('tasks');
+  const tCommon = useTranslations('common');
+  const categoryLabel: Record<string, string> = {
+    shopping: t('category_shopping'),
+    chores: t('category_chores'),
+    finance: t('category_finance'),
+    goal: t('category_goal'),
+  };
   const [expanded, setExpanded] = useState(false);
   const [editNote, setEditNote] = useState(task.note ?? '');
   const [saving, setSaving] = useState(false);
@@ -71,7 +80,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
             type="button"
             onClick={() => onDelete(task.id)}
             className="shrink-0 rounded p-0.5 text-stone-300 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-50 hover:text-red-400"
-            aria-label="Xóa"
+            aria-label={t('delete_label')}
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M9 3L3 9M3 3l6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -81,7 +90,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
 
         <div className="mt-2 flex items-center gap-1.5">
           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${cat.pill}`}>
-            {cat.label}
+            {categoryLabel[task.category]}
           </span>
           {task.assignee === 'both' ? (
             <div className="flex -space-x-1.5">
@@ -108,12 +117,12 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
               {task.status === 'todo' ? (
                 <>
                   <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><polygon points="2,1 7,4 2,7"/></svg>
-                  Bắt đầu
+                  {t('start')}
                 </>
               ) : (
                 <>
                   <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  Xong
+                  {t('done')}
                 </>
               )}
             </button>
@@ -122,7 +131,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
           {isDone && (
             <span className="ml-auto flex items-center gap-1 text-[10px] text-emerald-600">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Hoàn thành
+              {t('completed')}
             </span>
           )}
         </div>
@@ -132,7 +141,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
             <textarea
               className="w-full resize-none rounded-lg border border-stone-200 bg-stone-50 p-2 text-xs text-stone-700 placeholder-stone-400 focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
               rows={2}
-              placeholder="Ghi chú..."
+              placeholder={t('note_placeholder')}
               value={editNote}
               onChange={(e) => setEditNote(e.target.value)}
             />
@@ -142,7 +151,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
                 onClick={() => { setExpanded(false); setEditNote(task.note ?? ''); }}
                 className="rounded-lg px-2.5 py-1 text-xs text-stone-400 hover:bg-stone-100 hover:text-stone-600"
               >
-                Hủy
+                {tCommon('cancel')}
               </button>
               <button
                 type="button"
@@ -150,7 +159,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
                 onClick={handleNoteSave}
                 className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
               >
-                Lưu
+                {tCommon('save')}
               </button>
             </div>
           </div>

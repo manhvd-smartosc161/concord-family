@@ -1,18 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { familyMembers } from '@/features/auth/api';
 import type { AuthUser } from '@/features/auth/types';
 import { createTask, deleteTask, listTasks, updateTask } from '../api';
 import type { CreateTaskInput, Task, TaskAssignee, TaskStatus, UpdateTaskInput } from '../types';
 import { TaskCard } from './task-card';
 import { TaskQuickAdd } from './task-quick-add';
-
-const STATUSES: { status: TaskStatus; label: string; dot: string; badgeBg: string; badgeText: string }[] = [
-  { status: 'todo',        label: 'Cần làm',  dot: 'bg-stone-300',   badgeBg: 'bg-stone-100',   badgeText: 'text-stone-500'   },
-  { status: 'in_progress', label: 'Đang làm', dot: 'bg-amber-400',   badgeBg: 'bg-amber-100',   badgeText: 'text-amber-700'   },
-  { status: 'done',        label: 'Xong',     dot: 'bg-emerald-500', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-700' },
-];
 
 function getISOWeek(date: Date): string {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -49,6 +44,12 @@ function formatWeekLabel(weekYear: string): string {
 }
 
 export function TaskBoard() {
+  const t = useTranslations('tasks');
+  const STATUSES: { status: TaskStatus; label: string; dot: string; badgeBg: string; badgeText: string }[] = [
+    { status: 'todo',        label: t('status_todo'),        dot: 'bg-stone-300',   badgeBg: 'bg-stone-100',   badgeText: 'text-stone-500'   },
+    { status: 'in_progress', label: t('status_in_progress'), dot: 'bg-amber-400',   badgeBg: 'bg-amber-100',   badgeText: 'text-amber-700'   },
+    { status: 'done',        label: t('status_done'),        dot: 'bg-emerald-500', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-700' },
+  ];
   const [currentWeek, setCurrentWeek] = useState(() => getISOWeek(new Date()));
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,7 +143,7 @@ export function TaskBoard() {
               />
             </div>
             <span className="shrink-0 text-[11px] tabular-nums text-stone-400">
-              {totalDone}/{totalAll} xong
+              {totalDone}/{totalAll} {t('status_done')}
             </span>
           </div>
         )}
@@ -206,7 +207,7 @@ export function TaskBoard() {
                   ))}
                 {tasks.filter((t) => t.status === mobileStatus).length === 0 && (
                   <div className="rounded-xl border border-dashed border-stone-200 py-8 text-center text-sm text-stone-300">
-                    Chưa có
+                    {t('no_tasks_col')}
                   </div>
                 )}
               </div>

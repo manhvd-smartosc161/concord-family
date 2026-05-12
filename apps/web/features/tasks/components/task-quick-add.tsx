@@ -1,26 +1,29 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { CreateTaskInput, TaskAssignee, TaskCategory } from '../types';
 
 interface Props {
   onAdd: (input: CreateTaskInput) => Promise<void>;
 }
 
-const CATEGORIES: { value: TaskCategory; label: string; icon: string }[] = [
-  { value: 'shopping', label: 'Mua sắm',  icon: '🛒' },
-  { value: 'chores',   label: 'Việc nhà', icon: '🏠' },
-  { value: 'finance',  label: 'Tài chính',icon: '💰' },
-  { value: 'goal',     label: 'Mục tiêu', icon: '🎯' },
-];
-
-const ASSIGNEES: { value: TaskAssignee; label: string }[] = [
-  { value: 'both',    label: '👫 Cả hai' },
-  { value: 'husband', label: '👨 Chồng' },
-  { value: 'wife',    label: '👩 Vợ' },
-];
-
 export function TaskQuickAdd({ onAdd }: Props) {
+  const t = useTranslations('tasks');
+  const tCommon = useTranslations('common');
+
+  const CATEGORIES: { value: TaskCategory; label: string; icon: string }[] = [
+    { value: 'shopping', label: t('category_shopping'), icon: '🛒' },
+    { value: 'chores',   label: t('category_chores'),   icon: '🏠' },
+    { value: 'finance',  label: t('category_finance'),  icon: '💰' },
+    { value: 'goal',     label: t('category_goal'),     icon: '🎯' },
+  ];
+
+  const ASSIGNEES: { value: TaskAssignee; label: string }[] = [
+    { value: 'both',    label: `👫 ${t('assignee_both')}` },
+    { value: 'husband', label: `👨 ${t('assignee_husband')}` },
+    { value: 'wife',    label: `👩 ${t('assignee_wife')}` },
+  ];
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<TaskCategory>('shopping');
@@ -57,7 +60,7 @@ export function TaskQuickAdd({ onAdd }: Props) {
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
           <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
-        Thêm task mới...
+        {t('add_task')}...
       </button>
     );
   }
@@ -73,7 +76,7 @@ export function TaskQuickAdd({ onAdd }: Props) {
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Tên task..."
+        placeholder={t('title_placeholder')}
         className="w-full bg-transparent text-sm font-medium text-stone-800 placeholder-stone-400 focus:outline-none"
         disabled={loading}
       />
@@ -118,14 +121,14 @@ export function TaskQuickAdd({ onAdd }: Props) {
             onClick={() => { setOpen(false); setTitle(''); }}
             className="rounded px-2 py-0.5 text-xs text-stone-400 hover:bg-stone-100"
           >
-            Hủy
+            {tCommon('cancel')}
           </button>
           <button
             type="submit"
             disabled={loading || !title.trim()}
             className="rounded bg-emerald-600 px-2.5 py-0.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
           >
-            {loading ? '...' : 'Thêm'}
+            {loading ? '...' : t('add_button')}
           </button>
         </div>
       </div>
