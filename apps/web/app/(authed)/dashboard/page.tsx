@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
 import { listEnvelopes } from '@/features/funds/api';
@@ -29,6 +30,8 @@ import {
 } from '@/components/ui';
 
 export default function DashboardPage() {
+  const t = useTranslations('dashboard');
+  const tCommon = useTranslations('common');
   const { user, funds, reloadFunds } = useAuthedLayout();
   const [goals, setGoals] = useState<GoalView[]>([]);
   const [envelopes, setEnvelopes] = useState<FundView[]>([]);
@@ -56,13 +59,10 @@ export default function DashboardPage() {
   }, []);
 
   async function handleDeleteTxn(id: string) {
-    if (
-      !confirm('Xoá giao dịch này? Số dư quỹ sẽ được hoàn lại.')
-    )
+    if (!confirm(tCommon('confirm_delete_transaction')))
       return;
     try {
       await deleteTransaction(id);
-      // Reload funds (sidebar) + dashboard data
       await Promise.all([reloadFunds(), reload()]);
     } catch (err) {
       const msg =
@@ -70,8 +70,8 @@ export default function DashboardPage() {
           ? err.message
           : err instanceof Error
             ? err.message
-            : 'Lỗi không xác định';
-      alert(`Không xoá được: ${msg}`);
+            : tCommon('error');
+      alert(tCommon('cannot_delete', { msg }));
     }
   }
 
@@ -85,8 +85,8 @@ export default function DashboardPage() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
-        title={`Chào ${user.name} 👋`}
-        subtitle={`Hôm nay là ${new Date().toLocaleDateString('vi-VN', {
+        title={t('title', { name: user.name })}
+        subtitle={`${new Date().toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
           weekday: 'long',
           day: 'numeric',
           month: 'long',
@@ -102,17 +102,16 @@ export default function DashboardPage() {
                 <span className="text-2xl">🏠</span>
                 <div className="flex-1">
                   <div className="text-sm font-semibold text-amber-900">
-                    Mời vợ/chồng tham gia gia đình
+                    {t('invite_title')}
                   </div>
                   <p className="mt-1 text-xs text-amber-800">
-                    Sau khi 2 người cùng tham gia, hệ thống sẽ tự tạo 3 quỹ
-                    chi tiêu (Chồng / Vợ / Chung) để bắt đầu.
+                    {t('invite_desc')}
                   </p>
                   <Link
                     href="/family/invite"
                     className="mt-3 inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700"
                   >
-                    Gửi link mời ngay →
+                    {t('invite_cta')}
                   </Link>
                 </div>
               </div>
@@ -185,6 +184,8 @@ export default function DashboardPage() {
 // ─── Sub-components ────────────────────────────────────────────────────
 
 function GoalHero({ goal }: { goal: GoalView }) {
+  const t = useTranslations('dashboard');
+  const tGoals = useTranslations('goals');
   const pctRaw = (goal.currentProgress / Math.max(goal.targetAmount, 1)) * 100;
   const pct = Math.max(0, Math.min(100, pctRaw));
   const tone =
@@ -194,9 +195,9 @@ function GoalHero({ goal }: { goal: GoalView }) {
         ? 'amber'
         : 'rose';
   const paceLabel = {
-    ahead: 'Đang vượt tiến độ',
-    on_track: 'Đúng tiến độ',
-    behind: 'Đang chậm',
+    ahead: tGoals('ahead'),
+    on_track: tGoals('on_track'),
+    behind: tGoals('behind'),
   }[goal.paceStatus];
   const paceTone = {
     ahead: 'emerald',
@@ -209,10 +210,10 @@ function GoalHero({ goal }: { goal: GoalView }) {
       <div className="mb-3 flex items-start justify-between">
         <div>
           <div className="text-[11px] font-medium uppercase tracking-wide text-emerald-700">
-            Mục tiêu năm {new Date(goal.startDate).getFullYear()}
+            {t('year_goal', { year: new Date(goal.startDate).getFullYear() })}
           </div>
           <div className="mt-0.5 text-base font-semibold text-stone-800">
-            Tiết kiệm {formatVND(goal.targetAmount)} cùng nhau
+            {t('year_goal_desc', { amount: formatVND(goal.targetAmount) })}
           </div>
         </div>
         <Badge tone={paceTone}>{paceLabel}</Badge>
@@ -231,20 +232,20 @@ function GoalHero({ goal }: { goal: GoalView }) {
       </div>
       <ProgressBar value={pct} max={100} tone={tone} />
       <p className="mt-1.5 text-[10px] text-stone-400">
-        Tính theo dòng tiền vào quỹ tiết kiệm & đầu tư trong năm
+        {t('goal_progress_hint')}
       </p>
 
       <div className="mt-4 grid grid-cols-1 gap-4 border-t border-stone-100 pt-4 sm:grid-cols-3">
         <Stat
-          label="Còn lại"
+          label={t('remaining')}
           value={formatVND(Math.max(0, goal.targetAmount - goal.currentProgress))}
         />
-        <Stat label="Còn ngày" value={`${goal.daysRemaining} ngày`} />
+        <Stat label={t('days_remaining')} value={t('days_remaining_value', { days: goal.daysRemaining })} />
         <Stat
-          label="Dự kiến cuối kỳ"
+          label={t('projection')}
           value={formatVND(goal.projection)}
           hint={
-            goal.projection >= goal.targetAmount ? 'Đạt mục tiêu' : 'Hụt mục tiêu'
+            goal.projection >= goal.targetAmount ? t('goal_reached') : t('goal_missed')
           }
         />
       </div>
@@ -253,11 +254,12 @@ function GoalHero({ goal }: { goal: GoalView }) {
 }
 
 function EnvelopesBlock({ envelopes }: { envelopes: FundView[] }) {
+  const t = useTranslations('dashboard');
   return (
     <Card>
       <div className="mb-3 flex items-baseline justify-between">
         <h3 className="text-sm font-semibold text-stone-800">
-          Quỹ mục tiêu
+          {t('target_funds')}
         </h3>
         <Link
           href="/goals"
@@ -379,12 +381,13 @@ function FundsBlock({
   totalVisible: number;
   funds: ReturnType<typeof useAuthedLayout>['funds'];
 }) {
+  const t = useTranslations('dashboard');
   return (
     <Card>
       <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-stone-800">Số dư quỹ</h3>
+        <h3 className="text-sm font-semibold text-stone-800">{t('funds_balance')}</h3>
         <span className="font-mono text-xs tabular-nums text-stone-500">
-          Tổng (bạn thấy được): {formatVND(totalVisible)}
+          {t('total_visible', { amount: formatVND(totalVisible) })}
         </span>
       </div>
       {(() => {
@@ -431,7 +434,7 @@ function FundsBlock({
             {goalFunds.length > 0 && (
               <>
                 <p className="pt-1 text-[10px] font-medium uppercase tracking-wider text-stone-400">
-                  Tiết kiệm & đầu tư
+                  {t('savings_investment')}
                 </p>
                 {goalFunds.map(renderFund)}
               </>
@@ -454,17 +457,18 @@ function RecentBlock({
   onEdit: (t: TransactionView) => void;
   onDelete: (id: string) => void;
 }) {
+  const t = useTranslations('dashboard');
   return (
     <Card>
       <div className="mb-3 flex items-baseline justify-between">
         <h3 className="text-sm font-semibold text-stone-800">
-          Giao dịch gần đây
+          {t('recent_transactions')}
         </h3>
         <Link
           href="/chat"
           className="text-xs text-emerald-700 hover:text-emerald-900"
         >
-          + Thêm qua chat
+          {t('add_via_chat')}
         </Link>
       </div>
       {loading && (
@@ -477,17 +481,17 @@ function RecentBlock({
       {!loading && recent.length === 0 && (
         <EmptyState
           icon="📭"
-          title="Chưa có giao dịch nào"
-          description="Vào tab Chat để gõ giao dịch tự nhiên — agent sẽ log vào quỹ tương ứng."
+          title={t('no_recent')}
+          description={t('no_recent_desc')}
         />
       )}
       {!loading &&
-        recent.map((t) => (
+        recent.map((txn) => (
           <TxnRow
-            key={t.id}
-            t={t}
-            onEdit={() => onEdit(t)}
-            onDelete={() => onDelete(t.id)}
+            key={txn.id}
+            t={txn}
+            onEdit={() => onEdit(txn)}
+            onDelete={() => onDelete(txn.id)}
           />
         ))}
     </Card>
@@ -495,7 +499,7 @@ function RecentBlock({
 }
 
 function TxnRow({
-  t,
+  t: txn,
   onEdit,
   onDelete,
 }: {
@@ -503,25 +507,26 @@ function TxnRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const isExpense = t.amount < 0;
+  const locale = useLocale();
+  const isExpense = txn.amount < 0;
   return (
     <div className="group flex items-center justify-between border-b border-stone-100 py-2 last:border-0">
       <div className="flex items-center gap-2.5">
         <span className="text-base">
-          {t.category?.icon ?? (isExpense ? '💸' : '💰')}
+          {txn.category?.icon ?? (isExpense ? '💸' : '💰')}
         </span>
         <div className="leading-tight">
           <div className="text-sm text-stone-800">
-            {t.note ?? t.category?.name ?? '(không ghi chú)'}
+            {txn.note ?? txn.category?.name ?? '(không ghi chú)'}
           </div>
           <div className="text-[11px] text-stone-500">
-            {t.fund.name}
-            {t.category && ` • ${t.category.name}`} •{' '}
-            {new Date(t.date).toLocaleDateString('vi-VN', {
+            {txn.fund.name}
+            {txn.category && ` • ${txn.category.name}`} •{' '}
+            {new Date(txn.date).toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
               day: '2-digit',
               month: '2-digit',
             })}{' '}
-            • {t.loggedBy.name}
+            • {txn.loggedBy.name}
           </div>
         </div>
       </div>
@@ -531,7 +536,7 @@ function TxnRow({
             isExpense ? 'text-rose-700' : 'text-emerald-700'
           }`}
         >
-          {formatVND(t.amount, true)}
+          {formatVND(txn.amount, true)}
         </span>
         <div className="flex items-center gap-1 sm:invisible sm:group-hover:visible">
           <button
