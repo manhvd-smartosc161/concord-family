@@ -301,6 +301,7 @@ function EnvelopeCard({
 // ─── Fund ledger ───────────────────────────────────────────────────────
 
 function FundLedgerPanel({ fundId }: { fundId: string }) {
+  const tLedger = useTranslations('goals');
   const [txns, setTxns] = useState<TransactionView[] | null>(null);
 
   useEffect(() => {
@@ -312,7 +313,7 @@ function FundLedgerPanel({ fundId }: { fundId: string }) {
   if (txns.length === 0)
     return (
       <p className="mt-3 text-center text-[11px] text-stone-400">
-        Chưa có giao dịch nào
+        {tLedger('no_transactions')}
       </p>
     );
 
@@ -333,7 +334,7 @@ function FundLedgerPanel({ fundId }: { fundId: string }) {
       {prevYears.length > 0 && (
         <details>
           <summary className="cursor-pointer text-[11px] text-stone-400 hover:text-stone-600">
-            Các năm trước ({prevYears.length} năm)
+            {tLedger('prev_years', { count: prevYears.length })}
           </summary>
           <div className="mt-2 space-y-3">
             {prevYears.map(([year, rows]) => (
@@ -502,7 +503,7 @@ function EnvelopeFormModal({
 
   async function onSubmit() {
     if (!name.trim()) {
-      setErr('Tên quỹ không được rỗng');
+      setErr(tGoalsModal('name_required'));
       return;
     }
     setSaving(true);
@@ -559,9 +560,9 @@ function EnvelopeFormModal({
             <div className="flex gap-2">
               {(
                 [
-                  { value: 'savings', label: '🐷 Tiết kiệm' },
-                  { value: 'investment', label: '📈 Đầu tư' },
-                ] as const
+                  { value: 'savings' as const, label: tCommonModal('fund_type_savings') },
+                  { value: 'investment' as const, label: tCommonModal('fund_type_investment') },
+                ]
               ).map((opt) => (
                 <button
                   key={opt.value}
@@ -584,7 +585,7 @@ function EnvelopeFormModal({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="vd: Quỹ Du lịch"
+              placeholder={tGoalsModal('fund_name_placeholder')}
               className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
             />
           </Field>

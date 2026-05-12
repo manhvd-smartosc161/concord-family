@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
 import {
@@ -253,7 +253,7 @@ function ChatInner() {
           {
             id: crypto.randomUUID(),
             role: 'system',
-            text: 'Chưa chọn quỹ nào. Click vào tab quỹ ở sidebar trái.',
+            text: t('no_fund_selected'),
             error: true,
           },
         ]);
@@ -341,7 +341,7 @@ function ChatInner() {
   }
 
   async function handleDeleteSession(id: string) {
-    if (!confirm('Xoá hội thoại này (không hoàn tác)?')) return;
+    if (!confirm(t('delete_session_confirm'))) return;
     try {
       await deleteChatSession(id);
       if (id === sessionIdFromUrl) {
@@ -592,7 +592,11 @@ function SessionList({
   fundType: 'personal' | 'joint' | undefined;
 }) {
   const t = useTranslations('chat');
-  const grouped = useMemo(() => groupByDate(sessions), [sessions]);
+  const groupLabels = useMemo<GroupLabels>(() => ({
+    today: t('group_today'), yesterday: t('group_yesterday'),
+    last7: t('group_7days'), last30: t('group_30days'), older: t('group_older'),
+  }), [t]);
+  const grouped = useMemo(() => groupByDate(sessions, groupLabels), [sessions, groupLabels]);
   return (
     <div className="flex-1 overflow-y-auto px-2 py-2">
       {sessions.length === 0 && (
@@ -633,6 +637,13 @@ function SessionItem({
   onDelete: () => void;
 }) {
   const t = useTranslations('chat');
+  const locale = useLocale();
+  const relLabels: RelativeLabels = useMemo(() => ({
+    justNow: t('relative_just_now'),
+    minutesAgo: (n) => t('relative_minutes', { n }),
+    hoursAgo: (n) => t('relative_hours', { n }),
+    locale,
+  }), [t, locale]);
   const router = useRouter();
   return (
     <li>
@@ -655,7 +666,7 @@ function SessionItem({
           </div>
           <div className="text-[10px] text-stone-400">
             {t('message_count', { count: session.messageCount })} ·{' '}
-            {formatRelative(new Date(session.lastMessageAt))}
+            {formatRelative(new Date(session.lastMessageAt), relLabels)}
           </div>
         </button>
         <button
@@ -699,7 +710,11 @@ function SessionListDrawer({
   onPick: () => void;
 }) {
   const t = useTranslations('chat');
-  const grouped = useMemo(() => groupByDate(sessions), [sessions]);
+  const groupLabels = useMemo<GroupLabels>(() => ({
+    today: t('group_today'), yesterday: t('group_yesterday'),
+    last7: t('group_7days'), last30: t('group_30days'), older: t('group_older'),
+  }), [t]);
+  const grouped = useMemo(() => groupByDate(sessions, groupLabels), [sessions, groupLabels]);
   return (
     <div className="flex-1 overflow-y-auto px-2 py-2">
       {sessions.length === 0 && (
@@ -743,6 +758,13 @@ function SessionItemDrawer({
   onPick: () => void;
 }) {
   const t = useTranslations('chat');
+  const locale = useLocale();
+  const relLabels: RelativeLabels = useMemo(() => ({
+    justNow: t('relative_just_now'),
+    minutesAgo: (n) => t('relative_minutes', { n }),
+    hoursAgo: (n) => t('relative_hours', { n }),
+    locale,
+  }), [t, locale]);
   const router = useRouter();
   return (
     <li>
@@ -765,7 +787,7 @@ function SessionItemDrawer({
           </div>
           <div className="text-[10px] text-stone-400">
             {t('message_count', { count: session.messageCount })} ·{' '}
-            {formatRelative(new Date(session.lastMessageAt))}
+            {formatRelative(new Date(session.lastMessageAt), relLabels)}
           </div>
         </button>
         <button
@@ -1001,6 +1023,7 @@ function ActionCard({
   actionIndex: number;
   onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
 }) {
+  const t = useTranslations('chat');
   if (action.kind === 'logged') {
     const isExpense = action.amount < 0;
     return (
@@ -1016,7 +1039,7 @@ function ActionCard({
         </div>
         <div className="mt-0.5 text-[11px] opacity-80">
           {action.fundName}
-          {action.categoryName ? ` • ${action.categoryName}` : ''} · Số dư mới{' '}
+          {action.categoryName ? ` • ${action.categoryName}` : ''} · {t('action_new_balance')}{' '}
           <span className="font-mono tabular-nums">
             {formatVND(action.balance)}
           </span>
@@ -1035,7 +1058,7 @@ function ActionCard({
         }`}
       >
         <div className="flex items-center gap-1.5 font-semibold">
-          🔧 <span>Đã sửa</span>
+          🔧 <span>{t('action_updated')}</span>
         </div>
         <div className="font-mono font-semibold tabular-nums">
           {formatVND(action.amount, true)}
@@ -1050,7 +1073,7 @@ function ActionCard({
   if (action.kind === 'deleted') {
     return (
       <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
-        🗑️ Đã xoá giao dịch
+        🗑️ {t('action_deleted')}
       </div>
     );
   }
@@ -1064,15 +1087,15 @@ function ActionCard({
   if (action.kind === 'category_created') {
     return (
       <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
-        <span className="font-medium">✨ Đã tạo category: {action.name}</span>
+        <span className="font-medium">✨ {t('action_category_created')} {action.name}</span>
         <span>
           {action.parentName
-            ? ` (thuộc ${action.parentName})`
-            : ' (danh mục cha)'}
+            ? ` (${t('action_category_sub', { parent: action.parentName })})`
+            : ` (${t('action_category_root')})`}
         </span>
         <span className="text-stone-500">
           {' '}
-          — {action.isEssential ? 'thiết yếu' : 'không thiết yếu'}
+          — {action.isEssential ? t('action_essential') : t('action_not_essential')}
         </span>
       </div>
     );
@@ -1090,9 +1113,9 @@ function ActionCard({
   if (action.kind === 'important_date_logged') {
     return (
       <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
-        ✅ Đã thêm: <span className="font-medium">{action.name}</span>
+        ✅ {t('action_date_logged')} <span className="font-medium">{action.name}</span>
         <span className="ml-1 text-stone-500">
-          — {formatImportantDate(action.date)}
+          — {formatImportantDate(action.date, false, t('lunar_suffix'))}
         </span>
       </div>
     );
@@ -1100,7 +1123,7 @@ function ActionCard({
   if (action.kind === 'important_date_dismissed') {
     return (
       <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-500">
-        ⊘ Đã bỏ qua đề xuất ngày
+        ⊘ {t('action_date_dismissed')}
       </div>
     );
   }
@@ -1235,7 +1258,7 @@ function ImportantDateBatchCard({
                 {action.name}
               </div>
               <div className="mt-0.5 text-[11px] text-stone-500">
-                {formatImportantDate(action.date, action.isLunar)}
+                {formatImportantDate(action.date, action.isLunar, t('lunar_suffix'))}
               </div>
             </div>
           </li>
@@ -1292,8 +1315,12 @@ function ImportantDateProposedCard({
       ? action.remindDaysBefore
       : [0, 2];
   const icon = importantDateIcon(action.type);
-  const dateLabel = formatImportantDate(action.date, action.isLunar);
-  const reminderLabel = formatReminderDays(safeReminders);
+  const dateLabel = formatImportantDate(action.date, action.isLunar, t('lunar_suffix'));
+  const reminderLabel = formatReminderDays(safeReminders, {
+    none: t('reminder_none'),
+    onDay: t('reminder_on_day'),
+    daysBeforeFn: (n) => t('reminder_days_before', { n }),
+  });
 
   async function handleConfirm() {
     setSubmitting(true);
@@ -1390,22 +1417,28 @@ function importantDateIcon(
   }
 }
 
-function formatImportantDate(iso: string, isLunar = false): string {
+function formatImportantDate(iso: string, isLunar = false, lunarSuffix = '(âm)'): string {
   const [y, m, d] = iso.split('-');
   if (!y || !m || !d) return iso;
   const formatted = `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
-  return isLunar ? `${formatted} (âm)` : formatted;
+  return isLunar ? `${formatted} ${lunarSuffix}` : formatted;
 }
 
-function formatReminderDays(days: number[] | undefined | null): string {
-  if (!days || days.length === 0) return 'không nhắc';
-  const labels = days.map((d) => (d === 0 ? 'hôm đó' : `${d} ngày trước`));
-  return labels.join(' + ');
+function formatReminderDays(
+  days: number[] | undefined | null,
+  labels: { none: string; onDay: string; daysBeforeFn: (n: number) => string },
+): string {
+  if (!days || days.length === 0) return labels.none;
+  return days.map((d) => (d === 0 ? labels.onDay : labels.daysBeforeFn(d))).join(' + ');
 }
 
 // ─── Date helpers ─────────────────────────────────────────────────────
 
-function groupByDate(sessions: ChatSessionView[]) {
+interface GroupLabels {
+  today: string; yesterday: string; last7: string; last30: string; older: string;
+}
+
+function groupByDate(sessions: ChatSessionView[], labels: GroupLabels) {
   const today = startOfDay(new Date());
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
@@ -1415,19 +1448,19 @@ function groupByDate(sessions: ChatSessionView[]) {
   last30.setDate(today.getDate() - 30);
 
   const buckets: Record<string, ChatSessionView[]> = {
-    'Hôm nay': [],
-    'Hôm qua': [],
-    '7 ngày trước': [],
-    '30 ngày trước': [],
-    'Cũ hơn': [],
+    [labels.today]: [],
+    [labels.yesterday]: [],
+    [labels.last7]: [],
+    [labels.last30]: [],
+    [labels.older]: [],
   };
   for (const s of sessions) {
     const t = new Date(s.lastMessageAt);
-    if (t >= today) buckets['Hôm nay'].push(s);
-    else if (t >= yesterday) buckets['Hôm qua'].push(s);
-    else if (t >= last7) buckets['7 ngày trước'].push(s);
-    else if (t >= last30) buckets['30 ngày trước'].push(s);
-    else buckets['Cũ hơn'].push(s);
+    if (t >= today) buckets[labels.today].push(s);
+    else if (t >= yesterday) buckets[labels.yesterday].push(s);
+    else if (t >= last7) buckets[labels.last7].push(s);
+    else if (t >= last30) buckets[labels.last30].push(s);
+    else buckets[labels.older].push(s);
   }
   return Object.entries(buckets)
     .filter(([, items]) => items.length > 0)
@@ -1440,11 +1473,18 @@ function startOfDay(d: Date) {
   return x;
 }
 
-function formatRelative(d: Date): string {
+interface RelativeLabels {
+  justNow: string;
+  minutesAgo: (n: number) => string;
+  hoursAgo: (n: number) => string;
+  locale: string;
+}
+
+function formatRelative(d: Date, labels: RelativeLabels): string {
   const diffMin = Math.round((Date.now() - +d) / 60000);
-  if (diffMin < 1) return 'vừa xong';
-  if (diffMin < 60) return `${diffMin} phút trước`;
+  if (diffMin < 1) return labels.justNow;
+  if (diffMin < 60) return labels.minutesAgo(diffMin);
   const diffH = Math.round(diffMin / 60);
-  if (diffH < 24) return `${diffH} giờ trước`;
-  return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+  if (diffH < 24) return labels.hoursAgo(diffH);
+  return d.toLocaleDateString(labels.locale === 'en' ? 'en-US' : 'vi-VN', { day: '2-digit', month: '2-digit' });
 }

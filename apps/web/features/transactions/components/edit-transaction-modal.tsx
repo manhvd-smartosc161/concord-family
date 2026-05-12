@@ -82,7 +82,7 @@ export function EditTransactionModal({
 
     const absAmount = parseInt(amountStr.replace(/[^\d]/g, ''), 10);
     if (!Number.isFinite(absAmount) || absAmount === 0) {
-      setError('Số tiền phải là số dương');
+      setError(t('amount_required'));
       return;
     }
     const signedAmount = isExpense ? -absAmount : absAmount;

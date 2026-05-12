@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import {
   deleteImportantDate,
@@ -18,20 +18,12 @@ import type {
   YearAgendaView,
 } from '@/features/important-dates/types';
 
-const MONTH_VI: Record<number, string> = {
-  1: 'Tháng 1',
-  2: 'Tháng 2',
-  3: 'Tháng 3',
-  4: 'Tháng 4',
-  5: 'Tháng 5',
-  6: 'Tháng 6',
-  7: 'Tháng 7',
-  8: 'Tháng 8',
-  9: 'Tháng 9',
-  10: 'Tháng 10',
-  11: 'Tháng 11',
-  12: 'Tháng 12',
-};
+function getMonthName(month: number, locale: string): string {
+  return new Date(2024, month - 1, 1).toLocaleDateString(
+    locale === 'en' ? 'en-US' : 'vi-VN',
+    { month: 'long' },
+  );
+}
 
 const MONTH_HUE: Record<number, string> = {
   1: 'from-rose-300 to-rose-500',
@@ -50,13 +42,6 @@ const MONTH_HUE: Record<number, string> = {
 
 type KindFilter = 'all' | 'birthday' | 'death_anniversary' | 'anniversary' | 'other';
 
-const FILTER_OPTIONS: { value: KindFilter; icon: string; label: string }[] = [
-  { value: 'all', icon: '📋', label: 'Tất cả' },
-  { value: 'birthday', icon: '🎂', label: 'Sinh nhật' },
-  { value: 'death_anniversary', icon: '🕯', label: 'Giỗ' },
-  { value: 'anniversary', icon: '💑', label: 'Kỷ niệm' },
-  { value: 'other', icon: '📅', label: 'Khác / lễ' },
-];
 
 function matchesFilter(item: AgendaItem, filter: KindFilter): boolean {
   if (filter === 'all') return true;
@@ -72,6 +57,14 @@ function matchesFilter(item: AgendaItem, filter: KindFilter): boolean {
 export default function YearAgendaPage() {
   const t = useTranslations('dates');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
+  const FILTER_OPTIONS: { value: KindFilter; icon: string; label: string }[] = [
+    { value: 'all', icon: '📋', label: tCommon('all') },
+    { value: 'birthday', icon: '🎂', label: t('kind_birthday') },
+    { value: 'death_anniversary', icon: '🕯', label: t('kind_death_anniversary') },
+    { value: 'anniversary', icon: '💑', label: t('kind_anniversary') },
+    { value: 'other', icon: '📅', label: t('kind_other') },
+  ];
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const [view, setView] = useState<YearAgendaView | null>(null);
@@ -166,13 +159,13 @@ export default function YearAgendaPage() {
   const subtitleText = !view
     ? tCommon('loading')
     : kindFilter === 'all'
-      ? `${total} sự kiện sắp tới — group theo tháng`
-      : `${filteredCount}/${total} sự kiện (đang lọc)`;
+      ? t('year_subtitle_all', { total })
+      : t('year_subtitle_filtered', { filtered: filteredCount, total });
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
-        title={`Cả năm ${year}`}
+        title={t('year_title', { year })}
         subtitle={subtitleText}
         actions={
           <div className="flex items-center gap-2">
@@ -279,10 +272,10 @@ export default function YearAgendaPage() {
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold tracking-tight text-stone-900">
-                        {MONTH_VI[month]}
+                        {getMonthName(month, locale)}
                       </h2>
                       <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-400">
-                        {items.length} sự kiện · {String(month).padStart(2, '0')}/{year}
+                        {items.length} {t('events_count')} · {String(month).padStart(2, '0')}/{year}
                       </p>
                     </div>
                   </div>

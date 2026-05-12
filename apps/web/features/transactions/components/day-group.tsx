@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { formatVND } from '@/lib/format';
 import type { TransactionView } from '../types';
 import { formatDayLabel } from '../lib/group-by-day';
@@ -17,7 +17,8 @@ export function DayGroup({
   onDelete: (id: string) => void;
 }) {
   const tDayGroup = useTranslations('transactions');
-  const dayLabel = formatDayLabel(day);
+  const locale = useLocale();
+  const dayLabel = formatDayLabel(day, { today: tDayGroup('day_today'), yesterday: tDayGroup('day_yesterday') }, locale);
   return (
     <div className="mb-4 last:mb-0">
       <div className="mb-1 flex items-baseline justify-between border-b border-stone-100 pb-1">
@@ -92,8 +93,8 @@ function TxnRow({
         <div className="invisible flex items-center gap-1 group-hover:visible">
           <button
             onClick={onEdit}
-            aria-label="Sửa"
-            title="Sửa quỹ / số tiền / category"
+            aria-label="Edit"
+            title="Edit fund / amount / category"
             className="rounded-md p-1 text-stone-400 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,8 +103,8 @@ function TxnRow({
           </button>
           <button
             onClick={onDelete}
-            aria-label="Xoá"
-            title="Xoá + hoàn lại số dư"
+            aria-label="Delete"
+            title="Delete and restore balance"
             className="rounded-md p-1 text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

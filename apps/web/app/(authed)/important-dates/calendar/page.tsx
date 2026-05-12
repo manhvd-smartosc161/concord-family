@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import {
   deleteImportantDate,
@@ -20,25 +20,22 @@ import type {
   YearAgendaView,
 } from '@/features/important-dates/types';
 
-const MONTH_VI: Record<number, string> = {
-  1: 'Tháng 1',
-  2: 'Tháng 2',
-  3: 'Tháng 3',
-  4: 'Tháng 4',
-  5: 'Tháng 5',
-  6: 'Tháng 6',
-  7: 'Tháng 7',
-  8: 'Tháng 8',
-  9: 'Tháng 9',
-  10: 'Tháng 10',
-  11: 'Tháng 11',
-  12: 'Tháng 12',
-};
+function getMonthLabel(month: number, year: number, locale: string): string {
+  return new Date(year, month - 1, 1).toLocaleDateString(
+    locale === 'en' ? 'en-US' : 'vi-VN',
+    { month: 'long', year: 'numeric' },
+  );
+}
 
-const DOW_FULL = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+function getDowLabels(locale: string): string[] {
+  return Array.from({ length: 7 }, (_, i) =>
+    new Date(2024, 0, i).toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', { weekday: 'short' }),
+  );
+}
 
 export default function CalendarPage() {
   const t = useTranslations('dates');
+  const locale = useLocale();
   const today = new Date();
   const todayIso = isoOf(today);
   const [year, setYear] = useState(today.getFullYear());
@@ -153,15 +150,15 @@ export default function CalendarPage() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
-        title={`${MONTH_VI[month]} ${year}`}
-        subtitle="Lịch âm-dương · ngày quan trọng"
+        title={getMonthLabel(month, year, locale)}
+        subtitle={t('calendar_subtitle')}
         actions={
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => shiftMonth(-1)}
               className="rounded-lg bg-white px-3 py-1.5 text-sm text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
-              aria-label="Tháng trước"
+              aria-label="Previous month"
             >
               ‹
             </button>
@@ -176,7 +173,7 @@ export default function CalendarPage() {
               type="button"
               onClick={() => shiftMonth(1)}
               className="rounded-lg bg-white px-3 py-1.5 text-sm text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
-              aria-label="Tháng sau"
+              aria-label="Next month"
             >
               ›
             </button>
@@ -214,20 +211,20 @@ export default function CalendarPage() {
                 </div>
                 <div className="leading-tight">
                   <div className="text-sm font-semibold text-stone-800">
-                    {DOW_FULL[selectedDateObj.getDay()]},{' '}
+                    {getDowLabels(locale)[selectedDateObj.getDay()]},{' '}
                     {selectedDateObj.getDate()}/
                     {selectedDateObj.getMonth() + 1}
                   </div>
                   <div className="mt-0.5 text-[11px] text-stone-500">
-                    Âm: {selectedLunar.day}/{selectedLunar.month}
+                    {t('lunar_label')}: {selectedLunar.day}/{selectedLunar.month}
                     {selectedLunar.isFirstDay && (
                       <span className="ml-1 inline-flex items-center rounded-full bg-rose-50 px-1.5 py-0.5 text-[9px] font-semibold text-rose-600">
-                        Mùng 1
+                        {t('lunar_first_day')}
                       </span>
                     )}
                     {selectedLunar.isFullMoon && (
                       <span className="ml-1 inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold text-amber-700">
-                        Rằm
+                        {t('lunar_full_moon')}
                       </span>
                     )}
                   </div>
@@ -235,7 +232,7 @@ export default function CalendarPage() {
               </div>
               {selectedItems.length > 0 && (
                 <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
-                  {selectedItems.length} sự kiện
+                  {selectedItems.length} {t('events_count')}
                 </span>
               )}
             </div>

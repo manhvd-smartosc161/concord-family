@@ -159,9 +159,7 @@ export default function ImportantDatesPage() {
           if (view && view.items.length > 0) {
             const lastDay = view.items[view.items.length - 1].daysUntil;
             if (saved.daysUntilNext > lastDay) {
-              alert(
-                `Đã lưu — "${saved.name}" còn ${saved.daysUntilNext} ngày, không hiện trong top ${UPCOMING_LIMIT}. Xem ở "Cả năm".`,
-              );
+              alert(t('saved_out_of_range', { name: saved.name, days: saved.daysUntilNext, limit: UPCOMING_LIMIT }));
             }
           }
         }}

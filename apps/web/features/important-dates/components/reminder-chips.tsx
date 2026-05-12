@@ -1,13 +1,6 @@
 'use client';
 
-const PRESETS: { value: number; label: string }[] = [
-  { value: 0, label: 'Hôm đó' },
-  { value: 1, label: '1 ngày trước' },
-  { value: 3, label: '3 ngày' },
-  { value: 7, label: '1 tuần' },
-  { value: 14, label: '2 tuần' },
-  { value: 30, label: '1 tháng' },
-];
+import { useTranslations } from 'next-intl';
 
 export function ReminderChips({
   value,
@@ -16,6 +9,15 @@ export function ReminderChips({
   value: number[];
   onChange: (next: number[]) => void;
 }) {
+  const t = useTranslations('dates');
+  const PRESETS: { value: number; label: string }[] = [
+    { value: 0, label: t('remind_on_day_short') },
+    { value: 1, label: t('remind_1d') },
+    { value: 3, label: t('remind_3d') },
+    { value: 7, label: t('remind_1w') },
+    { value: 14, label: t('remind_2w') },
+    { value: 30, label: t('remind_1m') },
+  ];
   const set = new Set(value);
   function toggle(v: number) {
     if (set.has(v)) {

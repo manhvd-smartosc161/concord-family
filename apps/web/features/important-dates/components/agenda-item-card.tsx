@@ -135,10 +135,10 @@ export function AgendaItemCard({
     const info = lunarOf(new Date(y, m - 1, d));
     const label =
       info.day === 1
-        ? `Mùng 1 tháng ${info.month} âm`
+        ? t('lunar_new_moon_hint', { month: info.month })
         : info.day === 15
-        ? `Rằm tháng ${info.month} âm`
-        : `Ngày ${info.day}/${info.month} âm`;
+        ? t('lunar_full_moon_hint', { month: info.month })
+        : t('lunar_day_hint', { day: info.day, month: info.month });
     if (label !== item.name && label !== item.notes) {
       lunarHint = label;
     }

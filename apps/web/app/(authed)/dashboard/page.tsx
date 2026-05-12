@@ -501,6 +501,7 @@ function TxnRow({
   onDelete: () => void;
 }) {
   const locale = useLocale();
+  const tTxn = useTranslations('transactions');
   const isExpense = txn.amount < 0;
   return (
     <div className="group flex items-center justify-between border-b border-stone-100 py-2 last:border-0">
@@ -510,7 +511,7 @@ function TxnRow({
         </span>
         <div className="leading-tight">
           <div className="text-sm text-stone-800">
-            {txn.note ?? txn.category?.name ?? '(không ghi chú)'}
+            {txn.note ?? txn.category?.name ?? tTxn('no_category')}
           </div>
           <div className="text-[11px] text-stone-500">
             {txn.fund.name}
@@ -534,8 +535,8 @@ function TxnRow({
         <div className="flex items-center gap-1 sm:invisible sm:group-hover:visible">
           <button
             onClick={onEdit}
-            aria-label="Sửa giao dịch"
-            title="Sửa quỹ / số tiền / category"
+            aria-label={tTxn('edit_title')}
+            title={tTxn('edit_title')}
             className="rounded-md p-1 text-stone-400 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
           >
             <svg
@@ -554,8 +555,8 @@ function TxnRow({
           </button>
           <button
             onClick={onDelete}
-            aria-label="Xoá giao dịch"
-            title="Xoá + hoàn lại số dư"
+            aria-label={tTxn('delete_confirm')}
+            title={tTxn('delete_confirm')}
             className="rounded-md p-1 text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
           >
             <svg

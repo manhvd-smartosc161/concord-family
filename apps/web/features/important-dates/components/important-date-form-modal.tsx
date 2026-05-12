@@ -31,7 +31,14 @@ export function ImportantDateFormModal({
   onClose: () => void;
   onSaved: (saved: ImportantDateView) => void;
 }) {
+  const t = useTranslations('dates');
   const tCommon = useTranslations('common');
+  const TYPE_OPTIONS_I18N = [
+    { value: 'birthday' as const, label: t('kind_birthday') },
+    { value: 'death_anniversary' as const, label: t('kind_death_anniversary') },
+    { value: 'anniversary' as const, label: t('kind_anniversary') },
+    { value: 'other' as const, label: t('kind_other') },
+  ];
   const [name, setName] = useState('');
   const [type, setType] = useState<ImportantDateType>('birthday');
   const [date, setDate] = useState('');
@@ -66,7 +73,7 @@ export function ImportantDateFormModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !date) {
-      setError('Vui lòng nhập tên và ngày');
+      setError(t('form_required'));
       return;
     }
     setSubmitting(true);
@@ -103,19 +110,19 @@ export function ImportantDateFormModal({
         className="w-full max-w-md rounded-xl bg-white p-4 sm:p-6 shadow-xl"
       >
         <h2 className="mb-4 text-base font-semibold text-stone-900">
-          {entry ? 'Sửa ngày quan trọng' : 'Thêm ngày quan trọng'}
+          {entry ? t('form_edit_title') : t('form_add_title')}
         </h2>
 
         <div className="space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-stone-600">
-              Tên
+              {t('form_name_label')}
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Sinh nhật vợ, Giỗ chạp,..."
+              placeholder={t('form_name_placeholder')}
               className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               maxLength={120}
             />
@@ -123,14 +130,14 @@ export function ImportantDateFormModal({
 
           <div>
             <label className="mb-1 block text-xs font-medium text-stone-600">
-              Loại
+              {t('form_type_label')}
             </label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as ImportantDateType)}
               className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             >
-              {TYPE_OPTIONS.map((o) => (
+              {TYPE_OPTIONS_I18N.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
                 </option>
@@ -140,7 +147,7 @@ export function ImportantDateFormModal({
 
           <div>
             <label className="mb-1 block text-xs font-medium text-stone-600">
-              Ngày {isLunar && <span className="text-amber-600">(âm lịch)</span>}
+              {t('form_date_label')} {isLunar && <span className="text-amber-600">{t('form_date_lunar_hint')}</span>}
             </label>
             <input
               type="date"
@@ -157,19 +164,19 @@ export function ImportantDateFormModal({
               onChange={(e) => setIsLunar(e.target.checked)}
               className="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500"
             />
-            Ngày này theo lịch âm
+            {t('form_lunar_checkbox')}
           </label>
 
           <div>
             <label className="mb-1 block text-xs font-medium text-stone-600">
-              Nhắc trước
+              {t('form_remind_label')}
             </label>
             <ReminderChips value={reminders} onChange={setReminders} />
           </div>
 
           <div>
             <label className="mb-1 block text-xs font-medium text-stone-600">
-              Ghi chú (tùy chọn)
+              {t('form_notes_label')}
             </label>
             <textarea
               value={notes}

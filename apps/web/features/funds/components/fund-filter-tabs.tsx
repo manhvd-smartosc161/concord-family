@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { FundView } from '../types';
 
 export function FundFilterTabs({
@@ -11,10 +12,11 @@ export function FundFilterTabs({
   value: string | 'all';
   onChange: (v: string | 'all') => void;
 }) {
+  const t = useTranslations('transactions');
   const tabs: Array<
     { id: 'all' | string; label: string; icon: string; disabled?: boolean }
   > = [
-    { id: 'all', label: 'Tất cả', icon: '📋' },
+    { id: 'all', label: t('all_funds_filter'), icon: '📋' },
     ...funds.map((f) => ({
       id: f.id,
       label: f.name.replace('Quỹ ', ''),

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError, setToken } from '@/lib/api-client';
 import { login } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/hooks';
@@ -16,6 +17,7 @@ export default function LoginPage() {
 }
 
 function LoginInner() {
+  const t = useTranslations('auth');
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get('next');
@@ -84,23 +86,23 @@ function LoginInner() {
             Concord
           </h1>
           <p className="mt-1 text-sm text-stone-500">
-            Cùng vợ chồng đi tới mục tiêu tài chính chung.
+            {t('login_tagline')}
           </p>
         </div>
 
         {/* Card */}
         <div className="rounded-2xl border border-stone-200/80 bg-white/90 p-6 shadow-xl shadow-stone-300/30 backdrop-blur sm:p-8">
           <h2 className="text-base font-semibold text-stone-800">
-            Đăng nhập
+            {t('login_title')}
           </h2>
           <p className="mt-1 mb-6 text-xs text-stone-500">
-            Nhập email và mật khẩu để tiếp tục.
+            {t('login_subtitle')}
           </p>
 
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-stone-700">
-                Email
+                {t('email')}
               </label>
               <input
                 type="email"
@@ -116,7 +118,7 @@ function LoginInner() {
 
             <div>
               <label className="mb-1.5 block text-xs font-medium text-stone-700">
-                Mật khẩu
+                {t('password')}
               </label>
               <input
                 type="password"
@@ -140,14 +142,14 @@ function LoginInner() {
               disabled={submitting || !email || !password}
               className="group relative w-full overflow-hidden rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
             >
-              {submitting ? 'Đang đăng nhập…' : 'Đăng nhập'}
+              {submitting ? t('submitting') : t('login_title')}
             </button>
           </form>
 
           <p className="mt-4 text-center text-xs text-stone-500">
-            Chưa có tài khoản?{' '}
+            {t('no_account')}{' '}
             <Link href="/register" className="font-medium text-emerald-700 hover:underline">
-              Đăng ký
+              {t('register_link')}
             </Link>
           </p>
         </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { formatVND } from '@/lib/format';
 import type { FundView } from '../types';
 
@@ -34,6 +35,7 @@ export function pickFundIcon(fund: {
 }
 
 export function FundCard({ fund }: { fund: FundView }) {
+  const tCommon = useTranslations('common');
   const isPrivate = fund.accessLevel === 'private';
   const isGoalFund = fund.purpose === 'savings' || fund.purpose === 'investment';
   const variant = {
@@ -48,14 +50,14 @@ export function FundCard({ fund }: { fund: FundView }) {
   const icon = pickFundIcon(fund);
   const label =
     fund.accessLevel === 'owner'
-      ? 'Của bạn'
+      ? tCommon('fund_label_yours')
       : fund.accessLevel === 'joint'
         ? fund.purpose === 'investment'
-          ? 'Đầu tư'
+          ? tCommon('fund_label_investment')
           : fund.purpose === 'savings'
-            ? 'Tiết kiệm'
-            : 'Chung'
-        : 'Riêng tư';
+            ? tCommon('fund_label_savings')
+            : tCommon('fund_label_joint')
+        : tCommon('fund_label_private');
 
   return (
     <div className={`rounded-lg border ${variant} p-3`}>

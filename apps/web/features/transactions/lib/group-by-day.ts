@@ -17,15 +17,19 @@ export function groupByDay(items: TransactionView[]): DayGrouped[] {
     .map(([day, items]) => ({ day, items }));
 }
 
-export function formatDayLabel(iso: string): string {
+export function formatDayLabel(
+  iso: string,
+  labels: { today: string; yesterday: string },
+  locale = 'vi',
+): string {
   const d = new Date(iso + 'T00:00:00');
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-  if (+d === +today) return 'Hôm nay';
-  if (+d === +yesterday) return 'Hôm qua';
-  return d.toLocaleDateString('vi-VN', {
+  if (+d === +today) return labels.today;
+  if (+d === +yesterday) return labels.yesterday;
+  return d.toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
     weekday: 'short',
     day: '2-digit',
     month: '2-digit',
