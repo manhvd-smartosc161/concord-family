@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { useAuthedLayout } from '../layout';
 import { ChangePasswordModal } from '@/features/auth/components/change-password-modal';
@@ -14,18 +15,19 @@ import {
 
 export default function SettingsPage() {
   const { user } = useAuthedLayout();
+  const t = useTranslations('settings');
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
-        title="Cài đặt"
-        subtitle="Tài khoản, mật khẩu và quy tắc lương"
+        title={t('title')}
+        subtitle={t('subtitle')}
       />
       <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto max-w-3xl space-y-6">
           <AccountSection />
           <p className="text-center text-[11px] text-stone-400">
-            User ID:{' '}
+            {t('user_id')}:{' '}
             <span className="font-mono">{user.id.slice(0, 8)}…</span>
           </p>
         </div>
@@ -38,6 +40,9 @@ export default function SettingsPage() {
 
 function AccountSection() {
   const { user, reloadUser } = useAuthedLayout();
+  const t = useTranslations('settings');
+  const tAuth = useTranslations('auth');
+  const tCommon = useTranslations('common');
   const [pwOpen, setPwOpen] = useState(false);
   const [editing, setEditing] = useState(false);
 
@@ -117,7 +122,7 @@ function AccountSection() {
       setAvatarPreview(null);
       setEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi không xác định');
+      setError(err instanceof Error ? err.message : tCommon('error'));
     } finally {
       setSaving(false);
     }
@@ -131,10 +136,10 @@ function AccountSection() {
     <Card padding="p-6">
       <div className="mb-5 flex items-start justify-between">
         <div>
-          <h3 className="mb-1 text-sm font-semibold text-stone-800">Tài khoản</h3>
+          <h3 className="mb-1 text-sm font-semibold text-stone-800">{t('account')}</h3>
           {!editing && (
             <p className="hidden text-xs text-stone-500 sm:block">
-              Concord là couple-only — mỗi instance chỉ có 2 tài khoản (vợ + chồng).
+              {t('couple_only_note')}
             </p>
           )}
         </div>
@@ -143,7 +148,7 @@ function AccountSection() {
             onClick={handleEnterEdit}
             className="shrink-0 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-50"
           >
-            ✏️ Chỉnh sửa
+            {t('click_edit')}
           </button>
         )}
       </div>
@@ -164,13 +169,13 @@ function AccountSection() {
             {avatarError && (
               <p className="text-xs text-rose-600">{avatarError}</p>
             )}
-            <p className="text-[11px] text-stone-400">Bấm vào ảnh để thay đổi</p>
+            <p className="text-[11px] text-stone-400">{t('click_to_change_avatar')}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-stone-500">
-                Tên
+                {tAuth('name')}
               </label>
               <input
                 type="text"
@@ -181,7 +186,7 @@ function AccountSection() {
             </div>
             <div>
               <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-stone-500">
-                Ngày sinh
+                {tAuth('birthdate')}
               </label>
               <input
                 type="date"
@@ -191,8 +196,8 @@ function AccountSection() {
                 className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
               />
             </div>
-            <Field label="Vai trò" value={user.role === 'husband' ? 'Chồng' : 'Vợ'} />
-            <Field label="Email" value={user.email} mono />
+            <Field label={t('role_label')} value={user.role === 'husband' ? tAuth('husband') : tAuth('wife')} />
+            <Field label={t('email_label')} value={user.email} mono />
           </div>
 
           {error && <p className="text-xs text-rose-600">⚠️ {error}</p>}
@@ -203,14 +208,14 @@ function AccountSection() {
               disabled={saving}
               className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 disabled:opacity-50"
             >
-              Huỷ
+              {tCommon('cancel')}
             </button>
             <button
               onClick={handleSave}
               disabled={saving || !isDirty || !name.trim()}
               className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300"
             >
-              {saving ? 'Đang lưu…' : 'Lưu'}
+              {saving ? tCommon('saving') : tCommon('save')}
             </button>
           </div>
         </div>
@@ -221,21 +226,21 @@ function AccountSection() {
             <div>
               <div className="text-base font-semibold text-stone-900">{user.name}</div>
               <div className="text-xs text-stone-500">
-                {user.role === 'husband' ? 'Chồng' : 'Vợ'} · {user.email}
+                {user.role === 'husband' ? tAuth('husband') : tAuth('wife')} · {user.email}
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field
-              label="Ngày sinh"
+              label={tAuth('birthdate')}
               value={
                 user.birthdate
                   ? new Date(user.birthdate + 'T00:00:00').toLocaleDateString('vi-VN')
                   : '—'
               }
             />
-            <Field label="ID" value={user.id.slice(0, 8) + '…'} mono small />
+            <Field label={t('id_label')} value={user.id.slice(0, 8) + '…'} mono small />
           </div>
 
           <div className="mt-5 flex justify-end border-t border-stone-100 pt-4">
@@ -243,7 +248,7 @@ function AccountSection() {
               onClick={() => setPwOpen(true)}
               className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99]"
             >
-              🔐 Đổi mật khẩu
+              🔐 {tAuth('change_password')}
             </button>
           </div>
         </>
