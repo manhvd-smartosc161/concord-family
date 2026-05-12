@@ -16,6 +16,7 @@ import { ImportantDate } from './modules/important-dates/entities/important-date
 import { YearlyAiCache } from './modules/important-dates/entities/yearly-ai-cache.entity';
 import { Insight } from './modules/insights/entities/insight.entity';
 import { SalaryRule } from './modules/salary-rules/entities/salary-rule.entity';
+import { Task } from './modules/tasks/entities/task.entity';
 import { Transaction } from './modules/transactions/entities/transaction.entity';
 import { User } from './modules/users/entities/user.entity';
 
@@ -41,6 +42,7 @@ export const entities = [
   ChatMessage,
   ImportantDate,
   YearlyAiCache,
+  Task,
 ];
 
 const databaseUrl = process.env.DATABASE_URL;
