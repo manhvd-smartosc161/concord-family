@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { formatVND } from '@/lib/format';
 import type { TransactionView } from '../types';
 import { formatDayLabel } from '../lib/group-by-day';
@@ -15,6 +16,7 @@ export function DayGroup({
   onEdit: (t: TransactionView) => void;
   onDelete: (id: string) => void;
 }) {
+  const tDayGroup = useTranslations('transactions');
   const dayLabel = formatDayLabel(day);
   return (
     <div className="mb-4 last:mb-0">
@@ -23,7 +25,7 @@ export function DayGroup({
           {dayLabel}
         </span>
         <span className="text-[11px] text-stone-400">
-          {items.length} giao dịch
+          {items.length} {tDayGroup('title').toLowerCase()}
         </span>
       </div>
       <div className="p-3 sm:p-4">
@@ -49,6 +51,7 @@ function TxnRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const tTxn = useTranslations('transactions');
   const isExpense = t.amount < 0;
   const isInternal = t.category?.name === 'Chuyển nội bộ';
   return (
@@ -59,7 +62,7 @@ function TxnRow({
         </span>
         <div className="leading-tight min-w-0 flex-1 truncate">
           <div className="text-sm text-stone-800 truncate">
-            {t.note ?? t.category?.name ?? '(không ghi chú)'}
+            {t.note ?? t.category?.name ?? tTxn('no_category')}
           </div>
           <div className="text-[11px] text-stone-500">
             <span className="font-medium">{t.fund.name}</span>

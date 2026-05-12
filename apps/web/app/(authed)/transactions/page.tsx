@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
 import { FundFilterTabs } from '@/features/funds/components/fund-filter-tabs';
@@ -26,6 +27,8 @@ import {
 const PAGE_SIZE = 30;
 
 export default function TransactionsPage() {
+  const t = useTranslations('transactions');
+  const tCommon = useTranslations('common');
   const { funds, reloadFunds } = useAuthedLayout();
 
   const now = new Date();
@@ -106,7 +109,7 @@ export default function TransactionsPage() {
   }, [items]);
 
   async function handleDelete(id: string) {
-    if (!confirm('Xoá giao dịch này? Số dư quỹ sẽ được hoàn lại.')) return;
+    if (!confirm(t('delete_confirm'))) return;
     try {
       await deleteTransaction(id);
       await Promise.all([reloadFunds(), fetchData()]);
@@ -116,8 +119,8 @@ export default function TransactionsPage() {
           ? err.message
           : err instanceof Error
             ? err.message
-            : 'Lỗi không xác định';
-      alert(`Không xoá được: ${msg}`);
+            : tCommon('error');
+      alert(tCommon('cannot_delete', { msg }));
     }
   }
 
@@ -129,8 +132,8 @@ export default function TransactionsPage() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
-        title="Lịch sử giao dịch"
-        subtitle={`${total} giao dịch · trang ${page + 1}/${Math.max(1, totalPages)}`}
+        title={t('title')}
+        subtitle={`${total} ${t('title').toLowerCase()} · ${t('page', { page: String(page + 1) })}/${Math.max(1, totalPages)}`}
       />
 
       <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
@@ -178,7 +181,7 @@ export default function TransactionsPage() {
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Tìm theo ghi chú, category…"
+                  placeholder={`${t('note')}, ${t('category')}…`}
                   className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm transition-colors placeholder:text-stone-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 />
               </div>
@@ -187,12 +190,12 @@ export default function TransactionsPage() {
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <StatCard
-              label="Thu (trang này)"
+              label={t('income')}
               value={formatVND(stats.income)}
               tone="positive"
             />
             <StatCard
-              label="Chi (trang này)"
+              label={t('expense')}
               value={`−${formatVND(stats.expense)}`}
               tone="negative"
             />
@@ -200,7 +203,7 @@ export default function TransactionsPage() {
               label="Net"
               value={formatVND(stats.net, true)}
               tone={stats.net >= 0 ? 'positive' : 'negative'}
-              hint="Đã loại Chuyển nội bộ"
+              hint={t('transfer')}
             />
           </div>
 
@@ -215,8 +218,8 @@ export default function TransactionsPage() {
             {!loading && items.length === 0 && (
               <EmptyState
                 icon="📭"
-                title="Không có giao dịch khớp filter"
-                description="Thử bỏ filter, đổi tháng, hoặc xoá search."
+                title={t('no_transactions')}
+                description={t('no_transactions_desc')}
               />
             )}
             {!loading &&

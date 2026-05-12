@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
 import { listCategories } from '@/features/categories/api';
@@ -24,6 +25,8 @@ export function EditTransactionModal({
   onClose,
   onSaved,
 }: Props) {
+  const t = useTranslations('transactions');
+  const tCommon = useTranslations('common');
   const [categories, setCategories] = useState<CategoryView[]>([]);
   const [fundId, setFundId] = useState('');
   const [amountStr, setAmountStr] = useState('');
@@ -100,7 +103,7 @@ export function EditTransactionModal({
           ? err.message
           : err instanceof Error
             ? err.message
-            : 'Lỗi không xác định';
+            : tCommon('error');
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -118,7 +121,7 @@ export function EditTransactionModal({
       <div className="relative w-full max-w-md rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
         <div className="mb-1 flex items-start justify-between">
           <h3 className="text-base font-semibold text-stone-900">
-            Sửa giao dịch
+            {t('edit_title')}
           </h3>
           <button
             type="button"
@@ -156,7 +159,7 @@ export function EditTransactionModal({
                   : 'border-stone-200 bg-white text-stone-500 hover:bg-stone-50'
               }`}
             >
-              − Chi
+              − {t('expense')}
             </button>
             <button
               type="button"
@@ -167,13 +170,13 @@ export function EditTransactionModal({
                   : 'border-stone-200 bg-white text-stone-500 hover:bg-stone-50'
               }`}
             >
-              + Thu
+              + {t('income')}
             </button>
           </div>
 
           {/* Fund + Amount */}
           <div className="grid grid-cols-[1fr_1fr] gap-3">
-            <Field label="Quỹ">
+            <Field label={t('fund')}>
               <select
                 value={fundId}
                 onChange={(e) => setFundId(e.target.value)}
@@ -187,7 +190,7 @@ export function EditTransactionModal({
                 ))}
               </select>
             </Field>
-            <Field label="Số tiền (VND)">
+            <Field label={t('amount')}>
               <input
                 type="text"
                 inputMode="numeric"
@@ -212,14 +215,14 @@ export function EditTransactionModal({
           </div>
 
           {/* Category */}
-          <Field label="Category">
+          <Field label={t('category')}>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
               disabled={submitting}
             >
-              <option value="">— không phân loại —</option>
+              <option value="">— {t('no_category')} —</option>
               {groupedCats.map((g) => (
                 <optgroup key={g.parentId ?? 'top'} label={g.parentLabel}>
                   {g.items.map((c) => (
@@ -234,7 +237,7 @@ export function EditTransactionModal({
           </Field>
 
           {/* Note */}
-          <Field label="Ghi chú">
+          <Field label={t('note')}>
             <input
               type="text"
               value={note}
@@ -259,14 +262,14 @@ export function EditTransactionModal({
               disabled={submitting}
               className="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 sm:w-auto"
             >
-              Huỷ
+              {tCommon('cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting || !fundId || !amountStr}
               className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300 sm:w-auto"
             >
-              {submitting ? 'Đang lưu…' : 'Lưu'}
+              {submitting ? tCommon('saving') : tCommon('save')}
             </button>
           </div>
         </form>
