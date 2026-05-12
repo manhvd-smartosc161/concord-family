@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 
 const LOCALES = [
@@ -11,14 +10,13 @@ const LOCALES = [
 
 export function LocaleToggle() {
   const locale = useLocale();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   function switchLocale(next: 'vi' | 'en') {
     setOpen(false);
     if (next === locale) return;
     document.cookie = `NEXT_LOCALE=${next};max-age=31536000;path=/`;
-    router.refresh();
+    window.location.reload();
   }
 
   const current = LOCALES.find((l) => l.key === locale) ?? LOCALES[0];
