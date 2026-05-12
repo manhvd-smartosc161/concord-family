@@ -34,7 +34,7 @@ export default async function RootLayout({
       className={`${beVietnamPro.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-stone-50 font-sans text-stone-900">
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
         </NextIntlClientProvider>
       </body>
