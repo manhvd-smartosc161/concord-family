@@ -144,7 +144,7 @@ export default function CalendarPage() {
       } else if (item.sourceId) {
         await testNotifyImportantDate(item.sourceId);
       }
-      alert('Đã gửi email test (check inbox).');
+      alert(t('email_test_sent'));
     } catch (err) {
       alert((err as Error).message);
     }
