@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { startTransition, useState } from 'react';
 import { useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 const LOCALES = [
   { key: 'vi', flag: '🇻🇳', label: 'Tiếng Việt' },
@@ -10,13 +11,16 @@ const LOCALES = [
 
 export function LocaleToggle() {
   const locale = useLocale();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   function switchLocale(next: 'vi' | 'en') {
     setOpen(false);
     if (next === locale) return;
     document.cookie = `NEXT_LOCALE=${next};max-age=31536000;path=/`;
-    window.location.reload();
+    startTransition(() => {
+      router.refresh();
+    });
   }
 
   const current = LOCALES.find((l) => l.key === locale) ?? LOCALES[0];
