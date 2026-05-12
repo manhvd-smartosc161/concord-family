@@ -156,7 +156,9 @@
     "no_data": "No data",
     "no_data_desc": "No transactions this month.",
     "expense_by_category": "Expense by category",
-    "current_month": "Current month"
+    "current_month": "Current month",
+    "chart_income": "Income",
+    "chart_expense": "Expense"
   },
   "tasks": {
     "title": "Weekly Tasks",

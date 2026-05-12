@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   Bar,
   BarChart,
@@ -155,6 +155,11 @@ function MonthSwitcher({
   isCurrent: boolean;
 }) {
   const tReports = useTranslations('reports');
+  const locale = useLocale();
+  const monthLabel = new Date(year, month - 1, 1).toLocaleDateString(
+    locale === 'en' ? 'en-US' : 'vi-VN',
+    { month: 'long', year: 'numeric' },
+  );
   return (
     <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white p-0.5">
       <button
@@ -165,7 +170,7 @@ function MonthSwitcher({
         <ChevronIcon dir="left" />
       </button>
       <div className="min-w-[140px] px-3 py-1 text-center text-sm font-medium text-stone-800">
-        Tháng {month}/{year}
+        {monthLabel}
       </div>
       <button
         onClick={() => onShift(1)}
@@ -198,14 +203,18 @@ function ChevronIcon({ dir }: { dir: 'left' | 'right' }) {
 }
 
 function DailyChart({ report }: { report: MonthlyReport }) {
+  const t = useTranslations('reports');
+  const incomeKey = t('chart_income');
+  const expenseKey = t('chart_expense');
+
   const data = useMemo(
     () =>
       report.byDay.map((d) => ({
         day: parseInt(d.date.slice(8, 10), 10),
-        Thu: d.income,
-        Chi: -d.expense, // negative so it shows below axis
+        [incomeKey]: d.income,
+        [expenseKey]: -d.expense,
       })),
-    [report.byDay],
+    [report.byDay, incomeKey, expenseKey],
   );
 
   const barChart = (
@@ -233,13 +242,13 @@ function DailyChart({ report }: { report: MonthlyReport }) {
         content={<ChartTooltip />}
       />
       <Bar
-        dataKey="Thu"
+        dataKey={incomeKey}
         fill="#10b981"
         radius={[4, 4, 0, 0]}
         maxBarSize={28}
       />
       <Bar
-        dataKey="Chi"
+        dataKey={expenseKey}
         fill="#f43f5e"
         radius={[0, 0, 4, 4]}
         maxBarSize={28}

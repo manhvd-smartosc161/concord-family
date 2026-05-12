@@ -387,9 +387,6 @@ function FundsBlock({
     <Card>
       <div className="mb-3 flex items-baseline justify-between">
         <h3 className="text-sm font-semibold text-stone-800">{t('funds_balance')}</h3>
-        <span className="font-mono text-xs tabular-nums text-stone-500">
-          {t('total_visible', { amount: formatVND(totalVisible) })}
-        </span>
       </div>
       {(() => {
         const sorted = [...funds].sort((a, b) => {
