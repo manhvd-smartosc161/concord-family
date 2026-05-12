@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import {
   deleteImportantDate,
@@ -37,6 +38,7 @@ const MONTH_VI: Record<number, string> = {
 const DOW_FULL = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
 
 export default function CalendarPage() {
+  const t = useTranslations('dates');
   const today = new Date();
   const todayIso = isoOf(today);
   const [year, setYear] = useState(today.getFullYear());
@@ -126,7 +128,7 @@ export default function CalendarPage() {
 
   async function handleDelete(item: AgendaItem) {
     if (!item.sourceId) return;
-    if (!confirm(`Xoá "${item.name}"?`)) return;
+    if (!confirm(`${t('delete')} "${item.name}"?`)) return;
     try {
       await deleteImportantDate(item.sourceId);
       await reload();
@@ -168,7 +170,7 @@ export default function CalendarPage() {
               onClick={jumpToToday}
               className="rounded-lg bg-white px-3 py-1.5 text-sm text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
             >
-              Hôm nay
+              {t('today')}
             </button>
             <button
               type="button"
@@ -183,7 +185,7 @@ export default function CalendarPage() {
               onClick={openCreate}
               className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-700"
             >
-              + Thêm
+              {t('add_date')}
             </button>
           </div>
         }
@@ -241,8 +243,8 @@ export default function CalendarPage() {
             {selectedItems.length === 0 ? (
               <EmptyState
                 icon="🗓"
-                title="Không có sự kiện"
-                description="Chọn ngày khác hoặc thêm mới."
+                title={t('no_dates')}
+                description={t('no_dates_desc')}
               />
             ) : (
               <div className="space-y-2">

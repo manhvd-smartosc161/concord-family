@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import {
   deleteImportantDate,
@@ -69,6 +70,7 @@ function matchesFilter(item: AgendaItem, filter: KindFilter): boolean {
 }
 
 export default function YearAgendaPage() {
+  const t = useTranslations('dates');
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const [view, setView] = useState<YearAgendaView | null>(null);
@@ -137,7 +139,7 @@ export default function YearAgendaPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Xoá ngày này?')) return;
+    if (!confirm(t('delete'))) return;
     try {
       await deleteImportantDate(id);
       await reload();
@@ -196,7 +198,7 @@ export default function YearAgendaPage() {
               onClick={openCreate}
               className="cursor-pointer rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-700"
             >
-              + Thêm ngày
+              {t('add_date')}
             </button>
           </div>
         }
@@ -241,8 +243,8 @@ export default function YearAgendaPage() {
             <Card>
               <EmptyState
                 icon="📅"
-                title={`Chưa có sự kiện sắp tới cho ${year}`}
-                description="AI sẽ tự sinh khi cron đầu năm chạy. Bạn cũng có thể tự thêm ngày."
+                title={t('no_dates')}
+                description={t('no_dates_desc')}
               />
             </Card>
           )}
@@ -253,8 +255,8 @@ export default function YearAgendaPage() {
               <Card>
                 <EmptyState
                   icon="🔍"
-                  title="Không có sự kiện khớp filter"
-                  description="Đổi loại khác hoặc bấm 'Tất cả' để xem hết."
+                  title={t('no_dates')}
+                  description={t('no_dates_desc')}
                 />
               </Card>
             )}

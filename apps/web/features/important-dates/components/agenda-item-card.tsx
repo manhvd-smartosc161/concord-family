@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui";
 import { lunarOf } from "../lib/lunar";
 import type { AgendaItem, AgendaItemKind } from "../types";
@@ -108,6 +109,7 @@ export function AgendaItemCard({
   onDelete: () => void;
   onTest: () => Promise<void>;
 }) {
+  const t = useTranslations('dates');
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -146,12 +148,12 @@ export function AgendaItemCard({
 
   const dayHint =
     days === 0
-      ? "Hôm nay"
+      ? t('today')
       : days === 1
-      ? "Ngày mai"
+      ? t('tomorrow')
       : days < 0
-      ? `${Math.abs(days)} ngày trước`
-      : `Còn ${days} ngày`;
+      ? t('days_ago', { days: Math.abs(days) })
+      : t('days_until', { days });
 
   const style = KIND_STYLE[item.kind] ?? KIND_STYLE.other;
   const stampBg = imminent ? "bg-emerald-100 border-emerald-300" : style.stamp;
@@ -275,7 +277,7 @@ export function AgendaItemCard({
                       onEdit();
                     }}
                     icon="✏️"
-                    label="Sửa"
+                    label={t('edit')}
                   />
                   <MenuItem
                     onClick={() => {
@@ -283,7 +285,7 @@ export function AgendaItemCard({
                       onDelete();
                     }}
                     icon="🗑️"
-                    label="Xoá"
+                    label={t('delete')}
                     danger
                   />
                   <div className="border-t border-stone-100" />

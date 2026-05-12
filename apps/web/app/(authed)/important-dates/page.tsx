@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import {
   deleteImportantDate,
@@ -21,6 +22,7 @@ import type {
 const UPCOMING_LIMIT = 10;
 
 export default function ImportantDatesPage() {
+  const t = useTranslations('dates');
   const [view, setView] = useState<UpcomingView | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ImportantDateView | null>(null);
@@ -67,7 +69,7 @@ export default function ImportantDatesPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Xoá ngày này?')) return;
+    if (!confirm(t('delete'))) return;
     try {
       await deleteImportantDate(id);
       await reload();
@@ -91,22 +93,22 @@ export default function ImportantDatesPage() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
-        title="Ngày quan trọng"
-        subtitle={`${UPCOMING_LIMIT} sự kiện sắp tới`}
+        title={t('title')}
+        subtitle={`${UPCOMING_LIMIT} ${t('upcoming')}`}
         actions={
           <div className="flex items-center gap-2">
             <Link
               href="/important-dates/year"
               className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
             >
-              Xem cả năm
+              {t('view_year')}
             </Link>
             <button
               type="button"
               onClick={openCreate}
               className="cursor-pointer rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-700"
             >
-              + Thêm ngày
+              {t('add_date')}
             </button>
           </div>
         }
@@ -126,8 +128,8 @@ export default function ImportantDatesPage() {
             <Card>
               <EmptyState
                 icon="📅"
-                title="Chưa có sự kiện sắp tới"
-                description="AI sẽ tự sinh danh sách ngày quan trọng cho cả năm. Bạn cũng có thể tự thêm sinh nhật, giỗ chạp, kỷ niệm."
+                title={t('no_dates')}
+                description={t('no_dates_desc')}
               />
             </Card>
           )}
