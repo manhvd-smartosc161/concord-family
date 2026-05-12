@@ -1,7 +1,7 @@
 import { Column, Entity, Index } from 'typeorm';
 import { BaseEntity } from '../../../shared/common/base.entity';
 
-export type TaskCategory = 'shopping' | 'chores' | 'finance' | 'goal';
+export type TaskCategory = 'shopping' | 'chores' | 'finance' | 'goal' | 'cooking' | 'health' | 'kids' | 'transport';
 export type TaskAssignee = 'husband' | 'wife' | 'both';
 export type TaskStatus = 'todo' | 'in_progress' | 'done';
 
@@ -17,7 +17,7 @@ export class Task extends BaseEntity {
   @Column({ type: 'varchar', length: 200 })
   title!: string;
 
-  @Column({ type: 'enum', enum: ['shopping', 'chores', 'finance', 'goal'] })
+  @Column({ type: 'enum', enum: ['shopping', 'chores', 'finance', 'goal', 'cooking', 'health', 'kids', 'transport'] })
   category!: TaskCategory;
 
   @Column({ type: 'enum', enum: ['husband', 'wife', 'both'] })

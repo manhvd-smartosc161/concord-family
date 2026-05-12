@@ -194,6 +194,10 @@
     "category_chores": "Chores",
     "category_finance": "Finance",
     "category_goal": "Goal",
+    "category_cooking": "Cooking",
+    "category_health": "Health",
+    "category_kids": "Kids",
+    "category_transport": "Transport",
     "assignee_label": "Assign to",
     "assignee_husband": "Husband",
     "assignee_wife": "Wife",
@@ -201,7 +205,8 @@
     "delete_label": "Delete",
     "title_placeholder": "Task name…",
     "add_button": "+ Add",
-    "this_week": "This week"
+    "this_week": "This week",
+    "today": "Today"
   },
   "dates": {
     "title": "Anniversaries",

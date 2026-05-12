@@ -7,8 +7,9 @@ export class CreateTaskDto {
   @MaxLength(200)
   title!: string;
 
-  @IsEnum(['shopping', 'chores', 'finance', 'goal'])
-  category!: TaskCategory;
+  @IsOptional()
+  @IsEnum(['shopping', 'chores', 'finance', 'goal', 'cooking', 'health', 'kids', 'transport'])
+  category?: TaskCategory;
 
   @IsEnum(['husband', 'wife', 'both'])
   assignee!: TaskAssignee;

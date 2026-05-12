@@ -194,6 +194,10 @@
     "category_chores": "Việc nhà",
     "category_finance": "Tài chính",
     "category_goal": "Mục tiêu",
+    "category_cooking": "Nấu ăn",
+    "category_health": "Sức khỏe",
+    "category_kids": "Con cái",
+    "category_transport": "Di chuyển",
     "assignee_label": "Giao cho",
     "assignee_husband": "Chồng",
     "assignee_wife": "Vợ",
@@ -201,7 +205,8 @@
     "delete_label": "Xóa",
     "title_placeholder": "Tên công việc…",
     "add_button": "+ Thêm",
-    "this_week": "Tuần này"
+    "this_week": "Tuần này",
+    "today": "Hôm nay"
   },
   "dates": {
     "title": "Ngày kỷ niệm",

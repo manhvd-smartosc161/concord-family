@@ -129,7 +129,7 @@ export function TaskBoard() {
                 onClick={() => setCurrentWeek(getISOWeek(new Date()))}
                 className="ml-1 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs text-stone-500 transition-colors hover:bg-stone-50 hover:text-stone-700"
               >
-                Hôm nay
+                {t('today')}
               </button>
             )}
           </div>
@@ -245,7 +245,7 @@ export function TaskBoard() {
                       ))}
                       {col.length === 0 && (
                         <div className="mt-4 rounded-xl border border-dashed border-stone-200 py-8 text-center text-sm text-stone-300">
-                          Chưa có
+                          {t('no_tasks_col')}
                         </div>
                       )}
                     </div>

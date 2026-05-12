@@ -59,6 +59,7 @@ export function Header({
         <div className="relative">
         <button
           onClick={() => setOpen((v) => !v)}
+          onPointerDown={(e) => e.stopPropagation()}
           className="flex items-center gap-2.5 rounded-lg border border-transparent px-2 py-1.5 transition-colors hover:border-stone-200 hover:bg-stone-50"
         >
           <UserAvatar user={user} size={32} />
@@ -89,7 +90,7 @@ export function Header({
           <>
             <div
               className="fixed inset-0 z-10"
-              onPointerDown={(e) => { e.preventDefault(); setOpen(false); }}
+              onPointerDown={() => setOpen(false)}
             />
             <div className="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
               <Link

@@ -247,6 +247,7 @@ export function AgendaItemCard({
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
+          onPointerDown={(e) => e.stopPropagation()}
           aria-label="Mở menu"
           className={`flex h-7 w-7 items-center justify-center rounded-full text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 ${
             menuOpen ? "bg-stone-100 text-stone-700" : ""
@@ -263,7 +264,7 @@ export function AgendaItemCard({
           <>
             <div
               className="fixed inset-0 z-10"
-              onPointerDown={(e) => { e.preventDefault(); setMenuOpen(false); }}
+              onPointerDown={() => setMenuOpen(false)}
               aria-hidden="true"
             />
             <div className="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">

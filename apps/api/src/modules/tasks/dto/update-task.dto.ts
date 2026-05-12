@@ -8,7 +8,7 @@ export class UpdateTaskDto {
   title?: string;
 
   @IsOptional()
-  @IsEnum(['shopping', 'chores', 'finance', 'goal'])
+  @IsEnum(['shopping', 'chores', 'finance', 'goal', 'cooking', 'health', 'kids', 'transport'])
   category?: TaskCategory;
 
   @IsOptional()
