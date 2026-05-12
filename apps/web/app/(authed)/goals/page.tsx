@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
 import {
@@ -28,6 +29,8 @@ import {
 } from '@/components/ui';
 
 export default function GoalsPage() {
+  const t = useTranslations('goals');
+  const tCommon = useTranslations('common');
   const { reloadFunds } = useAuthedLayout();
   const [envelopes, setEnvelopes] = useState<FundView[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,14 +51,14 @@ export default function GoalsPage() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
-        title="Quỹ tiết kiệm & đầu tư"
-        subtitle="Tích luỹ theo mục tiêu cụ thể. Chuyển tiền từ quỹ chi tiêu vào đây để bắt đầu tiết kiệm."
+        title={t('title')}
+        subtitle={t('subtitle')}
         actions={
           <button
             onClick={() => setEditingId('new')}
             className="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-[0.98]"
           >
-            + Tạo quỹ
+            {t('create_fund')}
           </button>
         }
       />
@@ -73,8 +76,8 @@ export default function GoalsPage() {
             <Card>
               <EmptyState
                 icon="🐷"
-                title="Chưa có quỹ tiết kiệm hay đầu tư nào"
-                description="Bấm + Tạo quỹ để bắt đầu. Vd: Quỹ Tiết kiệm Năm 2026, Quỹ Du lịch, Quỹ Chứng khoán…"
+                title={t('no_goals')}
+                description={t('no_goals_desc')}
               />
             </Card>
           )}
@@ -85,7 +88,7 @@ export default function GoalsPage() {
               envelope={env}
               onEdit={() => setEditingId(env.id)}
               onArchive={async () => {
-                if (!confirm(`Archive quỹ "${env.name}"?`)) return;
+                if (!confirm(`Archive "${env.name}"?`)) return;
                 await archiveEnvelope(env.id);
                 await Promise.all([reload(), reloadFunds()]);
               }}
@@ -143,6 +146,8 @@ function EnvelopeCard({
   onEdit: () => void;
   onArchive: () => void;
 }) {
+  const tGoals = useTranslations('goals');
+  const tCommonCard = useTranslations('common');
   const [showLedger, setShowLedger] = useState(false);
   const balance = envelope.balance ?? 0;
   const target = envelope.targetAmount ?? 0;
@@ -163,9 +168,9 @@ function EnvelopeCard({
           : 'neutral';
   const paceLabel = progress?.paceStatus
     ? {
-        ahead: 'Đang vượt tiến độ',
-        on_track: 'Đúng tiến độ',
-        behind: 'Đang chậm',
+        ahead: tGoals('ahead'),
+        on_track: tGoals('on_track'),
+        behind: tGoals('behind'),
       }[progress.paceStatus]
     : null;
 
@@ -204,7 +209,7 @@ function EnvelopeCard({
             {envelope.purpose === 'investment' && (
               <Badge tone="sky">Đầu tư</Badge>
             )}
-            {reached && <Badge tone="emerald">✅ Đạt</Badge>}
+            {reached && <Badge tone="emerald">✅ {tGoals('reached')}</Badge>}
             {!reached && paceLabel && <Badge tone={paceTone}>{paceLabel}</Badge>}
             {isArchived && <Badge tone="neutral">Archived</Badge>}
           </div>
@@ -212,7 +217,7 @@ function EnvelopeCard({
             <p className="mt-1 text-[11px] text-stone-500">
               Deadline: {deadline.toLocaleDateString('vi-VN')}
               {progress?.daysRemaining != null && (
-                <span className="ml-1">· còn {progress.daysRemaining} ngày</span>
+                <span className="ml-1">· {tGoals('days_remaining', { days: progress.daysRemaining })}</span>
               )}
             </p>
           )}
@@ -222,7 +227,7 @@ function EnvelopeCard({
             onClick={onEdit}
             className="rounded-md border border-stone-200 px-2.5 py-1 text-[11px] text-stone-600 transition-colors hover:bg-stone-50"
           >
-            Sửa
+            {tCommonCard('edit')}
           </button>
           <button
             onClick={onArchive}
@@ -249,7 +254,7 @@ function EnvelopeCard({
       {hasTarget && <ProgressBar value={pct} max={100} tone={barTone} />}
       {!hasTarget && !hasMonthlyTarget && (
         <p className="text-xs text-stone-400">
-          Chưa đặt target — chỉ track tích luỹ
+          {tGoals('no_goals_desc')}
         </p>
       )}
 
@@ -271,11 +276,10 @@ function EnvelopeCard({
           />
           {!monthReached && (
             <p className="mt-1 text-[11px] text-amber-700">
-              Cần góp thêm{' '}
-              <span className="font-mono">
-                {formatVND(monthlyTarget - monthContribution)}
-              </span>{' '}
-              trong tháng này
+              {tGoals('month_contribution', {
+                current: formatVND(monthContribution),
+                target: formatVND(monthlyTarget),
+              })}
             </p>
           )}
         </div>
@@ -286,7 +290,7 @@ function EnvelopeCard({
           onClick={() => setShowLedger((v) => !v)}
           className="flex items-center gap-1 text-[11px] font-medium text-stone-500 hover:text-stone-700"
         >
-          <span>{showLedger ? '▲' : '▼'}</span> Lịch sử giao dịch
+          <span>{showLedger ? '▲' : '▼'}</span> {tGoals('manage')}
         </button>
         {showLedger && <FundLedgerPanel fundId={envelope.id} />}
       </div>
@@ -470,6 +474,8 @@ function EnvelopeFormModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const tGoalsModal = useTranslations('goals');
+  const tCommonModal = useTranslations('common');
   const [name, setName] = useState('');
   const [purpose, setPurpose] = useState<'savings' | 'investment'>('savings');
   const [targetAmount, setTargetAmount] = useState<number | ''>('');
@@ -542,7 +548,7 @@ function EnvelopeFormModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="mb-1 text-base font-semibold text-stone-900">
-          {isEdit ? 'Sửa quỹ' : 'Tạo quỹ mới'}
+          {isEdit ? tCommonModal('edit') : tGoalsModal('create_fund')}
         </h2>
         <p className="mb-5 text-xs text-stone-500">
           Quỹ tiết kiệm & đầu tư — cả 2 vợ chồng cùng thấy và góp được.
@@ -643,14 +649,14 @@ function EnvelopeFormModal({
             disabled={saving}
             className="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 sm:w-auto"
           >
-            Huỷ
+            {tCommonModal('cancel')}
           </button>
           <button
             onClick={onSubmit}
             disabled={saving || !name.trim()}
             className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300 sm:w-auto"
           >
-            {saving ? 'Đang lưu…' : isEdit ? 'Cập nhật' : 'Tạo'}
+            {saving ? tCommonModal('saving') : isEdit ? tCommonModal('save') : tGoalsModal('create_fund')}
           </button>
         </div>
       </div>
