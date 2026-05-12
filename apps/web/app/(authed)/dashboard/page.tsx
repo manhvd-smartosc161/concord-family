@@ -32,6 +32,7 @@ import {
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const { user, funds, reloadFunds } = useAuthedLayout();
   const [goals, setGoals] = useState<GoalView[]>([]);
   const [envelopes, setEnvelopes] = useState<FundView[]>([]);
