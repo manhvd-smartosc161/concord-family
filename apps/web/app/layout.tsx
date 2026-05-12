@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Be_Vietnam_Pro, JetBrains_Mono } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -21,16 +23,20 @@ export const metadata: Metadata = {
     'Track expenses across personal + joint funds. Hit your savings goals with an AI agent.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
   return (
     <html
-      lang="vi"
+      lang={locale}
       className={`${beVietnamPro.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-stone-50 font-sans text-stone-900">
-        {children}
+        <NextIntlClientProvider messages={messages}>
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );
