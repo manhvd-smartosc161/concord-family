@@ -30,7 +30,7 @@ export function LocaleToggle() {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1 rounded-lg border border-transparent px-2 py-1.5 text-sm transition-colors hover:border-stone-200 hover:bg-stone-50"
       >
-        <span className="text-base leading-none">{current.flag}</span>
+        <span className="text-xl leading-none">{current.flag}</span>
         <svg
           className={`h-3 w-3 text-stone-400 transition-transform ${open ? 'rotate-180' : ''}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor"
