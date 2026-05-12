@@ -231,7 +231,7 @@ export function TaskBoard() {
 
           {/* ── DESKTOP: kanban matrix ── */}
           <div className="hidden min-h-0 flex-1 overflow-auto p-5 lg:block xl:p-6">
-            <div className="grid h-full grid-cols-[96px_1fr_1fr_1fr] grid-rows-[auto_1fr_1fr_1fr] gap-2">
+            <div className="grid grid-cols-[96px_1fr_1fr_1fr] items-start gap-2">
 
               {/* Corner */}
               <div />
@@ -274,7 +274,7 @@ export function TaskBoard() {
                     return (
                       <div
                         key={`${lane.assignee}-${s.status}`}
-                        className={`overflow-y-auto rounded-xl p-2 ${
+                        className={`rounded-xl p-2 ${
                           laneIdx % 2 === 0 ? 'bg-stone-50' : 'bg-stone-50/50'
                         }`}
                       >
