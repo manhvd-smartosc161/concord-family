@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createTask, deleteTask, listTasks, updateTask } from '../api';
 import type { CreateTaskInput, Task, TaskAssignee, TaskStatus, UpdateTaskInput } from '../types';
 import { TaskCard } from './task-card';
@@ -254,10 +254,9 @@ export function TaskBoard() {
 
               {/* Lane rows */}
               {LANES.map((lane, laneIdx) => (
-                <>
+                <React.Fragment key={lane.assignee}>
                   {/* Lane header */}
                   <div
-                    key={`label-${lane.assignee}`}
                     className={`flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-3 ${
                       laneIdx % 2 === 0 ? 'bg-stone-100/80' : 'bg-white ring-1 ring-stone-100'
                     }`}
@@ -291,7 +290,7 @@ export function TaskBoard() {
                       </div>
                     );
                   })}
-                </>
+                </React.Fragment>
               ))}
             </div>
           </div>
