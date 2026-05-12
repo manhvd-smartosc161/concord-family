@@ -6,16 +6,16 @@ import type { CreateTaskInput, Task, TaskAssignee, TaskStatus, UpdateTaskInput }
 import { TaskCard } from './task-card';
 import { TaskQuickAdd } from './task-quick-add';
 
-const STATUSES: { status: TaskStatus; label: string }[] = [
-  { status: 'todo',        label: 'Cần làm' },
-  { status: 'in_progress', label: 'Đang làm' },
-  { status: 'done',        label: 'Xong' },
+const STATUSES: { status: TaskStatus; label: string; dot: string }[] = [
+  { status: 'todo',        label: 'Cần làm',  dot: 'bg-stone-300' },
+  { status: 'in_progress', label: 'Đang làm', dot: 'bg-amber-400' },
+  { status: 'done',        label: 'Xong',     dot: 'bg-emerald-500' },
 ];
 
 const LANES: { assignee: TaskAssignee; label: string; icon: string }[] = [
-  { assignee: 'both',    label: 'Cả hai',  icon: '👫' },
-  { assignee: 'husband', label: 'Chồng',   icon: '👨' },
-  { assignee: 'wife',    label: 'Vợ',      icon: '👩' },
+  { assignee: 'both',    label: 'Cả hai', icon: '👫' },
+  { assignee: 'husband', label: 'Chồng',  icon: '👨' },
+  { assignee: 'wife',    label: 'Vợ',     icon: '👩' },
 ];
 
 function getISOWeek(date: Date): string {
@@ -52,85 +52,6 @@ function formatWeekLabel(weekYear: string): string {
   return `${fmt(d)} – ${fmt(end)}`;
 }
 
-function LaneSection({
-  lane,
-  tasks,
-  onUpdate,
-  onDelete,
-  onAdd,
-}: {
-  lane: typeof LANES[number];
-  tasks: Task[];
-  onUpdate: (id: string, input: UpdateTaskInput) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
-  onAdd: (input: CreateTaskInput) => Promise<void>;
-}) {
-  const [activeStatus, setActiveStatus] = useState<TaskStatus>('todo');
-
-  const counts = STATUSES.reduce(
-    (acc, s) => ({ ...acc, [s.status]: tasks.filter((t) => t.status === s.status).length }),
-    {} as Record<TaskStatus, number>,
-  );
-
-  const visible = tasks.filter((t) => t.status === activeStatus);
-
-  return (
-    <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-      <div className="flex items-center gap-3 border-b border-stone-100 bg-stone-50/60 px-4 py-3">
-        <span className="text-xl leading-none">{lane.icon}</span>
-        <span className="text-sm font-semibold text-stone-700">{lane.label}</span>
-        <span className="ml-auto text-xs text-stone-400">{tasks.length} task</span>
-      </div>
-
-      <div className="flex gap-1 border-b border-stone-100 px-3 pt-2.5 pb-0">
-        {STATUSES.map((s) => (
-          <button
-            key={s.status}
-            type="button"
-            onClick={() => setActiveStatus(s.status)}
-            className={`relative flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              activeStatus === s.status
-                ? 'bg-white text-stone-800 shadow-[0_-1px_0_0_inset] shadow-stone-200 after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-px after:bg-white'
-                : 'text-stone-400 hover:text-stone-600'
-            }`}
-          >
-            {s.label}
-            {counts[s.status] > 0 && (
-              <span className={`rounded-full px-1.5 py-px text-[10px] font-semibold leading-none ${
-                activeStatus === s.status
-                  ? s.status === 'done' ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-600'
-                  : 'bg-stone-100 text-stone-400'
-              }`}>
-                {counts[s.status]}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      <div className="min-h-[80px] p-3">
-        {visible.length === 0 ? (
-          <div className="flex h-16 items-center justify-center text-xs text-stone-300">
-            {activeStatus === 'done' ? 'Chưa có gì hoàn thành' : 'Trống'}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {visible.map((task) => (
-              <TaskCard key={task.id} task={task} onUpdate={onUpdate} onDelete={onDelete} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {activeStatus === 'todo' && (
-        <div className="border-t border-stone-100 p-3">
-          <TaskQuickAdd onAdd={onAdd} defaultAssignee={lane.assignee} />
-        </div>
-      )}
-    </section>
-  );
-}
-
 export function TaskBoard() {
   const [currentWeek, setCurrentWeek] = useState(() => getISOWeek(new Date()));
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -147,9 +68,7 @@ export function TaskBoard() {
     }
   }, []);
 
-  useEffect(() => {
-    void reload(currentWeek);
-  }, [currentWeek, reload]);
+  useEffect(() => { void reload(currentWeek); }, [currentWeek, reload]);
 
   async function handleAdd(input: CreateTaskInput) {
     const task = await createTask({ ...input, weekYear: currentWeek });
@@ -171,33 +90,35 @@ export function TaskBoard() {
   const progress = totalAll > 0 ? Math.round((totalDone / totalAll) * 100) : 0;
 
   return (
-    <div className="flex h-full flex-col overflow-auto bg-stone-50">
-      <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/90 px-4 py-3 backdrop-blur-sm lg:px-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-bold text-stone-900">Tuần này</h1>
+    <div className="flex h-full flex-col overflow-hidden bg-stone-50">
+      {/* Header */}
+      <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-3 lg:px-6">
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-base font-bold text-stone-900">Weekly Board</h1>
             <p className="text-xs text-stone-400">{formatWeekLabel(currentWeek)}</p>
           </div>
-          <div className="flex items-center gap-1">
+
+          <div className="flex shrink-0 items-center gap-1">
             <button
               type="button"
               onClick={() => setCurrentWeek((w) => addWeeks(w, -1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-            <span className="min-w-[64px] text-center text-xs font-semibold tabular-nums text-stone-600">
+            <span className="min-w-[60px] text-center text-xs font-semibold tabular-nums text-stone-600">
               {currentWeek}
             </span>
             <button
               type="button"
               onClick={() => setCurrentWeek((w) => addWeeks(w, 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
             {!isCurrentWeek && (
@@ -213,38 +134,96 @@ export function TaskBoard() {
         </div>
 
         {totalAll > 0 && (
-          <div className="mt-2.5 flex items-center gap-3">
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-stone-100">
+          <div className="mt-2 flex items-center gap-2.5">
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-stone-100">
               <div
-                className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                className="h-full rounded-full bg-emerald-500 transition-all duration-700"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="shrink-0 text-xs font-medium tabular-nums text-stone-500">
-              {totalDone}/{totalAll}
+            <span className="shrink-0 text-[11px] font-medium tabular-nums text-stone-400">
+              {totalDone}/{totalAll} xong
             </span>
           </div>
         )}
       </div>
 
+      {/* Quick add */}
+      <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-2.5 lg:px-6">
+        <TaskQuickAdd onAdd={handleAdd} />
+      </div>
+
+      {/* Board */}
       {loading ? (
-        <div className="flex flex-1 flex-col gap-3 p-4 lg:p-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 animate-pulse rounded-2xl bg-stone-200/60" />
-          ))}
+        <div className="flex-1 p-4 lg:p-6">
+          <div className="h-full animate-pulse rounded-2xl bg-stone-200/50" />
         </div>
       ) : (
-        <div className="flex flex-col gap-3 p-4 lg:p-6">
-          {LANES.map((lane) => (
-            <LaneSection
-              key={lane.assignee}
-              lane={lane}
-              tasks={tasks.filter((t) => t.assignee === lane.assignee)}
-              onUpdate={handleUpdate}
-              onDelete={handleDelete}
-              onAdd={handleAdd}
-            />
-          ))}
+        <div className="min-h-0 flex-1 overflow-auto p-4 lg:p-6">
+          <div className="h-full min-w-[480px]">
+            {/* Column headers */}
+            <div className="mb-2 grid grid-cols-[80px_1fr_1fr_1fr] gap-2 lg:grid-cols-[100px_1fr_1fr_1fr]">
+              <div />
+              {STATUSES.map((s) => {
+                const count = tasks.filter((t) => t.status === s.status).length;
+                return (
+                  <div key={s.status} className="flex items-center gap-1.5 px-1">
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${s.dot}`} />
+                    <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                      {s.label}
+                    </span>
+                    {count > 0 && (
+                      <span className="ml-auto rounded-full bg-stone-200 px-1.5 py-px text-[10px] font-semibold text-stone-500">
+                        {count}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Swim lanes */}
+            <div className="flex flex-col gap-1">
+              {LANES.map((lane, laneIdx) => (
+                <div
+                  key={lane.assignee}
+                  className={`grid grid-cols-[80px_1fr_1fr_1fr] gap-2 rounded-2xl p-2 lg:grid-cols-[100px_1fr_1fr_1fr] ${
+                    laneIdx % 2 === 0 ? 'bg-stone-100/60' : 'bg-white/60'
+                  }`}
+                >
+                  {/* Lane label */}
+                  <div className="flex flex-col items-center justify-start gap-0.5 pt-2">
+                    <span className="text-xl leading-none">{lane.icon}</span>
+                    <span className="text-center text-[10px] font-medium text-stone-500">{lane.label}</span>
+                  </div>
+
+                  {/* Cells */}
+                  {STATUSES.map((s) => {
+                    const cells = tasks.filter(
+                      (t) => t.assignee === lane.assignee && t.status === s.status,
+                    );
+                    return (
+                      <div key={s.status} className="flex min-h-[60px] flex-col gap-1.5">
+                        {cells.map((task) => (
+                          <TaskCard
+                            key={task.id}
+                            task={task}
+                            onUpdate={handleUpdate}
+                            onDelete={handleDelete}
+                          />
+                        ))}
+                        {cells.length === 0 && (
+                          <div className="flex h-10 items-center justify-center rounded-xl border border-dashed border-stone-200">
+                            <span className="text-[10px] text-stone-300">—</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
