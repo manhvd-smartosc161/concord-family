@@ -1,7 +1,7 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
-import { ChangePasswordModal } from '@/features/auth/components/change-password-modal';
 import { UserAvatar } from '@/features/auth/components/user-avatar';
 import type { AuthUser } from '@/features/auth/types';
 
@@ -15,7 +15,6 @@ export function Header({
   onMenuClick?: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [pwModalOpen, setPwModalOpen] = useState(false);
   return (
     <header className="flex h-16 items-center justify-between border-b border-stone-200 bg-white/80 px-3 backdrop-blur sm:px-4 lg:col-span-2 lg:px-6">
       <div className="flex items-center gap-3">
@@ -86,15 +85,13 @@ export function Header({
               onClick={() => setOpen(false)}
             />
             <div className="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  setPwModalOpen(true);
-                }}
+              <Link
+                href="/settings"
+                onClick={() => setOpen(false)}
                 className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-stone-700 transition-colors hover:bg-stone-50"
               >
-                <span>🔐</span> Đổi mật khẩu
-              </button>
+                <span>👤</span> Profile
+              </Link>
               <div className="border-t border-stone-100" />
               <button
                 onClick={onLogout}
@@ -107,10 +104,6 @@ export function Header({
         )}
       </div>
 
-      <ChangePasswordModal
-        open={pwModalOpen}
-        onClose={() => setPwModalOpen(false)}
-      />
     </header>
   );
 }

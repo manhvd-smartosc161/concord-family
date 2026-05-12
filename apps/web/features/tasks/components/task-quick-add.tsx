@@ -8,9 +8,9 @@ interface Props {
 }
 
 const CATEGORIES: { value: TaskCategory; label: string; icon: string }[] = [
-  { value: 'shopping', label: 'Mua sắm', icon: '🛒' },
+  { value: 'shopping', label: 'Mua sắm',  icon: '🛒' },
   { value: 'chores',   label: 'Việc nhà', icon: '🏠' },
-  { value: 'finance',  label: 'Tài chính', icon: '💰' },
+  { value: 'finance',  label: 'Tài chính',icon: '💰' },
   { value: 'goal',     label: 'Mục tiêu', icon: '🎯' },
 ];
 
@@ -66,7 +66,7 @@ export function TaskQuickAdd({ onAdd }: Props) {
     <form
       onSubmit={handleSubmit}
       onKeyDown={handleKeyDown}
-      className="rounded-lg border border-emerald-200 bg-emerald-50/30 p-2.5 ring-1 ring-emerald-100"
+      className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-2.5 ring-1 ring-emerald-100"
     >
       <input
         ref={inputRef}
@@ -86,7 +86,9 @@ export function TaskQuickAdd({ onAdd }: Props) {
               onClick={() => setCategory(c.value)}
               title={c.label}
               className={`rounded px-1.5 py-0.5 text-xs transition-colors ${
-                category === c.value ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                category === c.value
+                  ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300'
+                  : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
               }`}
             >
               {c.icon}
@@ -101,7 +103,9 @@ export function TaskQuickAdd({ onAdd }: Props) {
               type="button"
               onClick={() => setAssignee(a.value)}
               className={`rounded px-1.5 py-0.5 text-xs transition-colors ${
-                assignee === a.value ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                assignee === a.value
+                  ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300'
+                  : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
               }`}
             >
               {a.label}

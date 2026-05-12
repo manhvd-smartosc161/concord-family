@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { UserAvatar } from '@/features/auth/components/user-avatar';
+import type { AuthUser } from '@/features/auth/types';
 import type { Task, TaskStatus, UpdateTaskInput } from '../types';
 
 const CATEGORY_CONFIG = {
-  shopping: { label: 'Mua sắm', accent: 'bg-sky-500', pill: 'bg-sky-50 text-sky-700 ring-sky-200' },
-  chores:   { label: 'Việc nhà', accent: 'bg-amber-400', pill: 'bg-amber-50 text-amber-700 ring-amber-200' },
-  finance:  { label: 'Tài chính', accent: 'bg-emerald-500', pill: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
-  goal:     { label: 'Mục tiêu', accent: 'bg-violet-500', pill: 'bg-violet-50 text-violet-700 ring-violet-200' },
+  shopping: { label: 'Mua sắm', accent: 'bg-sky-500',     pill: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200' },
+  chores:   { label: 'Việc nhà', accent: 'bg-amber-400',   pill: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' },
+  finance:  { label: 'Tài chính', accent: 'bg-emerald-500', pill: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' },
+  goal:     { label: 'Mục tiêu', accent: 'bg-violet-500',  pill: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200' },
 } as const;
 
 const NEXT_STATUS: Record<TaskStatus, TaskStatus | null> = {
@@ -18,11 +20,12 @@ const NEXT_STATUS: Record<TaskStatus, TaskStatus | null> = {
 
 interface Props {
   task: Task;
+  members: AuthUser[];
   onUpdate: (id: string, input: UpdateTaskInput) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
-export function TaskCard({ task, onUpdate, onDelete }: Props) {
+export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [editNote, setEditNote] = useState(task.note ?? '');
   const [saving, setSaving] = useState(false);
@@ -46,17 +49,18 @@ export function TaskCard({ task, onUpdate, onDelete }: Props) {
   }
 
   return (
-    <div className={`group relative flex gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-stone-100 transition-all hover:shadow-md hover:ring-stone-200 ${isDone ? 'opacity-60' : ''}`}>
-      <div className={`mt-0.5 w-1 shrink-0 self-stretch rounded-full ${cat.accent}`} />
+    <div className={`group relative flex gap-0 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-stone-100 transition-all hover:shadow-md hover:ring-stone-200 ${isDone ? 'opacity-60' : ''}`}>
+      <div className={`w-[3px] shrink-0 self-stretch ${cat.accent}`} />
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 p-3">
         <div className="flex items-start justify-between gap-2">
           <button
             type="button"
             className="flex-1 text-left"
             onClick={() => setExpanded((v) => !v)}
           >
-            <p className={`text-sm font-medium leading-snug text-stone-800 ${isDone ? 'line-through' : ''}`}>
+            <p className="text-sm font-medium leading-snug text-stone-800"
+              style={isDone ? { textDecoration: 'line-through', textDecorationThickness: '1.5px' } : undefined}>
               {task.title}
             </p>
             {task.note && !expanded && (
@@ -76,9 +80,24 @@ export function TaskCard({ task, onUpdate, onDelete }: Props) {
         </div>
 
         <div className="mt-2 flex items-center gap-1.5">
-          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset ${cat.pill}`}>
+          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${cat.pill}`}>
             {cat.label}
           </span>
+          {task.assignee === 'both' ? (
+            <div className="flex -space-x-1.5">
+              {members.map((m) => (
+                <div key={m.id} className="rounded-full ring-2 ring-white">
+                  <UserAvatar user={m} size={28} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            (() => {
+              const m = members.find((u) => u.role === task.assignee);
+              return m ? <UserAvatar user={m} size={28} /> : null;
+            })()
+          )}
+
           {nextStatus && (
             <button
               type="button"
@@ -99,6 +118,7 @@ export function TaskCard({ task, onUpdate, onDelete }: Props) {
               )}
             </button>
           )}
+
           {isDone && (
             <span className="ml-auto flex items-center gap-1 text-[10px] text-emerald-600">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>

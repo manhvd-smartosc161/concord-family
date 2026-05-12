@@ -32,7 +32,8 @@ export function UserAvatar({ user, size = 32, editable = false, onClick }: Props
         />
       ) : (
         <div
-          className={`flex h-full w-full items-center justify-center text-sm font-semibold ${colorClass}`}
+          className={`flex h-full w-full items-center justify-center font-semibold ${colorClass}`}
+          style={{ fontSize: Math.max(10, Math.round(size * 0.42)) }}
         >
           {initials}
         </div>

@@ -1,21 +1,17 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { familyMembers } from '@/features/auth/api';
+import type { AuthUser } from '@/features/auth/types';
 import { createTask, deleteTask, listTasks, updateTask } from '../api';
 import type { CreateTaskInput, Task, TaskAssignee, TaskStatus, UpdateTaskInput } from '../types';
 import { TaskCard } from './task-card';
 import { TaskQuickAdd } from './task-quick-add';
 
-const STATUSES: { status: TaskStatus; label: string; dot: string }[] = [
-  { status: 'todo',        label: 'Cần làm',  dot: 'bg-stone-300' },
-  { status: 'in_progress', label: 'Đang làm', dot: 'bg-amber-400' },
-  { status: 'done',        label: 'Xong',     dot: 'bg-emerald-500' },
-];
-
-const LANES: { assignee: TaskAssignee; label: string; icon: string }[] = [
-  { assignee: 'both',    label: 'Cả hai', icon: '👫' },
-  { assignee: 'husband', label: 'Chồng',  icon: '👨' },
-  { assignee: 'wife',    label: 'Vợ',     icon: '👩' },
+const STATUSES: { status: TaskStatus; label: string; dot: string; badgeBg: string; badgeText: string }[] = [
+  { status: 'todo',        label: 'Cần làm',  dot: 'bg-stone-300',   badgeBg: 'bg-stone-100',   badgeText: 'text-stone-500'   },
+  { status: 'in_progress', label: 'Đang làm', dot: 'bg-amber-400',   badgeBg: 'bg-amber-100',   badgeText: 'text-amber-700'   },
+  { status: 'done',        label: 'Xong',     dot: 'bg-emerald-500', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-700' },
 ];
 
 function getISOWeek(date: Date): string {
@@ -57,6 +53,7 @@ export function TaskBoard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileStatus, setMobileStatus] = useState<TaskStatus>('todo');
+  const [members, setMembers] = useState<AuthUser[]>([]);
   const isCurrentWeek = currentWeek === getISOWeek(new Date());
 
   const reload = useCallback(async (week: string) => {
@@ -70,6 +67,7 @@ export function TaskBoard() {
   }, []);
 
   useEffect(() => { void reload(currentWeek); }, [currentWeek, reload]);
+  useEffect(() => { void familyMembers().then(setMembers); }, []);
 
   async function handleAdd(input: CreateTaskInput) {
     const task = await createTask({ ...input, weekYear: currentWeek });
@@ -77,6 +75,7 @@ export function TaskBoard() {
   }
 
   async function handleUpdate(id: string, input: UpdateTaskInput) {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...input } : t)));
     const updated = await updateTask(id, input);
     setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
   }
@@ -97,26 +96,26 @@ export function TaskBoard() {
       <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-3 lg:px-6">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-base font-bold text-stone-900">Weekly Board</h1>
+            <h1 className="text-base font-semibold text-stone-900">Tuần này</h1>
             <p className="text-xs text-stone-400">{formatWeekLabel(currentWeek)}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <button
               type="button"
               onClick={() => setCurrentWeek((w) => addWeeks(w, -1))}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-            <span className="min-w-[60px] text-center text-xs font-semibold tabular-nums text-stone-600">
+            <span className="min-w-[60px] text-center text-xs font-medium tabular-nums text-stone-500">
               {currentWeek}
             </span>
             <button
               type="button"
               onClick={() => setCurrentWeek((w) => addWeeks(w, 1))}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -126,7 +125,7 @@ export function TaskBoard() {
               <button
                 type="button"
                 onClick={() => setCurrentWeek(getISOWeek(new Date()))}
-                className="ml-1 rounded-lg border border-stone-200 px-2 py-1 text-xs text-stone-500 hover:bg-stone-100"
+                className="ml-1 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs text-stone-500 transition-colors hover:bg-stone-50 hover:text-stone-700"
               >
                 Hôm nay
               </button>
@@ -135,14 +134,14 @@ export function TaskBoard() {
         </div>
 
         {totalAll > 0 && (
-          <div className="mt-2 flex items-center gap-2.5">
-            <div className="h-1 flex-1 overflow-hidden rounded-full bg-stone-100">
+          <div className="mt-2.5 flex items-center gap-2.5">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-stone-100">
               <div
                 className="h-full rounded-full bg-emerald-500 transition-all duration-700"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="shrink-0 text-[11px] font-medium tabular-nums text-stone-400">
+            <span className="shrink-0 text-[11px] tabular-nums text-stone-400">
               {totalDone}/{totalAll} xong
             </span>
           </div>
@@ -156,16 +155,20 @@ export function TaskBoard() {
 
       {loading ? (
         <div className="flex-1 p-4 lg:p-6">
-          <div className="grid h-48 animate-pulse gap-3 lg:grid-cols-3">
-            {[1,2,3].map(i => <div key={i} className="rounded-2xl bg-stone-200/50" />)}
+          <div className="flex gap-4">
+            {[1,2,3].map(i => (
+              <div key={i} className="flex-1">
+                <div className="mb-3 h-5 w-20 animate-pulse rounded bg-stone-200" />
+                {[1,2].map(j => <div key={j} className="mb-2 h-16 animate-pulse rounded-xl bg-stone-200/60" />)}
+              </div>
+            ))}
           </div>
         </div>
       ) : (
         <>
-          {/* ── MOBILE: status tabs + list ── */}
+          {/* ── MOBILE: tabs ── */}
           <div className="flex min-h-0 flex-1 flex-col lg:hidden">
-            {/* Status tabs */}
-            <div className="flex shrink-0 gap-0 border-b border-stone-200 bg-white">
+            <div className="flex shrink-0 border-b border-stone-200 bg-white">
               {STATUSES.map((s) => {
                 const count = tasks.filter((t) => t.status === s.status).length;
                 const active = mobileStatus === s.status;
@@ -182,117 +185,72 @@ export function TaskBoard() {
                     {s.label}
                     {count > 0 && (
                       <span className={`rounded-full px-1.5 py-px text-[10px] font-semibold ${
-                        active ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-500'
+                        active ? 'bg-stone-800 text-white' : `${s.badgeBg} ${s.badgeText}`
                       }`}>
                         {count}
                       </span>
                     )}
                     {active && (
-                      <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-stone-800" />
+                      <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-emerald-500" />
                     )}
                   </button>
                 );
               })}
             </div>
-
-            {/* Mobile task list — grouped by lane */}
             <div className="flex-1 overflow-y-auto p-3">
-              {LANES.map((lane) => {
-                const laneTasks = tasks.filter(
-                  (t) => t.assignee === lane.assignee && t.status === mobileStatus,
-                );
-                return (
-                  <div key={lane.assignee} className="mb-4">
-                    <div className="mb-2 flex items-center gap-1.5">
-                      <span className="text-base leading-none">{lane.icon}</span>
-                      <span className="text-xs font-semibold text-stone-500">{lane.label}</span>
-                      {laneTasks.length > 0 && (
-                        <span className="rounded-full bg-stone-200 px-1.5 py-px text-[10px] font-semibold text-stone-500">
-                          {laneTasks.length}
-                        </span>
-                      )}
-                    </div>
-                    {laneTasks.length === 0 ? (
-                      <div className="rounded-xl border border-dashed border-stone-200 py-3 text-center text-xs text-stone-300">
-                        Trống
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        {laneTasks.map((task) => (
-                          <TaskCard key={task.id} task={task} onUpdate={handleUpdate} onDelete={handleDelete} />
-                        ))}
-                      </div>
-                    )}
+              <div className="flex flex-col gap-2">
+                {tasks
+                  .filter((t) => t.status === mobileStatus)
+                  .map((task) => (
+                    <TaskCard key={task.id} task={task} members={members} onUpdate={handleUpdate} onDelete={handleDelete} />
+                  ))}
+                {tasks.filter((t) => t.status === mobileStatus).length === 0 && (
+                  <div className="rounded-xl border border-dashed border-stone-200 py-8 text-center text-sm text-stone-300">
+                    Chưa có
                   </div>
-                );
-              })}
+                )}
+              </div>
             </div>
           </div>
 
-          {/* ── DESKTOP: kanban matrix ── */}
-          <div className="hidden min-h-0 flex-1 overflow-auto p-5 lg:block xl:p-6">
-            <div className="grid grid-cols-[96px_1fr_1fr_1fr] items-start gap-2">
-
-              {/* Corner */}
-              <div />
-
-              {/* Column headers */}
-              {STATUSES.map((s) => {
-                const count = tasks.filter((t) => t.status === s.status).length;
-                return (
-                  <div key={s.status} className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm ring-1 ring-stone-100">
+          {/* ── DESKTOP: 3 columns by status ── */}
+          <div className="hidden min-h-0 flex-1 lg:flex">
+            {STATUSES.map((s, idx) => {
+              const col = tasks.filter((t) => t.status === s.status);
+              return (
+                <div
+                  key={s.status}
+                  className={`flex min-h-0 flex-1 flex-col ${idx < STATUSES.length - 1 ? 'border-r border-stone-200' : ''}`}
+                >
+                  {/* Column header */}
+                  <div className="flex shrink-0 items-center gap-2 px-4 py-3">
                     <span className={`h-2 w-2 shrink-0 rounded-full ${s.dot}`} />
-                    <span className="text-xs font-semibold uppercase tracking-wide text-stone-600">{s.label}</span>
-                    {count > 0 && (
-                      <span className="ml-auto rounded-full bg-stone-100 px-1.5 py-px text-[10px] font-semibold text-stone-500">
-                        {count}
+                    <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">{s.label}</span>
+                    {col.length > 0 && (
+                      <span className={`ml-auto rounded-full px-1.5 py-px text-[10px] font-semibold ${s.badgeBg} ${s.badgeText}`}>
+                        {col.length}
                       </span>
                     )}
                   </div>
-                );
-              })}
 
-              {/* Lane rows */}
-              {LANES.map((lane, laneIdx) => (
-                <React.Fragment key={lane.assignee}>
-                  {/* Lane header */}
-                  <div
-                    className={`flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-3 ${
-                      laneIdx % 2 === 0 ? 'bg-stone-100/80' : 'bg-white ring-1 ring-stone-100'
-                    }`}
-                  >
-                    <span className="text-2xl leading-none">{lane.icon}</span>
-                    <span className="text-center text-[11px] font-semibold text-stone-500">{lane.label}</span>
-                  </div>
+                  <div className="h-px shrink-0 bg-stone-100" />
 
-                  {/* Status cells */}
-                  {STATUSES.map((s) => {
-                    const cells = tasks.filter(
-                      (t) => t.assignee === lane.assignee && t.status === s.status,
-                    );
-                    return (
-                      <div
-                        key={`${lane.assignee}-${s.status}`}
-                        className={`rounded-xl p-2 ${
-                          laneIdx % 2 === 0 ? 'bg-stone-50' : 'bg-stone-50/50'
-                        }`}
-                      >
-                        <div className="flex flex-col gap-2">
-                          {cells.map((task) => (
-                            <TaskCard key={task.id} task={task} onUpdate={handleUpdate} onDelete={handleDelete} />
-                          ))}
-                          {cells.length === 0 && (
-                            <div className="flex h-8 items-center justify-center rounded-lg border border-dashed border-stone-200">
-                              <span className="text-[10px] text-stone-300">—</span>
-                            </div>
-                          )}
+                  {/* Cards */}
+                  <div className="flex-1 overflow-y-auto p-3">
+                    <div className="flex flex-col gap-2">
+                      {col.map((task) => (
+                        <TaskCard key={task.id} task={task} members={members} onUpdate={handleUpdate} onDelete={handleDelete} />
+                      ))}
+                      {col.length === 0 && (
+                        <div className="mt-4 rounded-xl border border-dashed border-stone-200 py-8 text-center text-sm text-stone-300">
+                          Chưa có
                         </div>
-                      </div>
-                    );
-                  })}
-                </React.Fragment>
-              ))}
-            </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </>
       )}

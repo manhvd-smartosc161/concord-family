@@ -52,6 +52,14 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('family-members')
+  async familyMembers(@CurrentUser() user: User): Promise<AuthUserDto[]> {
+    if (!user.familyId) return [];
+    const members = await this.usersService.findByFamilyId(user.familyId);
+    return members.map((m) => this.authService.toAuthUser(m));
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch('me')
   async updateProfile(
     @CurrentUser() user: User,

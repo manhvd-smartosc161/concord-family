@@ -21,6 +21,10 @@ export function me(): Promise<AuthUser> {
   return apiFetch<AuthUser>('/api/auth/me');
 }
 
+export function familyMembers(): Promise<AuthUser[]> {
+  return apiFetch<AuthUser[]>('/api/auth/family-members');
+}
+
 export function updateProfile(payload: {
   name?: string;
   birthdate?: string | null;

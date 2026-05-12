@@ -18,6 +18,10 @@ export class UsersService {
     return this.repo.findOneBy({ id });
   }
 
+  findByFamilyId(familyId: string): Promise<User[]> {
+    return this.repo.findBy({ familyId });
+  }
+
   async validatePassword(user: User, plain: string): Promise<boolean> {
     return bcrypt.compare(plain, user.hashedPassword);
   }

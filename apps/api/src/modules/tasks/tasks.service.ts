@@ -52,7 +52,10 @@ export class TasksService {
     const task = await this.taskRepo.findOne({ where: { id } });
     if (!task) throw new NotFoundException('Task not found');
     if (task.familyId !== user.familyId) throw new ForbiddenException();
-    Object.assign(task, dto);
+    const patch = Object.fromEntries(
+      Object.entries(dto).filter(([, v]) => v !== undefined),
+    );
+    Object.assign(task, patch);
     return this.taskRepo.save(task);
   }
 
