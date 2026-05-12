@@ -56,6 +56,7 @@ export function TaskBoard() {
   const [currentWeek, setCurrentWeek] = useState(() => getISOWeek(new Date()));
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mobileStatus, setMobileStatus] = useState<TaskStatus>('todo');
   const isCurrentWeek = currentWeek === getISOWeek(new Date());
 
   const reload = useCallback(async (week: string) => {
@@ -91,14 +92,14 @@ export function TaskBoard() {
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-stone-50">
-      {/* Header */}
+
+      {/* ── Header ── */}
       <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-3 lg:px-6">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-base font-bold text-stone-900">Weekly Board</h1>
             <p className="text-xs text-stone-400">{formatWeekLabel(currentWeek)}</p>
           </div>
-
           <div className="flex shrink-0 items-center gap-1">
             <button
               type="button"
@@ -148,83 +149,153 @@ export function TaskBoard() {
         )}
       </div>
 
-      {/* Quick add */}
-      <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-2.5 lg:px-6">
+      {/* ── Quick add ── */}
+      <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-2 lg:px-6">
         <TaskQuickAdd onAdd={handleAdd} />
       </div>
 
-      {/* Board */}
       {loading ? (
         <div className="flex-1 p-4 lg:p-6">
-          <div className="h-full animate-pulse rounded-2xl bg-stone-200/50" />
+          <div className="grid h-48 animate-pulse gap-3 lg:grid-cols-3">
+            {[1,2,3].map(i => <div key={i} className="rounded-2xl bg-stone-200/50" />)}
+          </div>
         </div>
       ) : (
-        <div className="min-h-0 flex-1 overflow-auto p-4 lg:p-6">
-          <div className="h-full min-w-[480px]">
-            {/* Column headers */}
-            <div className="mb-2 grid grid-cols-[80px_1fr_1fr_1fr] gap-2 lg:grid-cols-[100px_1fr_1fr_1fr]">
+        <>
+          {/* ── MOBILE: status tabs + list ── */}
+          <div className="flex min-h-0 flex-1 flex-col lg:hidden">
+            {/* Status tabs */}
+            <div className="flex shrink-0 gap-0 border-b border-stone-200 bg-white">
+              {STATUSES.map((s) => {
+                const count = tasks.filter((t) => t.status === s.status).length;
+                const active = mobileStatus === s.status;
+                return (
+                  <button
+                    key={s.status}
+                    type="button"
+                    onClick={() => setMobileStatus(s.status)}
+                    className={`relative flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
+                      active ? 'text-stone-800' : 'text-stone-400 hover:text-stone-600'
+                    }`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
+                    {s.label}
+                    {count > 0 && (
+                      <span className={`rounded-full px-1.5 py-px text-[10px] font-semibold ${
+                        active ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-500'
+                      }`}>
+                        {count}
+                      </span>
+                    )}
+                    {active && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-stone-800" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Mobile task list — grouped by lane */}
+            <div className="flex-1 overflow-y-auto p-3">
+              {LANES.map((lane) => {
+                const laneTasks = tasks.filter(
+                  (t) => t.assignee === lane.assignee && t.status === mobileStatus,
+                );
+                return (
+                  <div key={lane.assignee} className="mb-4">
+                    <div className="mb-2 flex items-center gap-1.5">
+                      <span className="text-base leading-none">{lane.icon}</span>
+                      <span className="text-xs font-semibold text-stone-500">{lane.label}</span>
+                      {laneTasks.length > 0 && (
+                        <span className="rounded-full bg-stone-200 px-1.5 py-px text-[10px] font-semibold text-stone-500">
+                          {laneTasks.length}
+                        </span>
+                      )}
+                    </div>
+                    {laneTasks.length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-stone-200 py-3 text-center text-xs text-stone-300">
+                        Trống
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {laneTasks.map((task) => (
+                          <TaskCard key={task.id} task={task} onUpdate={handleUpdate} onDelete={handleDelete} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── DESKTOP: kanban matrix ── */}
+          <div className="hidden min-h-0 flex-1 overflow-auto p-5 lg:block xl:p-6">
+            <div className="grid h-full grid-cols-[96px_1fr_1fr_1fr] grid-rows-[auto_1fr_1fr_1fr] gap-2">
+
+              {/* Corner */}
               <div />
+
+              {/* Column headers */}
               {STATUSES.map((s) => {
                 const count = tasks.filter((t) => t.status === s.status).length;
                 return (
-                  <div key={s.status} className="flex items-center gap-1.5 px-1">
+                  <div key={s.status} className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm ring-1 ring-stone-100">
                     <span className={`h-2 w-2 shrink-0 rounded-full ${s.dot}`} />
-                    <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">
-                      {s.label}
-                    </span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-stone-600">{s.label}</span>
                     {count > 0 && (
-                      <span className="ml-auto rounded-full bg-stone-200 px-1.5 py-px text-[10px] font-semibold text-stone-500">
+                      <span className="ml-auto rounded-full bg-stone-100 px-1.5 py-px text-[10px] font-semibold text-stone-500">
                         {count}
                       </span>
                     )}
                   </div>
                 );
               })}
-            </div>
 
-            {/* Swim lanes */}
-            <div className="flex flex-col gap-1">
+              {/* Lane rows */}
               {LANES.map((lane, laneIdx) => (
-                <div
-                  key={lane.assignee}
-                  className={`grid grid-cols-[80px_1fr_1fr_1fr] gap-2 rounded-2xl p-2 lg:grid-cols-[100px_1fr_1fr_1fr] ${
-                    laneIdx % 2 === 0 ? 'bg-stone-100/60' : 'bg-white/60'
-                  }`}
-                >
-                  {/* Lane label */}
-                  <div className="flex flex-col items-center justify-start gap-0.5 pt-2">
-                    <span className="text-xl leading-none">{lane.icon}</span>
-                    <span className="text-center text-[10px] font-medium text-stone-500">{lane.label}</span>
+                <>
+                  {/* Lane header */}
+                  <div
+                    key={`label-${lane.assignee}`}
+                    className={`flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-3 ${
+                      laneIdx % 2 === 0 ? 'bg-stone-100/80' : 'bg-white ring-1 ring-stone-100'
+                    }`}
+                  >
+                    <span className="text-2xl leading-none">{lane.icon}</span>
+                    <span className="text-center text-[11px] font-semibold text-stone-500">{lane.label}</span>
                   </div>
 
-                  {/* Cells */}
+                  {/* Status cells */}
                   {STATUSES.map((s) => {
                     const cells = tasks.filter(
                       (t) => t.assignee === lane.assignee && t.status === s.status,
                     );
                     return (
-                      <div key={s.status} className="flex min-h-[60px] flex-col gap-1.5">
-                        {cells.map((task) => (
-                          <TaskCard
-                            key={task.id}
-                            task={task}
-                            onUpdate={handleUpdate}
-                            onDelete={handleDelete}
-                          />
-                        ))}
-                        {cells.length === 0 && (
-                          <div className="flex h-10 items-center justify-center rounded-xl border border-dashed border-stone-200">
-                            <span className="text-[10px] text-stone-300">—</span>
-                          </div>
-                        )}
+                      <div
+                        key={`${lane.assignee}-${s.status}`}
+                        className={`overflow-y-auto rounded-xl p-2 ${
+                          laneIdx % 2 === 0 ? 'bg-stone-50' : 'bg-stone-50/50'
+                        }`}
+                      >
+                        <div className="flex flex-col gap-2">
+                          {cells.map((task) => (
+                            <TaskCard key={task.id} task={task} onUpdate={handleUpdate} onDelete={handleDelete} />
+                          ))}
+                          {cells.length === 0 && (
+                            <div className="flex h-8 items-center justify-center rounded-lg border border-dashed border-stone-200">
+                              <span className="text-[10px] text-stone-300">—</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
-                </div>
+                </>
               ))}
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
