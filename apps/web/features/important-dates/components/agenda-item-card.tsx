@@ -263,7 +263,7 @@ export function AgendaItemCard({
           <>
             <div
               className="fixed inset-0 z-10"
-              onClick={() => setMenuOpen(false)}
+              onPointerDown={(e) => { e.preventDefault(); setMenuOpen(false); }}
               aria-hidden="true"
             />
             <div className="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">

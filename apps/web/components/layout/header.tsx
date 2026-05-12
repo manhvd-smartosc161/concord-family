@@ -89,7 +89,7 @@ export function Header({
           <>
             <div
               className="fixed inset-0 z-10"
-              onClick={() => setOpen(false)}
+              onPointerDown={(e) => { e.preventDefault(); setOpen(false); }}
             />
             <div className="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
               <Link

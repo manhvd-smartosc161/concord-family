@@ -43,7 +43,7 @@ export function LocaleToggle() {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-10" onPointerDown={(e) => { e.preventDefault(); setOpen(false); }} />
           <div className="absolute right-0 z-20 mt-1 w-36 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
             {LOCALES.map((l) => (
               <button
