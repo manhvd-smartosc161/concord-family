@@ -133,7 +133,16 @@
     "ahead_short": "Vượt",
     "days_remaining": "Còn {days} ngày",
     "month_contribution": "Tháng này: {current} / {target}",
-    "manage": "Quản lý →"
+    "manage": "Quản lý →",
+    "label_fund_type": "Loại quỹ",
+    "label_fund_name": "Tên quỹ",
+    "label_target_amount": "Mục tiêu (VND)",
+    "hint_no_target": "Bỏ trống nếu chỉ tích luỹ tự do",
+    "label_deadline": "Deadline",
+    "hint_deadline_optional": "Bỏ trống nếu không có hạn cụ thể",
+    "label_monthly_target": "Mục tiêu góp đều đặn (VND/tháng)",
+    "hint_monthly_example": "vd \"đầu tư 10tr/tháng đều đặn\"",
+    "hint_monthly_optional": "Bỏ trống nếu không cần — chỉ dùng khi muốn track recurring"
   },
   "reports": {
     "title": "Báo cáo",

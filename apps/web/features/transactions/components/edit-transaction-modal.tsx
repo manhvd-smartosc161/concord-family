@@ -114,7 +114,7 @@ export function EditTransactionModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button
         type="button"
-        aria-label="Đóng"
+        aria-label={tCommon('close')}
         onClick={onClose}
         className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
       />

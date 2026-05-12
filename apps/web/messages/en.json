@@ -133,7 +133,16 @@
     "ahead_short": "Ahead",
     "days_remaining": "{days} days left",
     "month_contribution": "This month: {current} / {target}",
-    "manage": "Manage →"
+    "manage": "Manage →",
+    "label_fund_type": "Fund type",
+    "label_fund_name": "Fund name",
+    "label_target_amount": "Target (VND)",
+    "hint_no_target": "Leave blank to save freely",
+    "label_deadline": "Deadline",
+    "hint_deadline_optional": "Leave blank if no specific deadline",
+    "label_monthly_target": "Monthly target (VND/month)",
+    "hint_monthly_example": "e.g. \"invest 10M/month regularly\"",
+    "hint_monthly_optional": "Leave blank if not needed — only use to track recurring contributions"
   },
   "reports": {
     "title": "Reports",

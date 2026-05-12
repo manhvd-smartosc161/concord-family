@@ -555,7 +555,7 @@ function EnvelopeFormModal({
         </p>
 
         <div className="space-y-4">
-          <Field label="Loại quỹ" required>
+          <Field label={tGoalsModal('label_fund_type')} required>
             <div className="flex gap-2">
               {(
                 [
@@ -579,7 +579,7 @@ function EnvelopeFormModal({
             </div>
           </Field>
 
-          <Field label="Tên quỹ" required>
+          <Field label={tGoalsModal('label_fund_name')} required>
             <input
               type="text"
               value={name}
@@ -590,11 +590,11 @@ function EnvelopeFormModal({
           </Field>
 
           <Field
-            label="Mục tiêu (VND)"
+            label={tGoalsModal('label_target_amount')}
             hint={
               targetAmount !== '' && Number(targetAmount) > 0
                 ? formatVND(Number(targetAmount))
-                : 'Bỏ trống nếu chỉ tích luỹ tự do'
+                : tGoalsModal('hint_no_target')
             }
           >
             <input
@@ -608,7 +608,7 @@ function EnvelopeFormModal({
             />
           </Field>
 
-          <Field label="Deadline" hint="Bỏ trống nếu không có hạn cụ thể">
+          <Field label={tGoalsModal('label_deadline')} hint={tGoalsModal('hint_deadline_optional')}>
             <input
               type="date"
               value={targetDeadline}
@@ -618,11 +618,11 @@ function EnvelopeFormModal({
           </Field>
 
           <Field
-            label="Mục tiêu góp đều đặn (VND/tháng)"
+            label={tGoalsModal('label_monthly_target')}
             hint={
               monthly !== '' && Number(monthly) > 0
-                ? `${formatVND(Number(monthly))}/tháng — vd "đầu tư 10tr/tháng đều đặn"`
-                : 'Bỏ trống nếu không cần — chỉ dùng khi muốn track recurring'
+                ? `${formatVND(Number(monthly))}/tháng — ${tGoalsModal('hint_monthly_example')}`
+                : tGoalsModal('hint_monthly_optional')
             }
           >
             <input
