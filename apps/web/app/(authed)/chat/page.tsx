@@ -1153,6 +1153,8 @@ function ImportantDateBatchCard({
   messageId: string;
   onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
 }) {
+  const t = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -1243,8 +1245,8 @@ function ImportantDateBatchCard({
           className="rounded-md bg-emerald-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
         >
           {submitting
-            ? `Đang lưu… (${items.length})`
-            : `Xác nhận tất cả (${items.length})`}
+            ? tCommon('saving')
+            : t('confirm_all', { count: items.length })}
         </button>
         <button
           type="button"
@@ -1273,6 +1275,8 @@ function ImportantDateProposedCard({
   actionIndex: number;
   onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
 }) {
+  const t = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -1349,7 +1353,7 @@ function ImportantDateProposedCard({
           disabled={submitting}
           className="rounded-md bg-emerald-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
         >
-          {submitting ? 'Đang lưu…' : 'Xác nhận'}
+          {submitting ? tCommon('saving') : t('confirm')}
         </button>
         <button
           type="button"

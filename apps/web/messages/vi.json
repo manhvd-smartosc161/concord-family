@@ -199,7 +199,24 @@
     "today": "Hôm nay",
     "tomorrow": "Ngày mai",
     "edit": "Sửa",
-    "delete": "Xoá"
+    "delete": "Xoá",
+    "notify": "Thông báo",
+    "sending": "Đang gửi…",
+    "lunar_calendar": "Âm lịch",
+    "remind_on_day": "Đúng ngày",
+    "remind_1_day_before": "Trước 1 ngày",
+    "remind_3_days_before": "Trước 3 ngày",
+    "remind_1_week_before": "Trước 1 tuần",
+    "email_test_sent": "Đã gửi email test (check inbox).",
+    "kind_birthday": "Sinh nhật",
+    "kind_death_anniversary": "Giỗ",
+    "kind_anniversary": "Kỷ niệm",
+    "kind_other": "Khác",
+    "kind_lunar": "Âm lịch",
+    "kind_national": "Lễ Việt Nam",
+    "kind_international": "Lễ quốc tế",
+    "kind_religious": "Tôn giáo",
+    "remind_days_before": "Trước {days} ngày"
   },
   "chat": {
     "title": "Trợ lý AI",
@@ -208,7 +225,9 @@
     "send": "Gửi",
     "thinking": "Đang suy nghĩ…",
     "empty_title": "Xin chào!",
-    "empty_desc": "Hãy bắt đầu bằng cách nhập một giao dịch, ví dụ: \"Sáng nay mua cà phê 45k\"."
+    "empty_desc": "Hãy bắt đầu bằng cách nhập một giao dịch, ví dụ: \"Sáng nay mua cà phê 45k\".",
+    "confirm_all": "Xác nhận tất cả ({count})",
+    "confirm": "Xác nhận"
   },
   "dashboard": {
     "title": "Chào {name} 👋",
@@ -237,7 +256,12 @@
     "invite_title": "Mời thành viên",
     "invite_subtitle": "Gửi link mời để vợ/chồng tham gia.",
     "setup_title": "Thiết lập gia đình",
-    "setup_subtitle": "Tạo gia đình để bắt đầu quản lý tài chính cùng nhau."
+    "setup_subtitle": "Tạo gia đình để bắt đầu quản lý tài chính cùng nhau.",
+    "complete": "Hoàn chỉnh",
+    "waiting_spouse": "Đang chờ vợ/chồng tham gia",
+    "creating_link": "Đang tạo link…",
+    "send_link": "Gửi link mời",
+    "leave_family": "Thoát gia đình"
   },
   "invite": {
     "title": "Lời mời tham gia",

@@ -108,7 +108,7 @@ export default function FamilyInvitePage() {
             </h1>
             <p className="mt-1 text-xs text-stone-500">
               {view.members.length}/2 thành viên ·{' '}
-              {isComplete ? 'Hoàn chỉnh' : 'Đang chờ vợ/chồng tham gia'}
+              {isComplete ? t('complete') : t('waiting_spouse')}
             </p>
           </div>
           {!editingFamily && (
@@ -218,7 +218,7 @@ export default function FamilyInvitePage() {
               disabled={submitting}
               className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:bg-stone-300 sm:w-auto"
             >
-              {submitting ? 'Đang tạo link…' : 'Gửi link mời'}
+              {submitting ? t('creating_link') : t('send_link')}
             </button>
           </form>
         )}
@@ -254,7 +254,7 @@ export default function FamilyInvitePage() {
 
         <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 sm:p-5">
           <div className="text-sm font-semibold text-rose-900">
-            ⚠️ Thoát gia đình
+            ⚠️ {t('leave_family')}
           </div>
           <p className="mt-1 text-xs text-rose-800">
             Quỹ riêng + chat của bạn sẽ bị xoá vĩnh viễn. Quỹ chung và dữ liệu
@@ -267,7 +267,7 @@ export default function FamilyInvitePage() {
             disabled={leaving}
             className="mt-3 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-700 disabled:opacity-50"
           >
-            {leaving ? 'Đang xử lý…' : 'Thoát gia đình'}
+            {leaving ? tCommon('saving') : t('leave_family')}
           </button>
         </div>
       </div>

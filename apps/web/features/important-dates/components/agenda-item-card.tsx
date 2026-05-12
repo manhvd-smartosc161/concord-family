@@ -17,26 +17,6 @@ const ICONS: Record<AgendaItemKind, string> = {
   religious: "🙏",
 };
 
-const TYPE_LABEL: Record<AgendaItemKind, string> = {
-  birthday: "Sinh nhật",
-  death_anniversary: "Giỗ",
-  anniversary: "Kỷ niệm",
-  other: "Khác",
-  lunar: "Âm lịch",
-  national: "Lễ Việt Nam",
-  international: "Lễ quốc tế",
-  religious: "Tôn giáo",
-};
-
-const REMIND_LABEL: Record<number, string> = {
-  0: "Đúng ngày",
-  1: "Trước 1 ngày",
-  2: "Trước 2 ngày",
-  3: "Trước 3 ngày",
-  7: "Trước 1 tuần",
-  14: "Trước 2 tuần",
-  30: "Trước 1 tháng",
-};
 
 const WEEKDAY_VI = ["CN", "Th 2", "Th 3", "Th 4", "Th 5", "Th 6", "Th 7"];
 
@@ -112,6 +92,24 @@ export function AgendaItemCard({
   const t = useTranslations('dates');
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const TYPE_LABEL: Record<AgendaItemKind, string> = {
+    birthday: t('kind_birthday'),
+    death_anniversary: t('kind_death_anniversary'),
+    anniversary: t('kind_anniversary'),
+    other: t('kind_other'),
+    lunar: t('kind_lunar'),
+    national: t('kind_national'),
+    international: t('kind_international'),
+    religious: t('kind_religious'),
+  };
+
+  const REMIND_LABEL: Record<number, string> = {
+    0: t('remind_on_day'),
+    1: t('remind_1_day_before'),
+    3: t('remind_3_days_before'),
+    7: t('remind_1_week_before'),
+  };
 
   async function handleTest() {
     if (sending) return;
@@ -200,7 +198,7 @@ export function AgendaItemCard({
               <Badge tone={style.badgeTone}>
                 {TYPE_LABEL[item.kind] ?? item.kind}
               </Badge>
-              {isUser && item.isLunar && <Badge tone="sky">Âm lịch</Badge>}
+              {isUser && item.isLunar && <Badge tone="sky">{t('lunar_calendar')}</Badge>}
               <span
                 className={
                   imminent
@@ -225,7 +223,7 @@ export function AgendaItemCard({
                     key={d}
                     className="rounded-md bg-stone-50 px-2 py-0.5 text-[10px] font-medium text-stone-600 ring-1 ring-stone-200/70"
                   >
-                    {REMIND_LABEL[d] ?? `Trước ${d} ngày`}
+                    {REMIND_LABEL[d] ?? t('remind_days_before', { days: d })}
                   </span>
                 ))}
               </div>
@@ -297,7 +295,7 @@ export function AgendaItemCard({
                   void handleTest();
                 }}
                 icon="🔔"
-                label={sending ? "Đang gửi…" : "Thông báo"}
+                label={sending ? t('sending') : t('notify')}
                 disabled={sending}
               />
             </div>

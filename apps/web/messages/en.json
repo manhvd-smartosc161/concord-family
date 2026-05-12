@@ -199,7 +199,24 @@
     "today": "Today",
     "tomorrow": "Tomorrow",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "notify": "Notify",
+    "sending": "Sending…",
+    "lunar_calendar": "Lunar calendar",
+    "remind_on_day": "On the day",
+    "remind_1_day_before": "1 day before",
+    "remind_3_days_before": "3 days before",
+    "remind_1_week_before": "1 week before",
+    "email_test_sent": "Test email sent (check inbox).",
+    "kind_birthday": "Birthday",
+    "kind_death_anniversary": "Memorial",
+    "kind_anniversary": "Anniversary",
+    "kind_other": "Other",
+    "kind_lunar": "Lunar calendar",
+    "kind_national": "Vietnamese holiday",
+    "kind_international": "International holiday",
+    "kind_religious": "Religious",
+    "remind_days_before": "{days} days before"
   },
   "chat": {
     "title": "AI Assistant",
@@ -208,7 +225,9 @@
     "send": "Send",
     "thinking": "Thinking…",
     "empty_title": "Hello!",
-    "empty_desc": "Start by entering a transaction, e.g. \"Bought coffee this morning 45k\"."
+    "empty_desc": "Start by entering a transaction, e.g. \"Bought coffee this morning 45k\".",
+    "confirm_all": "Confirm all ({count})",
+    "confirm": "Confirm"
   },
   "dashboard": {
     "title": "Hello {name} 👋",
@@ -237,7 +256,12 @@
     "invite_title": "Invite member",
     "invite_subtitle": "Send an invite link for your partner to join.",
     "setup_title": "Family setup",
-    "setup_subtitle": "Create your family to start managing finances together."
+    "setup_subtitle": "Create your family to start managing finances together.",
+    "complete": "Complete",
+    "waiting_spouse": "Waiting for partner to join",
+    "creating_link": "Creating link…",
+    "send_link": "Send invite link",
+    "leave_family": "Leave family"
   },
   "invite": {
     "title": "Invitation to join",

@@ -71,6 +71,7 @@ function matchesFilter(item: AgendaItem, filter: KindFilter): boolean {
 
 export default function YearAgendaPage() {
   const t = useTranslations('dates');
+  const tCommon = useTranslations('common');
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const [view, setView] = useState<YearAgendaView | null>(null);
@@ -163,7 +164,7 @@ export default function YearAgendaPage() {
   const total = view?.items.length ?? 0;
   const filteredCount = filteredItems.length;
   const subtitleText = !view
-    ? 'Đang tải…'
+    ? tCommon('loading')
     : kindFilter === 'all'
       ? `${total} sự kiện sắp tới — group theo tháng`
       : `${filteredCount}/${total} sự kiện (đang lọc)`;
