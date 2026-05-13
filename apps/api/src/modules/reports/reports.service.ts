@@ -48,12 +48,15 @@ export class ReportsService {
     year: number,
     month: number,
     scope: ReportScope = 'all',
+    fundId?: string,
   ): Promise<MonthlyReport> {
     const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
     const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
 
     let fundIds = await this.txnService.visibleFundIds(user);
-    if (scope === 'joint' && fundIds.length > 0) {
+    if (fundId && fundIds.includes(fundId)) {
+      fundIds = [fundId];
+    } else if (scope === 'joint' && fundIds.length > 0) {
       const jointFunds = await this.fundRepo.find({
         where: { id: In(fundIds), type: 'joint' },
         select: { id: true },

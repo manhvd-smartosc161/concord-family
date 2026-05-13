@@ -34,8 +34,9 @@ export class ReportsController {
     )
     month: number,
     @Query('scope') scope?: string,
+    @Query('fundId') fundId?: string,
   ): Promise<MonthlyReport> {
     const normalizedScope: ReportScope = scope === 'joint' ? 'joint' : 'all';
-    return this.reportsService.monthly(user, year, month, normalizedScope);
+    return this.reportsService.monthly(user, year, month, normalizedScope, fundId);
   }
 }

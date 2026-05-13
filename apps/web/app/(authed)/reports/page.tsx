@@ -17,6 +17,8 @@ import type {
   CategoryAggregate,
   MonthlyReport,
 } from '@/features/reports/types';
+import { FundFilterTabs } from '@/features/funds/components/fund-filter-tabs';
+import { useAuthedLayout } from '../layout';
 import {
   Card,
   EmptyState,
@@ -27,18 +29,28 @@ import {
 
 export default function ReportsPage() {
   const t = useTranslations('reports');
+  const { funds } = useAuthedLayout();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1); // 1-indexed
+  const [fundFilter, setFundFilter] = useState<string>('');
   const [report, setReport] = useState<MonthlyReport | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!fundFilter && funds.length > 0) {
+      const joint = funds.find((f) => f.type === 'joint');
+      setFundFilter(joint?.id ?? funds[0].id);
+    }
+  }, [funds, fundFilter]);
+
+  useEffect(() => {
+    if (!fundFilter) return;
     setLoading(true);
-    getMonthlyReport(year, month, 'all')
+    getMonthlyReport(year, month, 'all', fundFilter)
       .then(setReport)
       .finally(() => setLoading(false));
-  }, [year, month]);
+  }, [year, month, fundFilter]);
 
   function shift(delta: number) {
     let m = month + delta;
@@ -74,6 +86,14 @@ export default function ReportsPage() {
 
       <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto max-w-6xl space-y-6">
+          <Card padding="p-3 sm:p-4">
+            <FundFilterTabs
+              funds={funds}
+              value={fundFilter}
+              onChange={(v) => { setFundFilter(v); }}
+            />
+          </Card>
+
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard
