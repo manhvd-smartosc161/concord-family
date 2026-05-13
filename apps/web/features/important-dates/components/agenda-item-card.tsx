@@ -29,10 +29,10 @@ interface KindStyle {
 
 const KIND_STYLE: Record<AgendaItemKind, KindStyle> = {
   birthday: {
-    rail: "bg-amber-400",
-    stamp: "bg-amber-50 border-amber-200",
-    stampText: "text-amber-800",
-    badgeTone: "amber",
+    rail: "bg-fuchsia-500",
+    stamp: "bg-fuchsia-50 border-fuchsia-200",
+    stampText: "text-fuchsia-900",
+    badgeTone: "rose",
   },
   death_anniversary: {
     rail: "bg-stone-500",
@@ -41,9 +41,9 @@ const KIND_STYLE: Record<AgendaItemKind, KindStyle> = {
     badgeTone: "neutral",
   },
   anniversary: {
-    rail: "bg-rose-400",
-    stamp: "bg-rose-50 border-rose-200",
-    stampText: "text-rose-800",
+    rail: "bg-pink-500",
+    stamp: "bg-pink-50 border-pink-200",
+    stampText: "text-pink-900",
     badgeTone: "rose",
   },
   other: {
@@ -53,22 +53,22 @@ const KIND_STYLE: Record<AgendaItemKind, KindStyle> = {
     badgeTone: "neutral",
   },
   lunar: {
-    rail: "bg-sky-400",
-    stamp: "bg-sky-50 border-sky-200",
-    stampText: "text-sky-800",
+    rail: "bg-indigo-400",
+    stamp: "bg-indigo-50 border-indigo-200",
+    stampText: "text-indigo-800",
     badgeTone: "sky",
   },
   national: {
-    rail: "bg-emerald-500",
-    stamp: "bg-emerald-50 border-emerald-200",
-    stampText: "text-emerald-800",
-    badgeTone: "emerald",
+    rail: "bg-red-500",
+    stamp: "bg-red-50 border-red-200",
+    stampText: "text-red-800",
+    badgeTone: "rose",
   },
   international: {
-    rail: "bg-amber-500",
-    stamp: "bg-amber-50 border-amber-200",
-    stampText: "text-amber-800",
-    badgeTone: "amber",
+    rail: "bg-cyan-500",
+    stamp: "bg-cyan-50 border-cyan-200",
+    stampText: "text-cyan-800",
+    badgeTone: "sky",
   },
   religious: {
     rail: "bg-violet-400",
