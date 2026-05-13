@@ -76,15 +76,7 @@ export class ReportsService {
       where: { familyId: user.familyId!, fundId: In(fundIds), date: Between(start, end) },
       relations: { category: true },
     });
-    // Internal transfers (eg "đưa vợ tiền lương" → góp Quỹ Chung) cancel out
-    // at the couple level — exclude from income/expense aggregates. Opening
-    // balance markers are also excluded — chúng là entry cấu trúc, không phải
-    // thu/chi thật.
-    const txns = allTxns.filter(
-      (t) =>
-        !isInternalTransfer(t.category?.name) &&
-        t.note !== OPENING_BALANCE_NOTE,
-    );
+    const txns = allTxns.filter((t) => t.note !== OPENING_BALANCE_NOTE);
 
     let income = 0;
     let expense = 0;
@@ -152,9 +144,4 @@ export class ReportsService {
     }
     return out;
   }
-}
-
-const INTERNAL_TRANSFER_CATEGORY = 'Chuyển nội bộ';
-function isInternalTransfer(name: string | null | undefined): boolean {
-  return name === INTERNAL_TRANSFER_CATEGORY;
 }

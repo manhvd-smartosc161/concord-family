@@ -35,7 +35,7 @@ export default function ReportsPage() {
 
   useEffect(() => {
     setLoading(true);
-    getMonthlyReport(year, month, 'joint')
+    getMonthlyReport(year, month, 'all')
       .then(setReport)
       .finally(() => setLoading(false));
   }, [year, month]);

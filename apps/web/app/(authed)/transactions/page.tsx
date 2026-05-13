@@ -34,7 +34,7 @@ export default function TransactionsPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
-  const [fundFilter, setFundFilter] = useState<string | 'all'>('all');
+  const [fundFilter, setFundFilter] = useState<string>('');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -46,6 +46,13 @@ export default function TransactionsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
+    if (!fundFilter && funds.length > 0) {
+      const joint = funds.find((f) => f.type === 'joint');
+      setFundFilter(joint?.id ?? funds[0].id);
+    }
+  }, [funds, fundFilter]);
+
+  useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedSearch(search);
       setPage(0);
@@ -53,7 +60,7 @@ export default function TransactionsPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  function changeFundFilter(v: string | 'all') {
+  function changeFundFilter(v: string) {
     setFundFilter(v);
     setPage(0);
   }
@@ -74,13 +81,13 @@ export default function TransactionsPage() {
     const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
     try {
       const res = await listTransactions({
-        fundId: fundFilter === 'all' ? undefined : fundFilter,
+        fundId: fundFilter || undefined,
         from: start.toISOString(),
         to: end.toISOString(),
         q: debouncedSearch.trim() || undefined,
         offset: page * PAGE_SIZE,
         limit: PAGE_SIZE,
-        scope: fundFilter === 'all' ? 'joint' : 'all',
+        scope: 'all',
       });
       setItems(res.items);
       setTotal(res.total);
@@ -101,7 +108,6 @@ export default function TransactionsPage() {
     let income = 0;
     let expense = 0;
     for (const t of items) {
-      if (t.category?.name === 'Chuyển nội bộ') continue;
       if (t.amount >= 0) income += t.amount;
       else expense += -t.amount;
     }

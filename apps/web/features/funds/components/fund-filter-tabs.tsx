@@ -1,6 +1,5 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import type { FundView } from '../types';
 
 export function FundFilterTabs({
@@ -9,26 +8,17 @@ export function FundFilterTabs({
   onChange,
 }: {
   funds: FundView[];
-  value: string | 'all';
-  onChange: (v: string | 'all') => void;
+  value: string;
+  onChange: (v: string) => void;
 }) {
-  const t = useTranslations('transactions');
   const tabs: Array<
-    { id: 'all' | string; label: string; icon: string; disabled?: boolean }
-  > = [
-    { id: 'all', label: t('all_funds_filter'), icon: '📋' },
-    ...funds.map((f) => ({
-      id: f.id,
-      label: f.name.replace('Quỹ ', ''),
-      icon:
-        f.accessLevel === 'private'
-          ? '🔒'
-          : f.type === 'joint'
-            ? '🤝'
-            : '💰',
-      disabled: f.accessLevel === 'private',
-    })),
-  ];
+    { id: string; label: string; icon: string; disabled?: boolean }
+  > = funds.map((f) => ({
+    id: f.id,
+    label: f.name.replace('Quỹ ', ''),
+    icon: f.accessLevel === 'private' ? '🔒' : f.type === 'joint' ? '🤝' : '💰',
+    disabled: f.accessLevel === 'private',
+  }));
   return (
     <div className="flex flex-wrap gap-1">
       {tabs.map((t) => {
