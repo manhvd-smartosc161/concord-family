@@ -52,7 +52,7 @@ export default function InviteTokenPage({
 
   if (error) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-stone-50 px-4">
+      <main className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="w-full max-w-md rounded-2xl border border-rose-200 bg-rose-50 p-6">
           <div className="text-base font-semibold text-rose-900">
             ⚠️ {error}
@@ -70,7 +70,7 @@ export default function InviteTokenPage({
 
   if (!preview) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-stone-50 text-sm text-stone-400">
+      <main className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground">
         {tCommon('loading')}
       </main>
     );
@@ -78,21 +78,21 @@ export default function InviteTokenPage({
 
   if (auth.status === 'unauthed') {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-stone-50 px-4 py-8">
-        <div className="w-full max-w-md space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-          <h1 className="text-lg font-semibold text-stone-900">
+      <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
+        <div className="w-full max-w-md space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <h1 className="text-lg font-semibold text-foreground">
             ✉️ {t('title')}
           </h1>
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
             <strong>{preview.inviter.name}</strong> {t('invite_verb')} <strong>{preview.family.name}</strong>.
           </div>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-muted-foreground">
             {t('login_or_register')}
           </p>
           <div className="flex gap-2">
             <Link
               href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`}
-              className="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2 text-center text-sm font-medium text-stone-700 hover:bg-stone-50"
+              className="flex-1 rounded-lg border border-border bg-background px-4 py-2 text-center text-sm font-medium text-muted-foreground hover:bg-muted"
             >
               {tAuth('login_title')}
             </Link>
@@ -109,7 +109,7 @@ export default function InviteTokenPage({
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-stone-50 text-sm text-stone-400">
+    <main className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground">
       {t('processing')}
     </main>
   );
