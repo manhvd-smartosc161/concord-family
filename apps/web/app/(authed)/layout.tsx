@@ -65,7 +65,7 @@ export default function AuthedLayout({
   if (auth.status === 'loading') {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-2 text-stone-400">
+        <div className="flex flex-col items-center gap-2 text-muted-foreground">
           <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-emerald-500" />
           <span className="text-sm">{tCommon('loading')}</span>
         </div>
@@ -77,24 +77,24 @@ export default function AuthedLayout({
   if (!auth.user.familyId) {
     return (
       <LayoutContext.Provider value={{ user: auth.user, funds, reloadFunds, reloadUser }}>
-        <div className="flex min-h-screen flex-col bg-stone-50">
-          <header className="flex items-center justify-between border-b border-stone-200 bg-white px-4 py-2.5 sm:px-6">
+        <div className="flex min-h-screen flex-col bg-background">
+          <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2.5 sm:px-6">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-700 text-sm font-bold text-white">
                 C
               </div>
-              <span className="text-sm font-semibold text-stone-800">
+              <span className="text-sm font-semibold text-foreground">
                 Concord
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="hidden text-xs text-stone-500 sm:inline">
+              <span className="hidden text-xs text-muted-foreground sm:inline">
                 {auth.user.email}
               </span>
               <button
                 type="button"
                 onClick={() => logout(router)}
-                className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
+                className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
               >
                 {tCommon('logout')}
               </button>
@@ -114,7 +114,7 @@ export default function AuthedLayout({
           onLogout={() => logout(router)}
           onMenuClick={() => setDrawerOpen(true)}
         />
-        <main className="min-h-0 flex-1 overflow-hidden bg-stone-50">
+        <main className="min-h-0 flex-1 overflow-hidden bg-background">
           {children}
         </main>
         <MobileDrawer
@@ -128,7 +128,7 @@ export default function AuthedLayout({
       <div className="hidden h-screen grid-cols-[280px_minmax(0,1fr)] grid-rows-[64px_minmax(0,1fr)] lg:grid">
         <Header user={auth.user} onLogout={() => logout(router)} />
         <Sidebar funds={funds} />
-        <main className="min-h-0 overflow-hidden bg-stone-50">{children}</main>
+        <main className="min-h-0 overflow-hidden bg-background">{children}</main>
       </div>
     </LayoutContext.Provider>
   );
