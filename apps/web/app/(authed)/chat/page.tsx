@@ -65,10 +65,10 @@ const THEMES: Record<'private' | 'public', Theme> = {
     accentBorderSoft: 'border-slate-300',
     ring: 'focus-within:ring-2 focus-within:ring-slate-200/60 focus-within:border-slate-400',
     icon: '🔒',
-    bubbleAgent: 'bg-white ring-1 ring-dashed ring-slate-300',
+    bubbleAgent: 'bg-card ring-1 ring-dashed ring-slate-300',
     borderStyle: 'border-dashed',
     composerBorder: 'border-dashed border-slate-300',
-    chatBg: 'bg-slate-100',
+    chatBg: '',
   },
   public: {
     accent: 'bg-emerald-700',
@@ -78,10 +78,10 @@ const THEMES: Record<'private' | 'public', Theme> = {
     accentBorderSoft: 'border-emerald-200',
     ring: 'focus-within:ring-2 focus-within:ring-emerald-200/60 focus-within:border-emerald-300',
     icon: '🏠',
-    bubbleAgent: 'bg-white ring-1 ring-stone-200',
+    bubbleAgent: 'bg-card ring-1 ring-border',
     borderStyle: 'border-solid',
     composerBorder: 'border-solid border-emerald-200',
-    chatBg: 'bg-emerald-50/40',
+    chatBg: '',
   },
 };
 
@@ -362,10 +362,10 @@ function ChatInner() {
 
   return (
     <div className="relative flex h-full min-h-0 flex-col lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="hidden h-full min-h-0 flex-col border-r border-stone-200 bg-white lg:flex">
+      <aside className="hidden h-full min-h-0 flex-col border-r border-border bg-card lg:flex">
         <VisibilityToggle mode={activeMode} onChange={handleModeChange} />
 
-        <div className="border-b border-stone-100 p-3">
+        <div className="border-b border-border p-3">
           <button
             onClick={handleNewChat}
             className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${theme.accentBorderSoft} ${theme.accentSoft} ${theme.accentText} hover:brightness-95`}
@@ -382,7 +382,14 @@ function ChatInner() {
         />
       </aside>
 
-      <div className={`relative flex min-h-0 flex-1 flex-col transition-colors duration-200 ${theme.chatBg}`}>
+      <div
+        className="relative flex min-h-0 flex-1 flex-col transition-colors duration-200"
+        style={{
+          backgroundColor: activeMode === 'private'
+            ? 'var(--chat-private-bg)'
+            : 'var(--chat-public-bg)',
+        }}
+      >
         <ChatHeader
           mode={activeMode}
           session={currentSession}
@@ -394,7 +401,7 @@ function ChatInner() {
         <div ref={scrollRef} className="relative flex-1 overflow-y-auto px-3 py-6 sm:px-4 lg:px-6">
           <div className="mx-auto max-w-3xl space-y-4">
             {loadingMessages && (
-              <div className="text-center text-sm text-stone-400">
+              <div className="text-center text-sm text-muted-foreground">
                 Đang tải lịch sử…
               </div>
             )}
@@ -417,7 +424,7 @@ function ChatInner() {
               />
             ))}
             {isLoading && (
-              <div className="flex items-center gap-2 text-sm text-stone-500">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="inline-flex gap-1">
                   <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-500 [animation-delay:-0.3s]" />
                   <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-500 [animation-delay:-0.15s]" />
@@ -434,10 +441,10 @@ function ChatInner() {
             e.preventDefault();
             void submit(input);
           }}
-          className="border-t border-stone-200 bg-white px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4 lg:px-6"
+          className="border-t border-border bg-card px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4 lg:px-6"
         >
           <div className="mx-auto max-w-4xl">
-            <div className={`rounded-2xl border bg-stone-50 px-3 py-2 transition-colors focus-within:bg-white sm:px-4 sm:py-3 ${theme.composerBorder} ${theme.ring}`}>
+            <div className={`rounded-2xl border bg-muted px-3 py-2 transition-colors focus-within:bg-background sm:px-4 sm:py-3 ${theme.composerBorder} ${theme.ring}`}>
               <div className="flex items-end gap-2">
                 <textarea
                   ref={composerRef}
@@ -451,7 +458,7 @@ function ChatInner() {
                   }}
                   rows={1}
                   placeholder={t('placeholder')}
-                  className="min-h-[36px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed placeholder:text-stone-400 focus:outline-none focus:ring-0 sm:min-h-[44px]"
+                  className="min-h-[36px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-0 sm:min-h-[44px]"
                   style={{ maxHeight: '200px' }}
                   disabled={isLoading || loadingMessages}
                 />
@@ -460,7 +467,7 @@ function ChatInner() {
                   disabled={isLoading || !input.trim()}
                   aria-label={t('send')}
                   title={`${t('send')} (Enter)`}
-                  className={`flex h-9 shrink-0 items-center justify-center rounded-full px-3 text-white shadow-sm transition-all active:scale-95 sm:px-4 ${theme.accent} hover:brightness-110 disabled:cursor-not-allowed disabled:bg-stone-300`}
+                  className={`flex h-9 shrink-0 items-center justify-center rounded-full px-3 text-white shadow-sm transition-all active:scale-95 sm:px-4 ${theme.accent} hover:brightness-110 disabled:cursor-not-allowed disabled:bg-muted`}
                 >
                   <span className="hidden text-sm sm:inline">{t('send')}</span>
                   <svg
@@ -476,11 +483,11 @@ function ChatInner() {
                   </svg>
                 </button>
               </div>
-              <span className="mt-1 hidden text-[11px] text-stone-400 sm:block">
+              <span className="mt-1 hidden text-[11px] text-muted-foreground sm:block">
                 {t('shift_enter_newline')}
               </span>
             </div>
-            <p className="mt-2 flex items-center gap-1.5 text-[11px] text-stone-500">
+            <p className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <span>{theme.icon}</span>
               {activeMode === 'private' ? t('private_desc') : t('public_desc')}
             </p>
@@ -493,12 +500,12 @@ function ChatInner() {
         onClose={() => setSessionDrawerOpen(false)}
         widthClass="w-[280px]"
       >
-        <div className="flex h-full flex-col bg-white">
+        <div className="flex h-full flex-col bg-card">
           <VisibilityToggle
             mode={activeMode}
             onChange={(m) => { handleModeChange(m); setSessionDrawerOpen(false); }}
           />
-          <div className="border-b border-stone-100 p-3">
+          <div className="border-b border-border p-3">
             <button
               onClick={() => { handleNewChat(); setSessionDrawerOpen(false); }}
               className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${theme.accentBorderSoft} ${theme.accentSoft} ${theme.accentText} hover:brightness-95`}
