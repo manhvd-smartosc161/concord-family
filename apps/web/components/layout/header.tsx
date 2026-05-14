@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { UserAvatar } from '@/features/auth/components/user-avatar';
 import type { AuthUser } from '@/features/auth/types';
 import { LocaleToggle } from './locale-toggle';
+import { ThemeToggle } from './theme-toggle';
 
 export function Header({
   user,
@@ -56,6 +57,7 @@ export function Header({
 
       <div className="flex items-center gap-2">
         <LocaleToggle />
+        <ThemeToggle />
         <div className="relative">
         <button
           onClick={() => setOpen((v) => !v)}
