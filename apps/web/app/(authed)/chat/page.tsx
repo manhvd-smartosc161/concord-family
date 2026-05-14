@@ -53,6 +53,7 @@ type Theme = {
   bubbleAgent: string;
   borderStyle: string;
   composerBorder: string;
+  chatBg: string;
 };
 
 const THEMES: Record<'private' | 'public', Theme> = {
@@ -67,6 +68,7 @@ const THEMES: Record<'private' | 'public', Theme> = {
     bubbleAgent: 'bg-white ring-1 ring-dashed ring-slate-300',
     borderStyle: 'border-dashed',
     composerBorder: 'border-dashed border-slate-300',
+    chatBg: 'bg-slate-100',
   },
   public: {
     accent: 'bg-emerald-700',
@@ -79,6 +81,7 @@ const THEMES: Record<'private' | 'public', Theme> = {
     bubbleAgent: 'bg-white ring-1 ring-stone-200',
     borderStyle: 'border-solid',
     composerBorder: 'border-solid border-emerald-200',
+    chatBg: 'bg-emerald-50/40',
   },
 };
 
@@ -379,7 +382,7 @@ function ChatInner() {
         />
       </aside>
 
-      <div className="relative flex min-h-0 flex-1 flex-col bg-stone-50">
+      <div className={`relative flex min-h-0 flex-1 flex-col transition-colors duration-200 ${theme.chatBg}`}>
         <ChatHeader
           mode={activeMode}
           session={currentSession}
