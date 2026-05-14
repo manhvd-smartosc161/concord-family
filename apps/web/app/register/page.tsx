@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ApiError, setToken } from '@/lib/api-client';
 import { register } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/hooks';
+import { BrandPanel } from '@/features/auth/components/brand-panel';
+import { LocaleToggle } from '@/components/layout/locale-toggle';
 import type { UserGender } from '@/features/auth/types';
 
 export default function RegisterPage() {
@@ -83,140 +85,147 @@ function RegisterInner() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-stone-50 px-4 py-8">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-stone-50 to-amber-50"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-emerald-200/40 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-amber-200/40 blur-3xl"
-      />
+    <main className="min-h-screen lg:grid lg:grid-cols-[1.05fr_1fr] xl:grid-cols-[1.2fr_1fr]">
+      <BrandPanel />
 
-      <div className="relative w-full max-w-md">
-        <div className="mb-6 text-center">
-          <div className="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-700 text-2xl font-bold text-white shadow-lg shadow-emerald-700/20">
-            C
+      <MobileBackdrop />
+
+      <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
+        <LocaleToggle />
+      </div>
+
+      <div className="relative flex min-h-screen flex-col px-5 pb-10 pt-10 sm:px-8 lg:min-h-0 lg:items-center lg:justify-center lg:bg-stone-50 lg:px-6 lg:py-10">
+        <div className="mx-auto w-full max-w-sm">
+          <div className="mb-6 flex flex-col items-center lg:hidden">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-700 text-lg font-bold text-white shadow-lg shadow-emerald-700/25">
+              C
+            </div>
+            <div className="mt-3 text-center">
+              <div className="text-base font-semibold tracking-tight text-stone-900">
+                Concord
+              </div>
+              <div className="mt-0.5 text-[12px] text-stone-500">
+                {t('brand_eyebrow')}
+              </div>
+            </div>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
-            {t('register_title')} Concord
-          </h1>
-          <p className="mt-1 text-sm text-stone-500">
-            Cùng vợ/chồng quản lý tài chính chung.
-          </p>
-        </div>
 
-        <div className="rounded-2xl border border-stone-200/80 bg-white/90 p-6 shadow-xl shadow-stone-300/30 backdrop-blur sm:p-8">
-          <form onSubmit={onSubmit} className="space-y-4">
-            <Field label={t('email')}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoFocus
-                placeholder="ban@gmail.com"
-                className={inputClass}
-                disabled={submitting}
-              />
-            </Field>
-
-            <Field label={`${t('password')} (≥ 8 ký tự)`}>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                className={inputClass}
-                disabled={submitting}
-              />
-            </Field>
-
-            <Field label={t('confirm_password')}>
-              <input
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                required
-                className={inputClass}
-                disabled={submitting}
-              />
-            </Field>
-
-            <Field label={t('name')}>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                maxLength={80}
-                placeholder="Vd: Mạnh"
-                className={inputClass}
-                disabled={submitting}
-              />
-            </Field>
-
-            <Field label={t('gender')}>
-              <div className="flex gap-2">
-                <GenderRadio
-                  value="male"
-                  current={gender}
-                  onChange={setGender}
-                  label={t('male')}
-                />
-                <GenderRadio
-                  value="female"
-                  current={gender}
-                  onChange={setGender}
-                  label={t('female')}
-                />
-              </div>
-            </Field>
-
-            <Field label={t('birthdate_optional')}>
-              <input
-                type="date"
-                value={birthdate}
-                onChange={(e) => setBirthdate(e.target.value)}
-                className={inputClass}
-                disabled={submitting}
-              />
-            </Field>
-
-            <Field label={t('wedding_date_optional')}>
-              <input
-                type="date"
-                value={weddingDate}
-                onChange={(e) => setWeddingDate(e.target.value)}
-                className={inputClass}
-                disabled={submitting}
-              />
-              <p className="mt-1 text-[11px] text-stone-400">
-                Bạn có thể nhập sau khi tạo gia đình.
+          <div className="rounded-3xl bg-white/90 p-6 shadow-[0_20px_40px_-20px_rgba(15,42,30,0.15)] ring-1 ring-stone-200/60 backdrop-blur-sm sm:p-7 lg:rounded-2xl lg:bg-transparent lg:p-0 lg:shadow-none lg:ring-0 lg:backdrop-blur-none">
+            <div className="lg:text-left">
+              <h1 className="text-xl font-semibold tracking-tight text-stone-900 lg:text-2xl">
+                {t('register_title')}
+              </h1>
+              <p className="mt-1 hidden text-sm text-stone-500 lg:block">
+                {t('brand_subhead')}
               </p>
-            </Field>
+            </div>
 
-            {error && (
-              <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
-                {error}
+            <form onSubmit={onSubmit} className="mt-6 space-y-4 lg:mt-8">
+              <Field label={t('email')}>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                  placeholder="ban@gmail.com"
+                  className={inputClass}
+                  disabled={submitting}
+                />
+              </Field>
+
+              <Field label={t('name')}>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  maxLength={80}
+                  placeholder="Vd: Mạnh"
+                  className={inputClass}
+                  disabled={submitting}
+                />
+              </Field>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field label={`${t('password')} (≥ 8)`}>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={8}
+                    className={inputClass}
+                    disabled={submitting}
+                  />
+                </Field>
+
+                <Field label={t('confirm_password')}>
+                  <input
+                    type="password"
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                    required
+                    className={inputClass}
+                    disabled={submitting}
+                  />
+                </Field>
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
-            >
-              {submitting ? t('register_submitting') : t('register_link')}
-            </button>
-          </form>
+              <Field label={t('gender')}>
+                <div className="flex gap-2">
+                  <GenderRadio
+                    value="male"
+                    current={gender}
+                    onChange={setGender}
+                    label={t('male')}
+                  />
+                  <GenderRadio
+                    value="female"
+                    current={gender}
+                    onChange={setGender}
+                    label={t('female')}
+                  />
+                </div>
+              </Field>
 
-          <p className="mt-4 text-center text-xs text-stone-500">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field label={t('birthdate_optional')}>
+                  <DateInput
+                    value={birthdate}
+                    onChange={setBirthdate}
+                    placeholder={t('date_hint')}
+                    disabled={submitting}
+                  />
+                </Field>
+
+                <Field label={t('wedding_date_optional')}>
+                  <DateInput
+                    value={weddingDate}
+                    onChange={setWeddingDate}
+                    placeholder={t('date_hint')}
+                    disabled={submitting}
+                  />
+                </Field>
+              </div>
+
+              {error && (
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="mt-2 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-medium text-white shadow-sm shadow-emerald-700/20 transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none lg:rounded-lg lg:py-2.5"
+              >
+                {submitting ? t('register_submitting') : t('register_link')}
+              </button>
+            </form>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-stone-500">
             {t('already_account')}{' '}
             <Link
               href="/login"
@@ -231,15 +240,93 @@ function RegisterInner() {
   );
 }
 
+function MobileBackdrop() {
+  return (
+    <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden lg:hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/70 via-stone-50 to-amber-50/40" />
+      <div className="absolute -left-32 -top-32 h-72 w-72 rounded-full bg-emerald-200/50 blur-3xl" />
+      <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-amber-200/40 blur-3xl" />
+    </div>
+  );
+}
+
 const inputClass =
-  'w-full rounded-lg border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-sm transition-colors placeholder:text-stone-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100';
+  'w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm transition-colors placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 lg:rounded-lg lg:px-3.5 lg:py-2.5';
+
+function DateInput({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  function openPicker() {
+    if (disabled) return;
+    const el = ref.current;
+    if (!el) return;
+    if (typeof el.showPicker === 'function') {
+      el.showPicker();
+    } else {
+      el.focus();
+      el.click();
+    }
+  }
+  const formatted = value
+    ? new Date(`${value}T00:00:00`).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+    : '';
+  return (
+    <button
+      type="button"
+      onClick={openPicker}
+      disabled={disabled}
+      className={`relative flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 text-left text-sm transition-colors hover:border-emerald-300 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 lg:rounded-lg lg:px-3.5 lg:py-2.5 ${
+        formatted ? 'text-stone-900' : 'text-stone-400'
+      }`}
+    >
+      <span>{formatted || placeholder}</span>
+      <svg
+        className="h-4 w-4 text-stone-400"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <path d="M16 2v4M8 2v4M3 10h18" />
+      </svg>
+      <input
+        ref={ref}
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
+        tabIndex={-1}
+        aria-hidden
+      />
+    </button>
+  );
+}
 
 function Field({
   label,
   children,
+  hint,
 }: {
   label: string;
   children: React.ReactNode;
+  hint?: string;
 }) {
   return (
     <div>
@@ -247,6 +334,7 @@ function Field({
         {label}
       </label>
       {children}
+      {hint && <p className="mt-1 text-[11px] text-stone-400">{hint}</p>}
     </div>
   );
 }
@@ -267,7 +355,7 @@ function GenderRadio({
     <button
       type="button"
       onClick={() => onChange(value)}
-      className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${
+      className={`flex-1 rounded-xl border px-3 py-2.5 text-sm transition-colors lg:rounded-lg lg:py-2 ${
         active
           ? 'border-emerald-500 bg-emerald-50 font-medium text-emerald-900'
           : 'border-stone-200 bg-white text-stone-700 hover:border-emerald-200 hover:bg-emerald-50/50'
