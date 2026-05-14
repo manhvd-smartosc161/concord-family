@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
 
+import { PasswordResetToken } from './shared/auth/entities/password-reset-token.entity';
 import { Anomaly } from './modules/insights/entities/anomaly.entity';
 import { Budget } from './modules/budgets/entities/budget.entity';
 import { Category } from './modules/categories/entities/category.entity';
@@ -43,6 +44,7 @@ export const entities = [
   ImportantDate,
   YearlyAiCache,
   Task,
+  PasswordResetToken,
 ];
 
 const databaseUrl = process.env.DATABASE_URL;
