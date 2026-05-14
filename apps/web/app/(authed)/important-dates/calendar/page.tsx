@@ -157,7 +157,7 @@ export default function CalendarPage() {
             <button
               type="button"
               onClick={() => shiftMonth(-1)}
-              className="rounded-lg bg-white px-3 py-1.5 text-sm text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
+              className="rounded-lg bg-background px-3 py-1.5 text-sm text-muted-foreground ring-1 ring-border hover:bg-muted"
               aria-label="Previous month"
             >
               ‹
@@ -165,14 +165,14 @@ export default function CalendarPage() {
             <button
               type="button"
               onClick={jumpToToday}
-              className="rounded-lg bg-white px-3 py-1.5 text-sm text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
+              className="rounded-lg bg-background px-3 py-1.5 text-sm text-muted-foreground ring-1 ring-border hover:bg-muted"
             >
               {t('today')}
             </button>
             <button
               type="button"
               onClick={() => shiftMonth(1)}
-              className="rounded-lg bg-white px-3 py-1.5 text-sm text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
+              className="rounded-lg bg-background px-3 py-1.5 text-sm text-muted-foreground ring-1 ring-border hover:bg-muted"
               aria-label="Next month"
             >
               ›
@@ -187,7 +187,7 @@ export default function CalendarPage() {
           </div>
         }
       />
-      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-stone-50 to-stone-50 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
+      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-background to-background px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
         <div className="mx-auto max-w-3xl space-y-5">
           <ViewTabs current="calendar" />
 
@@ -204,18 +204,18 @@ export default function CalendarPage() {
           )}
 
           <Card>
-            <div className="mb-3 flex items-start justify-between gap-3 border-b border-stone-100 pb-3">
+            <div className="mb-3 flex items-start justify-between gap-3 border-b border-border pb-3">
               <div className="flex items-baseline gap-3">
-                <div className="font-mono text-3xl font-bold leading-none tabular-nums text-stone-900">
+                <div className="font-mono text-3xl font-bold leading-none tabular-nums text-foreground">
                   {selectedDateObj.getDate()}
                 </div>
                 <div className="leading-tight">
-                  <div className="text-sm font-semibold text-stone-800">
+                  <div className="text-sm font-semibold text-foreground">
                     {getDowLabels(locale)[selectedDateObj.getDay()]},{' '}
                     {selectedDateObj.getDate()}/
                     {selectedDateObj.getMonth() + 1}
                   </div>
-                  <div className="mt-0.5 text-[11px] text-stone-500">
+                  <div className="mt-0.5 text-[11px] text-muted-foreground">
                     {t('lunar_label')}: {selectedLunar.day}/{selectedLunar.month}
                     {selectedLunar.isFirstDay && (
                       <span className="ml-1 inline-flex items-center rounded-full bg-rose-50 px-1.5 py-0.5 text-[9px] font-semibold text-rose-600">

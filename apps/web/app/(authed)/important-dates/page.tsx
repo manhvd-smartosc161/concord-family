@@ -99,7 +99,7 @@ export default function ImportantDatesPage() {
           <div className="flex items-center gap-2">
             <Link
               href="/important-dates/year"
-              className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
+              className="cursor-pointer rounded-lg bg-background px-3 py-1.5 text-sm font-medium text-muted-foreground ring-1 ring-border hover:bg-muted"
             >
               {t('view_year')}
             </Link>
@@ -113,7 +113,7 @@ export default function ImportantDatesPage() {
           </div>
         }
       />
-      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-stone-50 to-stone-50 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
+      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-background to-background px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
         <div className="mx-auto max-w-2xl space-y-4">
           <ViewTabs current="upcoming" />
           {view === null && (

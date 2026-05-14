@@ -173,7 +173,7 @@ export default function YearAgendaPage() {
               <button
                 type="button"
                 onClick={() => setYear(year - 1)}
-                className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-sm text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
+                className="cursor-pointer rounded-lg bg-background px-3 py-1.5 text-sm text-muted-foreground ring-1 ring-border hover:bg-muted"
                 title="Năm trước"
               >
                 ← {year - 1}
@@ -182,7 +182,7 @@ export default function YearAgendaPage() {
             <button
               type="button"
               onClick={() => setYear(year + 1)}
-              className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-sm text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50"
+              className="cursor-pointer rounded-lg bg-background px-3 py-1.5 text-sm text-muted-foreground ring-1 ring-border hover:bg-muted"
               title="Năm sau"
             >
               {year + 1} →
@@ -197,7 +197,7 @@ export default function YearAgendaPage() {
           </div>
         }
       />
-      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-stone-50 to-stone-50 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
+      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-background to-background px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
         <div className="mx-auto max-w-3xl">
           <div className="mb-4">
             <ViewTabs current="year" />
@@ -214,7 +214,7 @@ export default function YearAgendaPage() {
                     className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                       active
                         ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'bg-white text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50'
+                        : 'bg-background text-muted-foreground ring-1 ring-border hover:bg-muted'
                     }`}
                   >
                     <span>{opt.icon}</span>
@@ -271,10 +271,10 @@ export default function YearAgendaPage() {
                       </div>
                     </div>
                     <div>
-                      <h2 className="text-xl font-semibold tracking-tight text-stone-900">
+                      <h2 className="text-xl font-semibold tracking-tight text-foreground">
                         {getMonthName(month, locale)}
                       </h2>
-                      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-400">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                         {items.length} {t('events_count')} · {String(month).padStart(2, '0')}/{year}
                       </p>
                     </div>
