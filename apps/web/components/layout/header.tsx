@@ -46,26 +46,26 @@ export function Header({
             </svg>
           </button>
         )}
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-700 text-base font-bold text-white shadow-sm shadow-emerald-700/20">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-700 text-base font-bold text-white shadow-sm shadow-emerald-700/20">
           C
         </div>
-        <div className="leading-tight">
+        <div className="hidden leading-tight sm:block">
           <div className="text-sm font-semibold text-foreground">Concord</div>
-          <div className="text-[11px] text-muted-foreground">Couple finance agent</div>
+          <div className="hidden text-[11px] text-muted-foreground lg:block">Couple finance agent</div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         <LocaleToggle />
         <ThemeToggle />
         <div className="relative">
         <button
           onClick={() => setOpen((v) => !v)}
           onPointerDown={(e) => e.stopPropagation()}
-          className="flex items-center gap-2.5 rounded-lg border border-transparent px-2 py-1.5 transition-colors hover:border-border hover:bg-muted"
+          className="flex items-center gap-2 rounded-lg border border-transparent px-1 py-1.5 transition-colors hover:border-border hover:bg-muted sm:px-2 sm:gap-2.5"
         >
           <UserAvatar user={user} size={32} />
-          <div className="hidden text-left leading-tight sm:block">
+          <div className="hidden text-left leading-tight lg:block">
             <div className="text-sm font-medium text-foreground">
               {user.name}
             </div>
@@ -74,7 +74,7 @@ export function Header({
             </div>
           </div>
           <svg
-            className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`hidden h-4 w-4 text-muted-foreground transition-transform lg:block ${open ? 'rotate-180' : ''}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
