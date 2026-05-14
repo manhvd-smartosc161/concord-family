@@ -73,8 +73,8 @@ function YearlyGoalSection() {
 
   return (
     <Card padding="p-6">
-      <h3 className="mb-1 text-sm font-semibold text-stone-800">{t('yearly_goal_title', { year })}</h3>
-      <p className="mb-5 text-xs text-stone-500">
+      <h3 className="mb-1 text-sm font-semibold text-foreground">{t('yearly_goal_title', { year })}</h3>
+      <p className="mb-5 text-xs text-muted-foreground">
         {t('yearly_goal_desc')}
       </p>
 
@@ -82,15 +82,15 @@ function YearlyGoalSection() {
 
       {!loading && (
         <>
-          <label className="mb-1.5 block text-xs font-medium text-stone-700">{t('goal_vnd')}</label>
+          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">{t('goal_vnd')}</label>
           <input
             type="number"
             value={target}
             onChange={(e) => setTarget(e.target.value === '' ? '' : Number(e.target.value))}
             placeholder={t('goal_placeholder')}
-            className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
           />
-          <p className="mt-1 text-[11px] text-stone-400">
+          <p className="mt-1 text-[11px] text-muted-foreground">
             {target !== '' && Number(target) > 0
               ? <><span>{t('goal_preview')} </span><span className="font-mono">{formatVND(Number(target))}</span></>
               : t('goal_hint')}
@@ -102,14 +102,14 @@ function YearlyGoalSection() {
                 className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                   target === p
                     ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                    : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'
+                    : 'border-border bg-background text-muted-foreground hover:bg-muted'
                 }`}>
                 {formatVND(p)}
               </button>
             ))}
           </div>
 
-          <div className="mt-5 flex flex-col items-start justify-between border-t border-stone-100 pt-4 sm:flex-row sm:items-center">
+          <div className="mt-5 flex flex-col items-start justify-between border-t border-border pt-4 sm:flex-row sm:items-center">
             {feedback && (
               <span className={`text-xs ${feedback.kind === 'ok' ? 'text-emerald-700' : 'text-rose-700'}`}>
                 {feedback.kind === 'ok' ? '✅' : '⚠️'} {feedback.msg}
@@ -119,14 +119,14 @@ function YearlyGoalSection() {
               <button
                 onClick={() => { setTarget(goal?.targetAmount ?? ''); setFeedback(null); }}
                 disabled={saving || !goal}
-                className="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 disabled:opacity-50 sm:flex-none"
+                className="flex-1 rounded-lg border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50 sm:flex-none"
               >
                 {tCommon('reset')}
               </button>
               <button
                 onClick={onSave}
                 disabled={saving || !isDirty}
-                className="flex-1 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300 sm:flex-none"
+                className="flex-1 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-muted sm:flex-none"
               >
                 {saving ? tCommon('saving') : tCommon('save')}
               </button>
@@ -145,8 +145,8 @@ function OpeningBalanceSection() {
 
   return (
     <Card padding="p-6">
-      <h3 className="mb-1 text-sm font-semibold text-stone-800">{t('opening_balance_title')}</h3>
-      <p className="mb-5 text-xs text-stone-500">
+      <h3 className="mb-1 text-sm font-semibold text-foreground">{t('opening_balance_title')}</h3>
+      <p className="mb-5 text-xs text-muted-foreground">
         {t('opening_balance_desc')}
       </p>
 
@@ -199,10 +199,10 @@ function OpeningBalanceRow({ fund, onSaved }: { fund: FundView; onSaved: () => v
   return (
     <div className={`rounded-lg border px-4 py-3 ${isJoint ? 'border-amber-100 bg-amber-50/40' : 'border-emerald-100 bg-emerald-50/30'}`}>
       <div className="mb-2 flex items-baseline justify-between">
-        <span className="flex items-center gap-1.5 text-sm font-medium text-stone-800">
+        <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
           <span>{pickFundIcon(fund)}</span> {fund.name}
         </span>
-        <span className="text-[11px] text-stone-500">
+        <span className="text-[11px] text-muted-foreground">
           {t('current_balance')}: <span className="font-mono">{formatVND(fund.balance ?? 0)}</span>
         </span>
       </div>
@@ -211,14 +211,14 @@ function OpeningBalanceRow({ fund, onSaved }: { fund: FundView; onSaved: () => v
           type="number" min={0} value={value}
           onChange={(e) => setValue(e.target.value === '' ? '' : Number(e.target.value))}
           placeholder="0"
-          className="min-w-0 flex-1 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="min-w-0 flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
         />
-        <span className="font-mono text-xs tabular-nums text-stone-500">
+        <span className="font-mono text-xs tabular-nums text-muted-foreground">
           {value !== '' && Number(value) >= 0 ? formatVND(Number(value)) : '—'}
         </span>
         <button
           onClick={onSave} disabled={saving || !isDirty}
-          className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300"
+          className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-muted"
         >
           {saving ? tCommon('saving') : tCommon('save')}
         </button>
