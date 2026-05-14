@@ -156,7 +156,7 @@ export default function TransactionsPage() {
                 <button
                   type="button"
                   onClick={() => setFilterOpen((v) => !v)}
-                  className="ml-auto inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 sm:hidden"
+                  className="ml-auto inline-flex items-center gap-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted sm:hidden"
                   aria-expanded={filterOpen}
                 >
                   <span>{t('filter')}</span>
@@ -188,7 +188,7 @@ export default function TransactionsPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={`${t('note')}, ${t('category')}…`}
-                  className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm transition-colors placeholder:text-stone-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 />
               </div>
             </div>
