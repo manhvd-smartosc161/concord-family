@@ -21,7 +21,7 @@ export function Header({
   const tAuth = useTranslations('auth');
   const tNav = useTranslations('nav');
   return (
-    <header className="flex h-16 items-center justify-between border-b border-stone-200 bg-white/80 px-3 backdrop-blur sm:px-4 lg:col-span-2 lg:px-6">
+    <header className="relative z-30 flex h-16 items-center justify-between border-b border-stone-200 bg-white/80 px-3 backdrop-blur sm:px-4 lg:col-span-2 lg:px-6">
       <div className="flex items-center gap-3">
         {onMenuClick && (
           <button
@@ -89,10 +89,10 @@ export function Header({
         {open && (
           <>
             <div
-              className="fixed inset-0 z-10"
+              className="fixed inset-0 z-40"
               onPointerDown={() => setOpen(false)}
             />
-            <div className="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
+            <div className="absolute right-0 z-50 mt-1 w-52 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
               <Link
                 href="/settings"
                 onClick={() => setOpen(false)}
