@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { ThemeToggle } from '../layout/theme-toggle';
 
 interface MobileDrawerProps {
   open: boolean;
@@ -71,6 +72,10 @@ export function MobileDrawer({
         aria-modal="true"
       >
         {children}
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+          <span className="text-sm text-muted-foreground">Giao diện</span>
+          <ThemeToggle />
+        </div>
       </aside>
     </div>,
     document.body,
