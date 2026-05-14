@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -7,7 +6,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { ParseAction } from '../../agent/subagents/parser/parser.subagent';
-import { Fund } from '../funds/entities/fund.entity';
 import { User } from '../users/entities/user.entity';
 import {
   ChatMessage,
@@ -21,8 +19,7 @@ export interface ChatSessionView {
   createdAt: string;
   lastMessageAt: string;
   messageCount: number;
-  fundId: string;
-  fundName: string;
+  visibility: 'private' | 'public';
 }
 
 export interface ChatMessageView {
@@ -42,36 +39,31 @@ export class ChatSessionsService {
     private readonly sessionRepo: Repository<ChatSession>,
     @InjectRepository(ChatMessage)
     private readonly messageRepo: Repository<ChatMessage>,
-    @InjectRepository(Fund)
-    private readonly fundRepo: Repository<Fund>,
   ) {}
 
   // ─── Sessions ────────────────────────────────────────────────────────
 
-  /** All sessions visible to user: in their personal fund + any joint fund. */
+  /** All sessions visible to user: public (family-wide) + their own private sessions. */
   async listForUser(user: User): Promise<ChatSessionView[]> {
     const rows = await this.sessionRepo
       .createQueryBuilder('s')
-      .innerJoin('s.fund', 'f')
       .leftJoin('s.messages', 'm')
       .where('s.family_id = :familyId', { familyId: user.familyId! })
-      .andWhere('(f.type = :joint OR f.owner_id = :userId)', {
-        joint: 'joint',
-        userId: user.id,
-      })
+      .andWhere(
+        "(s.visibility = 'public' OR (s.visibility = 'private' AND s.created_by_id = :userId))",
+        { userId: user.id },
+      )
       .select([
         's.id',
         's.title',
         's.createdAt',
         's.lastMessageAt',
-        's.fundId',
-        'f.name',
+        's.visibility',
       ])
       .addSelect('COUNT(m.id)', 'msgcount')
       .groupBy('s.id')
-      .addGroupBy('f.id')
       .orderBy('s.lastMessageAt', 'DESC')
-      .getRawAndEntities<{ msgcount: string; f_name: string }>();
+      .getRawAndEntities<{ msgcount: string }>();
 
     return rows.entities.map((s, i) => ({
       id: s.id,
@@ -79,29 +71,18 @@ export class ChatSessionsService {
       createdAt: s.createdAt.toISOString(),
       lastMessageAt: s.lastMessageAt.toISOString(),
       messageCount: parseInt(rows.raw[i].msgcount, 10) || 0,
-      fundId: s.fundId,
-      fundName: rows.raw[i].f_name,
+      visibility: s.visibility,
     }));
   }
 
   async create(
     user: User,
-    fundId: string,
+    visibility: 'private' | 'public',
     title?: string,
   ): Promise<ChatSessionView> {
-    const fund = await this.fundRepo.findOne({
-      where: { id: fundId, familyId: user.familyId! },
-    });
-    if (!fund) throw new BadRequestException('Quỹ không tồn tại');
-    if (fund.type === 'personal' && fund.ownerId !== user.id) {
-      throw new ForbiddenException(
-        `Không thể tạo chat trong ${fund.name} (quỹ riêng của người khác)`,
-      );
-    }
-
     const session = this.sessionRepo.create({
       familyId: user.familyId!,
-      fundId: fund.id,
+      visibility,
       createdById: user.id,
       title: title?.slice(0, 200) || 'Cuộc trò chuyện mới',
       lastMessageAt: new Date(),
@@ -113,8 +94,7 @@ export class ChatSessionsService {
       createdAt: saved.createdAt.toISOString(),
       lastMessageAt: saved.lastMessageAt.toISOString(),
       messageCount: 0,
-      fundId: fund.id,
-      fundName: fund.name,
+      visibility: saved.visibility,
     };
   }
 
@@ -190,21 +170,19 @@ export class ChatSessionsService {
 
   /**
    * Throws 404 if not exists, 403 if user can't access:
-   * - Personal fund session: only fund owner
-   * - Joint fund session: both spouses
+   * - private session: only the creator
+   * - public session: any family member
    */
   async findAccessible(user: User, sessionId: string): Promise<ChatSession> {
     const session = await this.sessionRepo.findOne({
       where: { id: sessionId, familyId: user.familyId! },
-      relations: { fund: true },
     });
     if (!session) {
       throw new NotFoundException('Session không tồn tại');
     }
-    const fund = session.fund;
-    if (fund.type === 'personal' && fund.ownerId !== user.id) {
+    if (session.visibility === 'private' && session.createdById !== user.id) {
       throw new ForbiddenException(
-        'Bạn không có quyền truy cập chat ở quỹ riêng của người khác',
+        'Bạn không có quyền truy cập chat riêng của người khác',
       );
     }
     return session;

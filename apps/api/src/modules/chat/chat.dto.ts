@@ -1,4 +1,5 @@
 import {
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -13,7 +14,6 @@ export class ChatRequestDto {
   @MaxLength(1000)
   message!: string;
 
-  /** Required — chat must be in a fund-scoped session. */
   @IsUUID()
   sessionId!: string;
 }
@@ -29,9 +29,8 @@ export interface ChatResponseDto {
 }
 
 export class CreateSessionDto {
-  /** Required — every session is bound to a fund. */
-  @IsUUID()
-  fundId!: string;
+  @IsIn(['private', 'public'])
+  visibility!: 'private' | 'public';
 
   @IsOptional()
   @IsString()
