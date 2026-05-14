@@ -42,6 +42,46 @@ const SUGGESTIONS_BY_MODE: Record<'private' | 'public', string[]> = {
   ],
 };
 
+type Theme = {
+  accent: string;
+  accentSoft: string;
+  accentText: string;
+  accentBorder: string;
+  accentBorderSoft: string;
+  ring: string;
+  icon: string;
+  bubbleAgent: string;
+  borderStyle: string;
+  composerBorder: string;
+};
+
+const THEMES: Record<'private' | 'public', Theme> = {
+  private: {
+    accent: 'bg-slate-700',
+    accentSoft: 'bg-slate-50',
+    accentText: 'text-slate-700',
+    accentBorder: 'border-slate-400',
+    accentBorderSoft: 'border-slate-300',
+    ring: 'focus-within:ring-2 focus-within:ring-slate-200/60 focus-within:border-slate-400',
+    icon: '🔒',
+    bubbleAgent: 'bg-white ring-1 ring-dashed ring-slate-300',
+    borderStyle: 'border-dashed',
+    composerBorder: 'border-dashed border-slate-300',
+  },
+  public: {
+    accent: 'bg-emerald-700',
+    accentSoft: 'bg-emerald-50',
+    accentText: 'text-emerald-700',
+    accentBorder: 'border-emerald-300',
+    accentBorderSoft: 'border-emerald-200',
+    ring: 'focus-within:ring-2 focus-within:ring-emerald-200/60 focus-within:border-emerald-300',
+    icon: '🏠',
+    bubbleAgent: 'bg-white ring-1 ring-stone-200',
+    borderStyle: 'border-solid',
+    composerBorder: 'border-solid border-emerald-200',
+  },
+};
+
 type ImportantDateConfirmState =
   | { kind: 'confirmed'; id: string; loggedAt: string }
   | { kind: 'dismissed' };
@@ -133,7 +173,8 @@ function ChatInner() {
   const [activeMode, setActiveMode] = useState<'private' | 'public'>('private');
   const [sessionDrawerOpen, setSessionDrawerOpen] = useState(false);
 
-  // ─── Load sessions ──────────────────────────────────────────────────
+  const theme = THEMES[activeMode];
+
   const reloadSessions = useCallback(async () => {
     try {
       const next = await listChatSessions();
@@ -147,14 +188,12 @@ function ChatInner() {
     void reloadSessions();
   }, [reloadSessions]);
 
-  // ─── Sync activeMode when session loads from URL ────────────────────
   useEffect(() => {
     if (!sessionIdFromUrl) return;
     const sess = sessions.find((s) => s.id === sessionIdFromUrl);
     if (sess) setActiveMode(sess.visibility);
   }, [sessionIdFromUrl, sessions]);
 
-  // ─── Load messages when session changes ─────────────────────────────
   useEffect(() => {
     if (!sessionIdFromUrl) {
       setMessages([]);
@@ -195,7 +234,6 @@ function ChatInner() {
       .finally(() => setLoadingMessages(false));
   }, [sessionIdFromUrl, router]);
 
-  // ─── Auto-scroll on new message ─────────────────────────────────────
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
@@ -203,12 +241,10 @@ function ChatInner() {
     });
   }, [messages, isLoading]);
 
-  // ─── Auto-focus composer khi AI vừa xong, để gõ tiếp ngay ───────────
   useEffect(() => {
     if (!isLoading) composerRef.current?.focus();
   }, [isLoading]);
 
-  // ─── Auto-resize textarea theo nội dung ─────────────────────────────
   useEffect(() => {
     const el = composerRef.current;
     if (!el) return;
@@ -216,7 +252,6 @@ function ChatInner() {
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
   }, [input]);
 
-  // ─── Submit (auto-creates session if needed) ────────────────────────
   async function submit(text: string) {
     if (!text.trim() || isLoading) return;
     const trimmed = text.trim();
@@ -322,24 +357,15 @@ function ChatInner() {
     ? sessions.find((s) => s.id === sessionIdFromUrl)
     : null;
 
-  const isPrivate = activeMode === 'private';
-
   return (
-    <div className="flex h-full min-h-0 flex-col lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
-      {/* Session sidebar */}
-      <aside className={`hidden h-full min-h-0 flex-col border-r lg:flex transition-colors duration-200 ${
-        isPrivate ? 'border-stone-800 bg-stone-900' : 'border-stone-200 bg-white'
-      }`}>
+    <div className="relative flex h-full min-h-0 flex-col lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
+      <aside className="hidden h-full min-h-0 flex-col border-r border-stone-200 bg-white lg:flex">
         <VisibilityToggle mode={activeMode} onChange={handleModeChange} />
 
-        <div className={`border-b p-3 ${isPrivate ? 'border-stone-800' : 'border-stone-100'}`}>
+        <div className="border-b border-stone-100 p-3">
           <button
             onClick={handleNewChat}
-            className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${
-              isPrivate
-                ? 'border-emerald-700 bg-transparent text-emerald-400 hover:bg-emerald-900/40'
-                : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
-            }`}
+            className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${theme.accentBorderSoft} ${theme.accentSoft} ${theme.accentText} hover:brightness-95`}
           >
             <span className="text-base leading-none">+</span> {t('new_chat')}
           </button>
@@ -349,12 +375,11 @@ function ChatInner() {
           sessions={filteredSessions}
           activeId={sessionIdFromUrl}
           onDelete={handleDeleteSession}
-          dark={isPrivate}
+          theme={theme}
         />
       </aside>
 
-      {/* Main chat panel */}
-      <div className={`flex min-h-0 flex-1 flex-col transition-colors duration-200 ${isPrivate ? 'bg-stone-950' : 'bg-white'}`}>
+      <div className="relative flex min-h-0 flex-1 flex-col bg-stone-50">
         <ChatHeader
           mode={activeMode}
           session={currentSession}
@@ -363,10 +388,10 @@ function ChatInner() {
           onModeChange={handleModeChange}
         />
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-6 sm:px-4 lg:px-6">
+        <div ref={scrollRef} className="relative flex-1 overflow-y-auto px-3 py-6 sm:px-4 lg:px-6">
           <div className="mx-auto max-w-3xl space-y-4">
             {loadingMessages && (
-              <div className={`text-center text-sm ${isPrivate ? 'text-stone-500' : 'text-stone-400'}`}>
+              <div className="text-center text-sm text-stone-400">
                 Đang tải lịch sử…
               </div>
             )}
@@ -375,6 +400,7 @@ function ChatInner() {
                 onSuggest={submit}
                 userName={user.name}
                 mode={activeMode}
+                theme={theme}
               />
             )}
             {messages.map((m) => (
@@ -384,11 +410,11 @@ function ChatInner() {
                 showAuthor={activeMode === 'public'}
                 currentUserId={user.id}
                 onMutate={mutateAction}
-                dark={isPrivate}
+                theme={theme}
               />
             ))}
             {isLoading && (
-              <div className={`flex items-center gap-2 text-sm ${isPrivate ? 'text-stone-400' : 'text-stone-500'}`}>
+              <div className="flex items-center gap-2 text-sm text-stone-500">
                 <span className="inline-flex gap-1">
                   <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-500 [animation-delay:-0.3s]" />
                   <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-500 [animation-delay:-0.15s]" />
@@ -400,22 +426,15 @@ function ChatInner() {
           </div>
         </div>
 
-        {/* Composer */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             void submit(input);
           }}
-          className={`border-t px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-colors duration-200 sm:px-4 lg:px-6 ${
-            isPrivate ? 'border-stone-800 bg-stone-900' : 'border-stone-200 bg-white'
-          }`}
+          className="border-t border-stone-200 bg-white px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4 lg:px-6"
         >
           <div className="mx-auto max-w-4xl">
-            <div className={`rounded-2xl border px-3 py-2 transition-colors sm:px-4 sm:py-3 ${
-              isPrivate
-                ? 'border-stone-700 bg-stone-800 focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-500/20'
-                : 'border-stone-200 bg-stone-50 focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-100'
-            }`}>
+            <div className={`rounded-2xl border bg-stone-50 px-3 py-2 transition-colors focus-within:bg-white sm:px-4 sm:py-3 ${theme.composerBorder} ${theme.ring}`}>
               <div className="flex items-end gap-2">
                 <textarea
                   ref={composerRef}
@@ -429,9 +448,7 @@ function ChatInner() {
                   }}
                   rows={1}
                   placeholder={t('placeholder')}
-                  className={`min-h-[36px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed focus:outline-none focus:ring-0 sm:min-h-[44px] ${
-                    isPrivate ? 'text-stone-100 placeholder:text-stone-500' : 'placeholder:text-stone-400'
-                  }`}
+                  className="min-h-[36px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed placeholder:text-stone-400 focus:outline-none focus:ring-0 sm:min-h-[44px]"
                   style={{ maxHeight: '200px' }}
                   disabled={isLoading || loadingMessages}
                 />
@@ -440,11 +457,7 @@ function ChatInner() {
                   disabled={isLoading || !input.trim()}
                   aria-label={t('send')}
                   title={`${t('send')} (Enter)`}
-                  className={`flex h-9 shrink-0 items-center justify-center rounded-full px-3 text-white shadow-sm transition-all active:scale-95 sm:px-4 ${
-                    isPrivate
-                      ? 'bg-emerald-700 hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-900/50'
-                      : 'bg-emerald-700 hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-stone-300'
-                  }`}
+                  className={`flex h-9 shrink-0 items-center justify-center rounded-full px-3 text-white shadow-sm transition-all active:scale-95 sm:px-4 ${theme.accent} hover:brightness-110 disabled:cursor-not-allowed disabled:bg-stone-300`}
                 >
                   <span className="hidden text-sm sm:inline">{t('send')}</span>
                   <svg
@@ -460,12 +473,13 @@ function ChatInner() {
                   </svg>
                 </button>
               </div>
-              <span className={`mt-1 hidden text-[11px] sm:block ${isPrivate ? 'text-stone-500' : 'text-stone-400'}`}>
+              <span className="mt-1 hidden text-[11px] text-stone-400 sm:block">
                 {t('shift_enter_newline')}
               </span>
             </div>
-            <p className={`mt-2 text-[11px] ${isPrivate ? 'text-stone-500' : 'text-stone-400'}`}>
-              {isPrivate ? `🔒 ${t('private_desc')}` : `🤝 ${t('public_desc')}`}
+            <p className="mt-2 flex items-center gap-1.5 text-[11px] text-stone-500">
+              <span>{theme.icon}</span>
+              {activeMode === 'private' ? t('private_desc') : t('public_desc')}
             </p>
           </div>
         </form>
@@ -476,19 +490,15 @@ function ChatInner() {
         onClose={() => setSessionDrawerOpen(false)}
         widthClass="w-[280px]"
       >
-        <div className={`flex h-full flex-col transition-colors duration-200 ${isPrivate ? 'bg-stone-900' : 'bg-white'}`}>
+        <div className="flex h-full flex-col bg-white">
           <VisibilityToggle
             mode={activeMode}
             onChange={(m) => { handleModeChange(m); setSessionDrawerOpen(false); }}
           />
-          <div className={`border-b p-3 ${isPrivate ? 'border-stone-800' : 'border-stone-100'}`}>
+          <div className="border-b border-stone-100 p-3">
             <button
               onClick={() => { handleNewChat(); setSessionDrawerOpen(false); }}
-              className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${
-                isPrivate
-                  ? 'border-emerald-700 bg-transparent text-emerald-400 hover:bg-emerald-900/40'
-                  : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
-              }`}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${theme.accentBorderSoft} ${theme.accentSoft} ${theme.accentText} hover:brightness-95`}
             >
               <span className="text-base leading-none">+</span> {t('new_chat')}
             </button>
@@ -498,15 +508,13 @@ function ChatInner() {
             activeId={sessionIdFromUrl}
             onDelete={handleDeleteSession}
             onPick={() => setSessionDrawerOpen(false)}
-            dark={isPrivate}
+            theme={theme}
           />
         </div>
       </MobileDrawer>
     </div>
   );
 }
-
-// ─── Visibility toggle ────────────────────────────────────────────────
 
 function VisibilityToggle({
   mode,
@@ -517,13 +525,13 @@ function VisibilityToggle({
 }) {
   const t = useTranslations('chat');
   return (
-    <div className={`border-b p-3 transition-colors duration-200 ${mode === 'private' ? 'border-stone-800' : 'border-stone-200'}`}>
-      <div className={`flex rounded-xl p-0.5 transition-colors duration-200 ${mode === 'private' ? 'bg-stone-800' : 'bg-stone-100'}`}>
+    <div className="border-b border-stone-200 p-3">
+      <div className="flex rounded-xl bg-stone-100 p-0.5">
         <button
           onClick={() => onChange('private')}
           className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
             mode === 'private'
-              ? 'bg-stone-950 text-white shadow-inner'
+              ? 'bg-white text-slate-700 shadow-sm ring-1 ring-slate-200'
               : 'text-stone-500 hover:text-stone-700'
           }`}
         >
@@ -534,10 +542,8 @@ function VisibilityToggle({
           onClick={() => onChange('public')}
           className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
             mode === 'public'
-              ? 'bg-white text-stone-900 shadow-sm'
-              : mode === 'private'
-                ? 'text-stone-400 hover:text-stone-200'
-                : 'text-stone-500 hover:text-stone-700'
+              ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-200'
+              : 'text-stone-500 hover:text-stone-700'
           }`}
         >
           <span>🏠</span>
@@ -548,18 +554,16 @@ function VisibilityToggle({
   );
 }
 
-// ─── Session list ─────────────────────────────────────────────────────
-
 function SessionList({
   sessions,
   activeId,
   onDelete,
-  dark = false,
+  theme,
 }: {
   sessions: ChatSessionView[];
   activeId: string | null;
   onDelete: (id: string) => void;
-  dark?: boolean;
+  theme: Theme;
 }) {
   const t = useTranslations('chat');
   const groupLabels = useMemo<GroupLabels>(() => ({
@@ -570,13 +574,13 @@ function SessionList({
   return (
     <div className="flex-1 overflow-y-auto px-2 py-2">
       {sessions.length === 0 && (
-        <div className={`px-3 py-6 text-center text-xs ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+        <div className="px-3 py-6 text-center text-xs text-stone-400">
           {t('no_conversations')}
         </div>
       )}
       {grouped.map(({ label, items }) => (
         <div key={label} className="mb-3">
-          <h4 className={`px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+          <h4 className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-stone-400">
             {label}
           </h4>
           <ul className="space-y-0.5">
@@ -586,7 +590,7 @@ function SessionList({
                 session={s}
                 active={s.id === activeId}
                 onDelete={() => onDelete(s.id)}
-                dark={dark}
+                theme={theme}
               />
             ))}
           </ul>
@@ -600,12 +604,12 @@ function SessionItem({
   session,
   active,
   onDelete,
-  dark = false,
+  theme,
 }: {
   session: ChatSessionView;
   active: boolean;
   onDelete: () => void;
-  dark?: boolean;
+  theme: Theme;
 }) {
   const t = useTranslations('chat');
   const locale = useLocale();
@@ -620,9 +624,7 @@ function SessionItem({
     <li>
       <div
         className={`group flex items-center gap-1 rounded-lg pr-1 ${
-          dark
-            ? active ? 'bg-emerald-900/40' : 'hover:bg-stone-800'
-            : active ? 'bg-emerald-50' : 'hover:bg-stone-100'
+          active ? theme.accentSoft : 'hover:bg-stone-100'
         }`}
       >
         <button
@@ -630,14 +632,10 @@ function SessionItem({
           className="flex-1 truncate px-3 py-2 text-left text-xs"
           title={session.title}
         >
-          <div className={`truncate ${
-            dark
-              ? active ? 'font-medium text-emerald-300' : 'text-stone-300'
-              : active ? 'font-medium text-emerald-900' : 'text-stone-700'
-          }`}>
+          <div className={`truncate ${active ? `font-medium ${theme.accentText}` : 'text-stone-700'}`}>
             {session.title}
           </div>
-          <div className={`text-[10px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+          <div className="text-[10px] text-stone-400">
             {t('message_count', { count: session.messageCount })} ·{' '}
             {formatRelative(new Date(session.lastMessageAt), relLabels)}
           </div>
@@ -645,11 +643,7 @@ function SessionItem({
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
           aria-label="Delete conversation"
-          className={`hidden rounded p-1 transition-colors group-hover:block ${
-            dark
-              ? 'text-stone-500 hover:bg-stone-700 hover:text-rose-400'
-              : 'text-stone-400 hover:bg-rose-50 hover:text-rose-600'
-          }`}
+          className="hidden rounded p-1 text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 group-hover:block"
         >
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -666,13 +660,13 @@ function SessionListDrawer({
   activeId,
   onDelete,
   onPick,
-  dark = false,
+  theme,
 }: {
   sessions: ChatSessionView[];
   activeId: string | null;
   onDelete: (id: string) => void;
   onPick: () => void;
-  dark?: boolean;
+  theme: Theme;
 }) {
   const t = useTranslations('chat');
   const groupLabels = useMemo<GroupLabels>(() => ({
@@ -683,13 +677,13 @@ function SessionListDrawer({
   return (
     <div className="flex-1 overflow-y-auto px-2 py-2">
       {sessions.length === 0 && (
-        <div className={`px-3 py-6 text-center text-xs ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+        <div className="px-3 py-6 text-center text-xs text-stone-400">
           {t('no_conversations')}
         </div>
       )}
       {grouped.map(({ label, items }) => (
         <div key={label} className="mb-3">
-          <h4 className={`px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+          <h4 className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-stone-400">
             {label}
           </h4>
           <ul className="space-y-0.5">
@@ -700,7 +694,7 @@ function SessionListDrawer({
                 active={s.id === activeId}
                 onDelete={() => onDelete(s.id)}
                 onPick={onPick}
-                dark={dark}
+                theme={theme}
               />
             ))}
           </ul>
@@ -715,13 +709,13 @@ function SessionItemDrawer({
   active,
   onDelete,
   onPick,
-  dark = false,
+  theme,
 }: {
   session: ChatSessionView;
   active: boolean;
   onDelete: () => void;
   onPick: () => void;
-  dark?: boolean;
+  theme: Theme;
 }) {
   const t = useTranslations('chat');
   const locale = useLocale();
@@ -736,9 +730,7 @@ function SessionItemDrawer({
     <li>
       <div
         className={`group flex items-center gap-1 rounded-lg pr-1 ${
-          dark
-            ? active ? 'bg-emerald-900/40' : 'hover:bg-stone-800'
-            : active ? 'bg-emerald-50' : 'hover:bg-stone-100'
+          active ? theme.accentSoft : 'hover:bg-stone-100'
         }`}
       >
         <button
@@ -746,14 +738,10 @@ function SessionItemDrawer({
           className="flex-1 truncate px-3 py-2 text-left text-xs"
           title={session.title}
         >
-          <div className={`truncate ${
-            dark
-              ? active ? 'font-medium text-emerald-300' : 'text-stone-300'
-              : active ? 'font-medium text-emerald-900' : 'text-stone-700'
-          }`}>
+          <div className={`truncate ${active ? `font-medium ${theme.accentText}` : 'text-stone-700'}`}>
             {session.title}
           </div>
-          <div className={`text-[10px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+          <div className="text-[10px] text-stone-400">
             {t('message_count', { count: session.messageCount })} ·{' '}
             {formatRelative(new Date(session.lastMessageAt), relLabels)}
           </div>
@@ -761,11 +749,7 @@ function SessionItemDrawer({
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
           aria-label="Delete conversation"
-          className={`hidden rounded p-1 transition-colors group-hover:block ${
-            dark
-              ? 'text-stone-500 hover:bg-stone-700 hover:text-rose-400'
-              : 'text-stone-400 hover:bg-rose-50 hover:text-rose-600'
-          }`}
+          className="hidden rounded p-1 text-stone-400 transition-colors hover:bg-rose-50 hover:text-rose-600 group-hover:block"
         >
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -776,8 +760,6 @@ function SessionItemDrawer({
     </li>
   );
 }
-
-// ─── Chat header ──────────────────────────────────────────────────────
 
 function ChatHeader({
   mode,
@@ -793,31 +775,30 @@ function ChatHeader({
   onModeChange: (m: 'private' | 'public') => void;
 }) {
   const t = useTranslations('chat');
+  const theme = THEMES[mode];
   const isPrivate = mode === 'private';
-  const icon = isPrivate ? '🔒' : '🏠';
   return (
-    <div className={`flex items-center justify-between border-b px-3 py-3 transition-colors duration-200 sm:px-4 lg:px-6 ${
-      isPrivate ? 'border-stone-800 bg-stone-900' : 'border-stone-200 bg-white'
-    }`}>
-      <div>
-        <h2 className={`flex items-center gap-2 text-sm font-semibold ${isPrivate ? 'text-white' : 'text-stone-800'}`}>
-          <span>{icon}</span>
-          {session?.title ?? t('new_chat')}
-        </h2>
-        <p className={`hidden text-[11px] sm:block ${isPrivate ? 'text-stone-400' : 'text-stone-500'}`}>
-          {isPrivate ? t('private_desc') : t('public_desc')}
-        </p>
+    <div className="flex items-center justify-between border-b border-stone-200 bg-white px-3 py-3 sm:px-4 lg:px-6">
+      <div className="flex items-center gap-3 min-w-0">
+        <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${theme.accentBorderSoft} ${theme.accentSoft} ${theme.accentText}`}>
+          <span>{theme.icon}</span>
+          <span>{isPrivate ? t('mode_private') : t('mode_public')}</span>
+        </span>
+        <div className="min-w-0">
+          <h2 className="truncate text-sm font-semibold text-stone-800">
+            {session?.title ?? t('new_chat')}
+          </h2>
+          <p className="hidden truncate text-[11px] text-stone-500 sm:block">
+            {isPrivate ? t('private_desc') : t('public_desc')}
+          </p>
+        </div>
       </div>
       <div className="flex items-center gap-1.5 lg:hidden">
         <button
           type="button"
           onClick={onNewChat}
           title={t('new_chat')}
-          className={`rounded-lg border p-1.5 transition-colors ${
-            isPrivate
-              ? 'border-stone-700 bg-stone-800 text-stone-200 hover:bg-stone-700'
-              : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
-          }`}
+          className="rounded-lg border border-stone-200 bg-white p-1.5 text-stone-700 transition-colors hover:bg-stone-50"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
             <path d="M12 5v14M5 12h14" />
@@ -827,11 +808,7 @@ function ChatHeader({
           type="button"
           onClick={() => onModeChange(isPrivate ? 'public' : 'private')}
           title={isPrivate ? t('mode_public') : t('mode_private')}
-          className={`rounded-lg border p-1.5 transition-colors ${
-            isPrivate
-              ? 'border-stone-600 bg-stone-700 text-stone-100 hover:bg-stone-600'
-              : 'border-stone-300 bg-stone-100 text-stone-700 hover:bg-stone-200'
-          }`}
+          className="rounded-lg border border-stone-300 bg-stone-100 p-1.5 text-stone-700 transition-colors hover:bg-stone-200"
         >
           <span className="flex h-4 w-4 items-center justify-center text-xs leading-none">
             {isPrivate ? '🏠' : '🔒'}
@@ -841,11 +818,7 @@ function ChatHeader({
           type="button"
           onClick={onHistoryOpen}
           title={t('history')}
-          className={`rounded-lg border p-1.5 transition-colors ${
-            isPrivate
-              ? 'border-stone-700 bg-stone-800 text-stone-200 hover:bg-stone-700'
-              : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
-          }`}
+          className="rounded-lg border border-stone-200 bg-white p-1.5 text-stone-700 transition-colors hover:bg-stone-50"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
             <circle cx="12" cy="12" r="9" />
@@ -857,30 +830,29 @@ function ChatHeader({
   );
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────
-
 function EmptyState({
   onSuggest,
   userName,
   mode,
+  theme,
 }: {
   onSuggest: (s: string) => void;
   userName: string;
   mode: 'private' | 'public';
+  theme: Theme;
 }) {
   const t = useTranslations('chat');
   const suggestions = SUGGESTIONS_BY_MODE[mode];
-  const dark = mode === 'private';
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 py-12 text-center">
-      <div className={`flex h-16 w-16 items-center justify-center rounded-2xl text-3xl ${dark ? 'bg-emerald-900/30' : 'bg-emerald-50'}`}>
-        💬
+      <div className={`flex h-16 w-16 items-center justify-center rounded-2xl text-3xl ${theme.accentSoft}`}>
+        {theme.icon}
       </div>
       <div>
-        <h3 className={`text-base font-semibold ${dark ? 'text-stone-200' : 'text-stone-800'}`}>
+        <h3 className="text-base font-semibold text-stone-800">
           {t('empty_title')} {userName}!
         </h3>
-        <p className={`mt-1 max-w-md text-sm ${dark ? 'text-stone-500' : 'text-stone-500'}`}>
+        <p className="mt-1 max-w-md text-sm text-stone-500">
           {t('empty_desc')}
         </p>
       </div>
@@ -889,11 +861,7 @@ function EmptyState({
           <button
             key={s}
             onClick={() => onSuggest(s)}
-            className={`rounded-xl border px-4 py-3 text-left text-xs transition-all ${
-              dark
-                ? 'border-stone-700 bg-stone-800 text-stone-300 hover:border-emerald-700 hover:bg-emerald-900/30'
-                : 'border-stone-200 bg-white text-stone-700 hover:border-emerald-200 hover:bg-emerald-50'
-            }`}
+            className={`rounded-xl border bg-white px-4 py-3 text-left text-xs text-stone-700 transition-all hover:bg-stone-50 ${theme.accentBorderSoft}`}
           >
             <span className="block font-mono">{s}</span>
           </button>
@@ -903,20 +871,18 @@ function EmptyState({
   );
 }
 
-// ─── Message bubbles ──────────────────────────────────────────────────
-
 function MessageBubble({
   msg,
   showAuthor,
   currentUserId,
   onMutate,
-  dark = false,
+  theme,
 }: {
   msg: PendingMessage;
   showAuthor: boolean;
   currentUserId: string;
   onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
-  dark?: boolean;
+  theme: Theme;
 }) {
   const t = useTranslations('chat');
   if (msg.role === 'system') {
@@ -924,12 +890,8 @@ function MessageBubble({
       <div
         className={`rounded-lg px-3 py-2 text-sm ${
           msg.error
-            ? dark
-              ? 'border border-rose-800/50 bg-rose-950/60 text-rose-300'
-              : 'border border-rose-200 bg-rose-50 text-rose-800'
-            : dark
-              ? 'bg-stone-800 text-stone-400'
-              : 'bg-stone-100 text-stone-600'
+            ? 'border border-rose-200 bg-rose-50 text-rose-800'
+            : 'bg-stone-100 text-stone-600'
         }`}
       >
         {msg.text}
@@ -944,7 +906,7 @@ function MessageBubble({
       <div className="flex max-w-[85%] flex-col gap-1 lg:max-w-[70%]">
         {showAuthor && msg.author && (
           <div
-            className={`text-[10px] font-medium uppercase tracking-wide ${dark ? 'text-stone-500' : 'text-stone-400'} ${
+            className={`text-[10px] font-medium uppercase tracking-wide text-stone-400 ${
               alignRight ? 'text-right' : 'text-left'
             }`}
           >
@@ -954,12 +916,10 @@ function MessageBubble({
         <div
           className={`rounded-2xl px-4 py-2.5 text-sm ${
             alignRight
-              ? 'bg-emerald-700 text-white shadow-sm shadow-emerald-700/10'
+              ? `${theme.accent} text-white shadow-sm`
               : isUser
-                ? dark ? 'bg-stone-700 text-stone-100' : 'bg-amber-100 text-amber-950'
-                : dark
-                  ? 'bg-stone-800 text-stone-100 ring-1 ring-stone-700'
-                  : 'bg-white text-stone-900 shadow-sm ring-1 ring-stone-200'
+                ? 'bg-amber-100 text-amber-950'
+                : theme.bubbleAgent + ' text-stone-900 shadow-sm'
           }`}
         >
           {msg.text && <div className="whitespace-pre-wrap">{msg.text}</div>}
@@ -978,7 +938,6 @@ function MessageBubble({
                     }))}
                     messageId={msg.id}
                     onMutate={onMutate}
-                    dark={dark}
                   />
                 ) : (
                   <ActionCard
@@ -987,14 +946,13 @@ function MessageBubble({
                     messageId={msg.id}
                     actionIndex={g.idx}
                     onMutate={onMutate}
-                    dark={dark}
                   />
                 ),
               )}
             </div>
           )}
           {!isUser && msg.usage && (
-            <div className={`mt-2 text-[10px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+            <div className="mt-2 text-[10px] text-stone-400">
               {msg.usage.inputTokens} in · {msg.usage.outputTokens} out tokens
             </div>
           )}
@@ -1009,13 +967,11 @@ function ActionCard({
   messageId,
   actionIndex,
   onMutate,
-  dark = false,
 }: {
   action: ParseAction;
   messageId: string;
   actionIndex: number;
   onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
-  dark?: boolean;
 }) {
   const t = useTranslations('chat');
   if (action.kind === 'logged') {
@@ -1024,14 +980,14 @@ function ActionCard({
       <div
         className={`rounded-md border px-3 py-2 text-xs ${
           isExpense
-            ? dark ? 'border-rose-800/60 bg-rose-950/50 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-900'
-            : dark ? 'border-emerald-800/60 bg-emerald-950/50 text-emerald-300' : 'border-emerald-200 bg-emerald-50 text-emerald-900'
+            ? 'border-rose-200 bg-rose-50 text-rose-900'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-900'
         }`}
       >
         <div className="font-mono font-semibold tabular-nums">
           {formatVND(action.amount, true)}
         </div>
-        <div className={`mt-0.5 text-[11px] ${dark ? (isExpense ? 'text-rose-400/70' : 'text-emerald-400/70') : 'opacity-80'}`}>
+        <div className="mt-0.5 text-[11px] opacity-80">
           {action.fundName}
           {action.categoryName ? ` • ${action.categoryName}` : ''} · {t('action_new_balance')}{' '}
           <span className="font-mono tabular-nums">
@@ -1047,8 +1003,8 @@ function ActionCard({
       <div
         className={`rounded-md border px-3 py-2 text-xs ${
           isExpense
-            ? dark ? 'border-amber-800/60 bg-amber-950/50 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-900'
-            : dark ? 'border-sky-800/60 bg-sky-950/50 text-sky-300' : 'border-sky-200 bg-sky-50 text-sky-900'
+            ? 'border-amber-200 bg-amber-50 text-amber-900'
+            : 'border-sky-200 bg-sky-50 text-sky-900'
         }`}
       >
         <div className="flex items-center gap-1.5 font-semibold">
@@ -1057,7 +1013,7 @@ function ActionCard({
         <div className="font-mono font-semibold tabular-nums">
           {formatVND(action.amount, true)}
         </div>
-        <div className={`mt-0.5 text-[11px] ${dark ? (isExpense ? 'text-amber-400/70' : 'text-sky-400/70') : 'opacity-80'}`}>
+        <div className="mt-0.5 text-[11px] opacity-80">
           {action.fundName}
           {action.categoryName ? ` • ${action.categoryName}` : ''}
         </div>
@@ -1066,28 +1022,28 @@ function ActionCard({
   }
   if (action.kind === 'deleted') {
     return (
-      <div className={`rounded-md border px-3 py-2 text-xs ${dark ? 'border-stone-700 bg-stone-800/60 text-stone-400' : 'border-stone-200 bg-stone-50 text-stone-700'}`}>
+      <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
         🗑️ {t('action_deleted')}
       </div>
     );
   }
   if (action.kind === 'clarify') {
     return (
-      <div className={`rounded-md border px-3 py-2 text-xs ${dark ? 'border-amber-800/60 bg-amber-950/50 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
+      <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
         ❓ {action.question}
       </div>
     );
   }
   if (action.kind === 'category_created') {
     return (
-      <div className={`rounded-md border px-3 py-2 text-xs ${dark ? 'border-stone-700 bg-stone-800/60 text-stone-400' : 'border-stone-200 bg-stone-50 text-stone-700'}`}>
+      <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
         <span className="font-medium">✨ {t('action_category_created')} {action.name}</span>
         <span>
           {action.parentName
             ? ` (${t('action_category_sub', { parent: action.parentName })})`
             : ` (${t('action_category_root')})`}
         </span>
-        <span className={dark ? 'text-stone-500' : 'text-stone-500'}>
+        <span className="text-stone-500">
           {' '}
           — {action.isEssential ? t('action_essential') : t('action_not_essential')}
         </span>
@@ -1101,15 +1057,14 @@ function ActionCard({
         messageId={messageId}
         actionIndex={actionIndex}
         onMutate={onMutate}
-        dark={dark}
       />
     );
   }
   if (action.kind === 'important_date_logged') {
     return (
-      <div className={`rounded-md border px-3 py-2 text-xs ${dark ? 'border-emerald-800/60 bg-emerald-950/50 text-emerald-300' : 'border-emerald-200 bg-emerald-50 text-emerald-900'}`}>
+      <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
         ✅ {t('action_date_logged')} <span className="font-medium">{action.name}</span>
-        <span className={`ml-1 ${dark ? 'text-emerald-500/60' : 'text-stone-500'}`}>
+        <span className="ml-1 text-stone-500">
           — {formatImportantDate(action.date, false, t('lunar_suffix'))}
         </span>
       </div>
@@ -1117,14 +1072,14 @@ function ActionCard({
   }
   if (action.kind === 'important_date_dismissed') {
     return (
-      <div className={`rounded-md border px-3 py-2 text-xs ${dark ? 'border-stone-700 bg-stone-800/60 text-stone-500' : 'border-stone-200 bg-stone-50 text-stone-500'}`}>
+      <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-500">
         ⊘ {t('action_date_dismissed')}
       </div>
     );
   }
   if (action.kind === 'tool_error') {
     return (
-      <div className={`rounded-md border px-3 py-2 text-xs ${dark ? 'border-rose-800/60 bg-rose-950/50 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-900'}`}>
+      <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-900">
         ⚠️ {action.message}
       </div>
     );
@@ -1170,7 +1125,6 @@ function ImportantDateBatchCard({
   items,
   messageId,
   onMutate,
-  dark = false,
 }: {
   items: {
     action: Extract<ParseAction, { kind: 'important_date_proposed' }>;
@@ -1178,7 +1132,6 @@ function ImportantDateBatchCard({
   }[];
   messageId: string;
   onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
-  dark?: boolean;
 }) {
   const t = useTranslations('chat');
   const tCommon = useTranslations('common');
@@ -1237,7 +1190,7 @@ function ImportantDateBatchCard({
   }
 
   return (
-    <div className={`rounded-md border px-3 py-2.5 text-xs ${dark ? 'border-sky-800/60 bg-sky-950/50 text-sky-300' : 'border-sky-200 bg-sky-50 text-sky-900'}`}>
+    <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2.5 text-xs text-sky-900">
       <div className="flex items-center gap-1.5 font-semibold">
         🗓 <span>Đề xuất {items.length} ngày quan trọng</span>
       </div>
@@ -1245,16 +1198,16 @@ function ImportantDateBatchCard({
         {items.map(({ action }, i) => (
           <li
             key={i}
-            className={`flex items-start gap-2 rounded-md px-2 py-1.5 ${dark ? 'bg-sky-900/30' : 'bg-white/70'}`}
+            className="flex items-start gap-2 rounded-md bg-white/70 px-2 py-1.5"
           >
             <span className="mt-0.5 text-sm leading-none">
               {importantDateIcon(action.type)}
             </span>
             <div className="min-w-0 flex-1">
-              <div className={`truncate text-[12px] font-medium ${dark ? 'text-stone-200' : 'text-stone-800'}`}>
+              <div className="truncate text-[12px] font-medium text-stone-800">
                 {action.name}
               </div>
-              <div className={`mt-0.5 text-[11px] ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
+              <div className="mt-0.5 text-[11px] text-stone-500">
                 {formatImportantDate(action.date, action.isLunar, t('lunar_suffix'))}
               </div>
             </div>
@@ -1262,7 +1215,7 @@ function ImportantDateBatchCard({
         ))}
       </ul>
       {error && (
-        <div className={`mt-2 text-[11px] ${dark ? 'text-rose-400' : 'text-rose-700'}`}>⚠️ {error}</div>
+        <div className="mt-2 text-[11px] text-rose-700">⚠️ {error}</div>
       )}
       <div className="mt-2.5 flex gap-2">
         <button
@@ -1279,12 +1232,12 @@ function ImportantDateBatchCard({
           type="button"
           onClick={handleDismissAll}
           disabled={submitting}
-          className={`rounded-md border px-3 py-1 text-[11px] disabled:opacity-50 ${dark ? 'border-stone-600 bg-stone-700/50 text-stone-300 hover:bg-stone-700' : 'border-stone-300 bg-white text-stone-700 hover:bg-stone-50'}`}
+          className="rounded-md border border-stone-300 bg-white px-3 py-1 text-[11px] text-stone-700 hover:bg-stone-50 disabled:opacity-50"
         >
           Bỏ qua
         </button>
       </div>
-      <div className={`mt-1.5 text-[10px] italic ${dark ? 'text-stone-500' : 'text-stone-500'}`}>
+      <div className="mt-1.5 text-[10px] italic text-stone-500">
         Sai chỗ nào? Reply bảo AI sửa lại.
       </div>
     </div>
@@ -1296,13 +1249,11 @@ function ImportantDateProposedCard({
   messageId,
   actionIndex,
   onMutate,
-  dark = false,
 }: {
   action: Extract<ParseAction, { kind: 'important_date_proposed' }>;
   messageId: string;
   actionIndex: number;
   onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
-  dark?: boolean;
 }) {
   const t = useTranslations('chat');
   const tCommon = useTranslations('common');
@@ -1364,20 +1315,20 @@ function ImportantDateProposedCard({
   }
 
   return (
-    <div className={`rounded-md border px-3 py-2.5 text-xs ${dark ? 'border-sky-800/60 bg-sky-950/50 text-sky-300' : 'border-sky-200 bg-sky-50 text-sky-900'}`}>
+    <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2.5 text-xs text-sky-900">
       <div className="flex items-center gap-1.5 font-semibold">
         {icon} <span>Đề xuất ngày quan trọng</span>
       </div>
-      <div className={`mt-1 font-medium ${dark ? 'text-stone-200' : 'text-stone-800'}`}>{action.name}</div>
-      <div className={`mt-0.5 text-[11px] ${dark ? 'text-stone-400' : 'text-stone-600'}`}>
+      <div className="mt-1 font-medium text-stone-800">{action.name}</div>
+      <div className="mt-0.5 text-[11px] text-stone-600">
         {dateLabel}
         {action.notes ? ` · ${action.notes}` : ''}
       </div>
-      <div className={`mt-0.5 text-[11px] ${dark ? 'text-stone-500' : 'text-stone-500'}`}>
+      <div className="mt-0.5 text-[11px] text-stone-500">
         Nhắc: {reminderLabel}
       </div>
       {error && (
-        <div className={`mt-1.5 text-[11px] ${dark ? 'text-rose-400' : 'text-rose-700'}`}>⚠️ {error}</div>
+        <div className="mt-1.5 text-[11px] text-rose-700">⚠️ {error}</div>
       )}
       <div className="mt-2 flex gap-2">
         <button
@@ -1392,7 +1343,7 @@ function ImportantDateProposedCard({
           type="button"
           onClick={handleDismiss}
           disabled={submitting}
-          className={`rounded-md border px-3 py-1 text-[11px] disabled:opacity-50 ${dark ? 'border-stone-600 bg-stone-700/50 text-stone-300 hover:bg-stone-700' : 'border-stone-300 bg-white text-stone-700 hover:bg-stone-50'}`}
+          className="rounded-md border border-stone-300 bg-white px-3 py-1 text-[11px] text-stone-700 hover:bg-stone-50 disabled:opacity-50"
         >
           Bỏ qua
         </button>
@@ -1430,8 +1381,6 @@ function formatReminderDays(
   if (!days || days.length === 0) return labels.none;
   return days.map((d) => (d === 0 ? labels.onDay : labels.daysBeforeFn(d))).join(' + ');
 }
-
-// ─── Date helpers ─────────────────────────────────────────────────────
 
 interface GroupLabels {
   today: string; yesterday: string; last7: string; last30: string; older: string;
