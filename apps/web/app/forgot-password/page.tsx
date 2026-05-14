@@ -45,15 +45,15 @@ function ForgotPasswordInner() {
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-amber-50"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 dark:from-emerald-950/20 via-background to-amber-50 dark:to-amber-950/20"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-emerald-200/40 blur-3xl"
+        className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-emerald-200/40 dark:bg-emerald-900/20 blur-3xl"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-amber-200/40 blur-3xl"
+        className="pointer-events-none absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-amber-200/40 dark:bg-amber-900/20 blur-3xl"
       />
 
       <div className="relative w-full max-w-md">
@@ -104,13 +104,13 @@ function ForgotPasswordInner() {
                     required
                     autoFocus
                     placeholder="ban@gmail.com"
-                    className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
                     disabled={submitting}
                   />
                 </div>
 
                 {error && (
-                  <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+                  <div className="rounded-lg border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs text-rose-800 dark:text-rose-300">
                     {error}
                   </div>
                 )}

@@ -259,13 +259,13 @@ function EnvelopeCard({
       )}
 
       {hasMonthlyTarget && (
-        <div className="mt-4 rounded-lg border border-amber-100 bg-amber-50/40 px-3 py-2.5">
+        <div className="mt-4 rounded-lg border border-amber-100 dark:border-amber-900 bg-amber-50/40 dark:bg-amber-950/40 px-3 py-2.5">
           <div className="mb-1 flex items-baseline justify-between">
-            <span className="text-[11px] font-medium uppercase tracking-wide text-amber-800">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-amber-800 dark:text-amber-300">
               {monthName} — góp đều đặn{' '}
               {monthReached ? '✅' : null}
             </span>
-            <span className="font-mono text-xs tabular-nums text-amber-900">
+            <span className="font-mono text-xs tabular-nums text-amber-900 dark:text-amber-300">
               {formatVND(monthContribution)} / {formatVND(monthlyTarget)}
             </span>
           </div>
@@ -275,7 +275,7 @@ function EnvelopeCard({
             tone={monthReached ? 'emerald' : 'amber'}
           />
           {!monthReached && (
-            <p className="mt-1 text-[11px] text-amber-700">
+            <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-400">
               {tGoals('month_contribution', {
                 current: formatVND(monthContribution),
                 target: formatVND(monthlyTarget),
@@ -369,7 +369,7 @@ function LedgerYearSection({
       <div
         className={`rounded-lg px-3 py-2 ${
           isCurrentYear
-            ? 'border border-sky-100 bg-sky-50'
+            ? 'border border-sky-100 dark:border-sky-900 bg-sky-50 dark:bg-sky-950/40'
             : 'bg-muted'
         }`}
       >
@@ -570,7 +570,7 @@ function EnvelopeFormModal({
                   onClick={() => setPurpose(opt.value)}
                   className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                     purpose === opt.value
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
                       : 'border-border bg-muted text-muted-foreground hover:bg-muted'
                   }`}
                 >
@@ -638,7 +638,7 @@ function EnvelopeFormModal({
           </Field>
 
           {err && (
-            <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+            <div className="rounded-md border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs text-rose-800 dark:text-rose-300">
               ⚠️ {err}
             </div>
           )}

@@ -12,8 +12,8 @@ export function UserAvatar({ user, size = 32, editable = false, onClick }: Props
   const initials = user.name.charAt(0).toUpperCase();
   const colorClass =
     user.role === 'husband'
-      ? 'bg-emerald-100 text-emerald-800'
-      : 'bg-amber-100 text-amber-800';
+      ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300'
+      : 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300';
 
   return (
     <div

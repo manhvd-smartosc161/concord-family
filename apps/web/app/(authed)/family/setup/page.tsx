@@ -154,7 +154,7 @@ function FamilySetupInner() {
             </div>
 
             {error && (
-              <div className="rounded-lg border border-rose-200 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <div className="rounded-lg border border-rose-200 dark:border-rose-900 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 {error}
               </div>
             )}
@@ -203,7 +203,7 @@ function FamilySetupInner() {
             </div>
 
             {error && (
-              <div className="rounded-lg border border-rose-200 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <div className="rounded-lg border border-rose-200 dark:border-rose-900 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 {error}
               </div>
             )}
@@ -232,7 +232,7 @@ function FamilySetupInner() {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100';
+  'w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900';
 
 const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 

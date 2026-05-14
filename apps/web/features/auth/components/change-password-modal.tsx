@@ -120,7 +120,7 @@ export function ChangePasswordModal({ open, onClose }: Props) {
         </p>
 
         {success ? (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          <div className="rounded-lg border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-300">
             ✅ {t('change_password_success')}.
           </div>
         ) : (
@@ -147,7 +147,7 @@ export function ChangePasswordModal({ open, onClose }: Props) {
             />
 
             {error && (
-              <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+              <div className="rounded-lg border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs text-rose-800 dark:text-rose-300">
                 {error}
               </div>
             )}
@@ -203,7 +203,7 @@ function PasswordField({
         required
         autoFocus={autoFocus}
         disabled={disabled}
-        className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+        className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
       />
       {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
     </div>

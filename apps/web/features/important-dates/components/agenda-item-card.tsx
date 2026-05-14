@@ -30,8 +30,8 @@ interface KindStyle {
 const KIND_STYLE: Record<AgendaItemKind, KindStyle> = {
   birthday: {
     rail: "bg-fuchsia-500",
-    stamp: "bg-fuchsia-50 border-fuchsia-200",
-    stampText: "text-fuchsia-900",
+    stamp: "bg-fuchsia-50 dark:bg-fuchsia-950/40 border-fuchsia-200 dark:border-fuchsia-900",
+    stampText: "text-fuchsia-900 dark:text-fuchsia-300",
     badgeTone: "rose",
   },
   death_anniversary: {
@@ -42,8 +42,8 @@ const KIND_STYLE: Record<AgendaItemKind, KindStyle> = {
   },
   anniversary: {
     rail: "bg-pink-500",
-    stamp: "bg-pink-50 border-pink-200",
-    stampText: "text-pink-900",
+    stamp: "bg-pink-50 dark:bg-pink-950/40 border-pink-200 dark:border-pink-900",
+    stampText: "text-pink-900 dark:text-pink-300",
     badgeTone: "rose",
   },
   other: {
@@ -54,26 +54,26 @@ const KIND_STYLE: Record<AgendaItemKind, KindStyle> = {
   },
   lunar: {
     rail: "bg-indigo-400",
-    stamp: "bg-indigo-50 border-indigo-200",
-    stampText: "text-indigo-800",
+    stamp: "bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-900",
+    stampText: "text-indigo-800 dark:text-indigo-300",
     badgeTone: "sky",
   },
   national: {
     rail: "bg-red-500",
-    stamp: "bg-red-50 border-red-200",
-    stampText: "text-red-800",
+    stamp: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900",
+    stampText: "text-red-800 dark:text-red-300",
     badgeTone: "rose",
   },
   international: {
     rail: "bg-cyan-500",
-    stamp: "bg-cyan-50 border-cyan-200",
-    stampText: "text-cyan-800",
+    stamp: "bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-900",
+    stampText: "text-cyan-800 dark:text-cyan-300",
     badgeTone: "sky",
   },
   religious: {
     rail: "bg-violet-400",
-    stamp: "bg-violet-50 border-violet-200",
-    stampText: "text-violet-800",
+    stamp: "bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-900",
+    stampText: "text-violet-800 dark:text-violet-300",
     badgeTone: "neutral",
   },
 };
@@ -154,7 +154,7 @@ export function AgendaItemCard({
       : t('days_until', { days });
 
   const style = KIND_STYLE[item.kind] ?? KIND_STYLE.other;
-  const stampBg = imminent ? "bg-emerald-100 border-emerald-300" : style.stamp;
+  const stampBg = imminent ? "bg-emerald-100 dark:bg-emerald-900/40 border-emerald-300 dark:border-emerald-900" : style.stamp;
   const stampText = imminent ? "text-emerald-900" : style.stampText;
   const railBg = imminent ? "bg-emerald-500" : style.rail;
 
@@ -202,7 +202,7 @@ export function AgendaItemCard({
               <span
                 className={
                   imminent
-                    ? "inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 ring-1 ring-emerald-300"
+                    ? "inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 ring-1 ring-emerald-300 dark:ring-emerald-900"
                     : "inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground ring-1 ring-border"
                 }
               >
@@ -327,7 +327,7 @@ function MenuItem({
       disabled={disabled}
       className={`flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors disabled:cursor-wait disabled:opacity-60 ${
         danger
-          ? "text-rose-700 hover:bg-rose-50"
+          ? "text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/60"
           : "text-foreground hover:bg-muted"
       }`}
     >

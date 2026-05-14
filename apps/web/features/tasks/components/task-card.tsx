@@ -7,14 +7,14 @@ import type { AuthUser } from '@/features/auth/types';
 import type { Task, TaskAssignee, TaskCategory, TaskStatus, UpdateTaskInput } from '../types';
 
 const CATEGORY_CONFIG: Record<TaskCategory, { bar: string; chip: string }> = {
-  shopping:  { bar: 'bg-sky-400',     chip: 'bg-sky-50/80 text-sky-600' },
-  chores:    { bar: 'bg-amber-400',   chip: 'bg-amber-50/80 text-amber-600' },
-  finance:   { bar: 'bg-emerald-500', chip: 'bg-emerald-50/80 text-emerald-700' },
-  goal:      { bar: 'bg-violet-500',  chip: 'bg-violet-50/80 text-violet-600' },
-  cooking:   { bar: 'bg-orange-400',  chip: 'bg-orange-50/80 text-orange-600' },
-  health:    { bar: 'bg-rose-400',    chip: 'bg-rose-50/80 text-rose-600' },
-  kids:      { bar: 'bg-pink-400',    chip: 'bg-pink-50/80 text-pink-600' },
-  transport: { bar: 'bg-slate-400',   chip: 'bg-slate-50/80 text-slate-600' },
+  shopping:  { bar: 'bg-sky-400',     chip: 'bg-sky-50/80 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400' },
+  chores:    { bar: 'bg-amber-400',   chip: 'bg-amber-50/80 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400' },
+  finance:   { bar: 'bg-emerald-500', chip: 'bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400' },
+  goal:      { bar: 'bg-violet-500',  chip: 'bg-violet-50/80 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400' },
+  cooking:   { bar: 'bg-orange-400',  chip: 'bg-orange-50/80 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400' },
+  health:    { bar: 'bg-rose-400',    chip: 'bg-rose-50/80 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400' },
+  kids:      { bar: 'bg-pink-400',    chip: 'bg-pink-50/80 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400' },
+  transport: { bar: 'bg-slate-400',   chip: 'bg-slate-50/80 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400' },
 };
 
 const NEXT_STATUS: Record<TaskStatus, TaskStatus | null> = {
@@ -103,7 +103,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
             value={draftTitle}
             onChange={(e) => setDraftTitle(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') void saveEdit(); if (e.key === 'Escape') setEditing(false); }}
-            className="w-full rounded-xl border border-input bg-muted px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:border-emerald-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-xl border border-input bg-muted px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:border-emerald-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
             placeholder={t('title_placeholder')}
             disabled={saving}
           />
@@ -116,7 +116,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
                 onClick={() => setDraftAssignee(a.value)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
                   draftAssignee === a.value
-                    ? 'bg-emerald-100 text-emerald-700 shadow-sm ring-1 ring-emerald-200'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 shadow-sm ring-1 ring-emerald-200 dark:ring-emerald-900'
                     : 'bg-muted text-muted-foreground hover:bg-muted'
                 }`}
               >
@@ -126,7 +126,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
           </div>
 
           <textarea
-            className="w-full resize-none rounded-xl border border-input bg-muted px-3 py-2 text-xs text-muted-foreground placeholder:text-muted-foreground focus:border-emerald-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="w-full resize-none rounded-xl border border-input bg-muted px-3 py-2 text-xs text-muted-foreground placeholder:text-muted-foreground focus:border-emerald-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
             rows={2}
             placeholder={t('note_placeholder')}
             value={draftNote}
@@ -202,7 +202,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}
-                className="shrink-0 mt-px flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground/40 transition-colors hover:bg-red-50 hover:text-red-400"
+                className="shrink-0 mt-px flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground/40 transition-colors hover:bg-red-50 dark:hover:bg-red-900/60 hover:text-red-400"
                 aria-label={tCommon('delete')}
               >
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
@@ -241,8 +241,8 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
                   onClick={handleStatusAdvance}
                   className={`ml-auto flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all disabled:opacity-40 ${
                     task.status === 'todo'
-                      ? 'bg-muted text-muted-foreground hover:bg-amber-50 hover:text-amber-600'
-                      : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                      ? 'bg-muted text-muted-foreground hover:bg-amber-50 dark:hover:bg-amber-900/60 hover:text-amber-600'
+                      : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
                   }`}
                 >
                   {task.status === 'todo' ? (

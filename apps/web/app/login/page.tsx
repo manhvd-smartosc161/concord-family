@@ -139,7 +139,7 @@ function LoginInner() {
               </div>
 
               {error && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+                <div className="rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs text-rose-800 dark:text-rose-300">
                   {error}
                 </div>
               )}
@@ -172,12 +172,12 @@ function LoginInner() {
 function MobileBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden lg:hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/70 via-background to-amber-50/40" />
-      <div className="absolute -left-32 -top-32 h-72 w-72 rounded-full bg-emerald-200/50 blur-3xl" />
-      <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-amber-200/40 blur-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/70 dark:from-emerald-950/20 via-background to-amber-50/40 dark:to-amber-950/20" />
+      <div className="absolute -left-32 -top-32 h-72 w-72 rounded-full bg-emerald-200/50 dark:bg-emerald-900/20 blur-3xl" />
+      <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-amber-200/40 dark:bg-amber-900/20 blur-3xl" />
     </div>
   );
 }
 
 const inputClass =
-  'w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 lg:rounded-lg lg:px-3.5 lg:py-2.5';
+  'w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900 lg:rounded-lg lg:px-3.5 lg:py-2.5';

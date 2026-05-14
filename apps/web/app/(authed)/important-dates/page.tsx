@@ -113,7 +113,7 @@ export default function ImportantDatesPage() {
           </div>
         }
       />
-      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-background to-background px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
+      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 dark:from-emerald-950/20 via-background to-background px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
         <div className="mx-auto max-w-2xl space-y-4">
           <ViewTabs current="upcoming" />
           {view === null && (

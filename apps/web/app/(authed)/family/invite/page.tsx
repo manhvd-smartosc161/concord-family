@@ -199,12 +199,12 @@ export default function FamilyInvitePage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="vochong@gmail.com"
-                className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
                 disabled={submitting}
               />
             </div>
             {error && (
-              <div className="rounded-lg border border-rose-200 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <div className="rounded-lg border border-rose-200 dark:border-rose-900 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 {error}
               </div>
             )}
@@ -219,14 +219,14 @@ export default function FamilyInvitePage() {
         )}
 
         {!isComplete && invitation && (
-          <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:p-5">
-            <div className="text-sm font-medium text-emerald-900">
+          <div className="space-y-3 rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 p-4 sm:p-5">
+            <div className="text-sm font-medium text-emerald-900 dark:text-emerald-300">
               ✅ {t('invite_sent')} <strong>{invitation.email}</strong>
             </div>
-            <p className="text-xs text-emerald-800">
+            <p className="text-xs text-emerald-800 dark:text-emerald-400">
               {t('invite_fallback_hint')}
             </p>
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-300 bg-background p-2">
+            <div className="flex items-center gap-2 rounded-lg border border-emerald-300 dark:border-emerald-900 bg-background p-2">
               <input
                 value={invitation.link}
                 readOnly
@@ -240,17 +240,17 @@ export default function FamilyInvitePage() {
                 {copied ? t('copied') : t('copy')}
               </button>
             </div>
-            <p className="text-[11px] italic text-emerald-700">
+            <p className="text-[11px] italic text-emerald-700 dark:text-emerald-400">
               {t('invite_accepted_hint')}
             </p>
           </div>
         )}
 
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 sm:p-5">
-          <div className="text-sm font-semibold text-rose-900">
+        <div className="rounded-2xl border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 p-4 sm:p-5">
+          <div className="text-sm font-semibold text-rose-900 dark:text-rose-300">
             ⚠️ {t('leave_family')}
           </div>
-          <p className="mt-1 text-xs text-rose-800">
+          <p className="mt-1 text-xs text-rose-800 dark:text-rose-400">
             {t('leave_desc')}
           </p>
           <button
@@ -293,7 +293,7 @@ function MemberRow({
             {roleLabel}
           </span>
           {canEdit && (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+            <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300">
               {t('you_badge')}
             </span>
           )}
@@ -362,7 +362,7 @@ function EditFamilyForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="space-y-3 rounded-2xl border border-emerald-200 bg-card p-4 shadow-sm sm:p-5"
+      className="space-y-3 rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-card p-4 shadow-sm sm:p-5"
     >
       <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
         {t('edit_family_title')}
@@ -377,7 +377,7 @@ function EditFamilyForm({
           onChange={(e) => setName(e.target.value)}
           required
           maxLength={120}
-          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
           disabled={saving}
         />
       </div>
@@ -389,7 +389,7 @@ function EditFamilyForm({
           type="date"
           value={wedding}
           onChange={(e) => setWedding(e.target.value)}
-          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
           disabled={saving}
         />
         <p className="mt-1 text-[10px] text-muted-foreground">
@@ -397,7 +397,7 @@ function EditFamilyForm({
         </p>
       </div>
       {err && (
-        <div className="rounded-lg border border-rose-200 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+        <div className="rounded-lg border border-rose-200 dark:border-rose-900 bg-destructive/10 px-3 py-2 text-xs text-destructive">
           {err}
         </div>
       )}
@@ -472,7 +472,7 @@ function EditProfileForm({
           onChange={(e) => setName(e.target.value)}
           required
           maxLength={80}
-          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
           disabled={saving}
         />
       </div>
@@ -484,12 +484,12 @@ function EditProfileForm({
           type="date"
           value={birthdate}
           onChange={(e) => setBirthdate(e.target.value)}
-          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
           disabled={saving}
         />
       </div>
       {err && (
-        <div className="rounded-lg border border-rose-200 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+        <div className="rounded-lg border border-rose-200 dark:border-rose-900 bg-destructive/10 px-3 py-2 text-xs text-destructive">
           {err}
         </div>
       )}

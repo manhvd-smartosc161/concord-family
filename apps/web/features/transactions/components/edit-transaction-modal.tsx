@@ -155,7 +155,7 @@ export function EditTransactionModal({
               onClick={() => setIsExpense(true)}
               className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                 isExpense
-                  ? 'border-rose-300 bg-rose-50 text-rose-800'
+                  ? 'border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300'
                   : 'border-border bg-card text-muted-foreground hover:bg-muted'
               }`}
             >
@@ -166,7 +166,7 @@ export function EditTransactionModal({
               onClick={() => setIsExpense(false)}
               className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                 !isExpense
-                  ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                  ? 'border-emerald-300 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
                   : 'border-border bg-card text-muted-foreground hover:bg-muted'
               }`}
             >
@@ -180,7 +180,7 @@ export function EditTransactionModal({
               <select
                 value={fundId}
                 onChange={(e) => setFundId(e.target.value)}
-                className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
                 disabled={submitting}
               >
                 {writableFunds.map((f) => (
@@ -199,7 +199,7 @@ export function EditTransactionModal({
                   setAmountStr(e.target.value.replace(/[^\d]/g, ''))
                 }
                 placeholder="200000"
-                className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm font-mono tabular-nums focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm font-mono tabular-nums focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
                 disabled={submitting}
               />
               {amountStr && (
@@ -219,7 +219,7 @@ export function EditTransactionModal({
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
               disabled={submitting}
             >
               <option value="">— {t('no_category')} —</option>
@@ -243,14 +243,14 @@ export function EditTransactionModal({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="vd: ăn Haidilao chung với cả nhà"
-              className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
               disabled={submitting}
               maxLength={200}
             />
           </Field>
 
           {error && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+            <div className="rounded-lg border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs text-rose-800 dark:text-rose-300">
               {error}
             </div>
           )}

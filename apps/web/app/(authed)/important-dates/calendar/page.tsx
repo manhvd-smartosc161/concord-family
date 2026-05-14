@@ -187,7 +187,7 @@ export default function CalendarPage() {
           </div>
         }
       />
-      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 via-background to-background px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
+      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-emerald-50/30 dark:from-emerald-950/20 via-background to-background px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-8">
         <div className="mx-auto max-w-3xl space-y-5">
           <ViewTabs current="calendar" />
 
@@ -218,12 +218,12 @@ export default function CalendarPage() {
                   <div className="mt-0.5 text-[11px] text-muted-foreground">
                     {t('lunar_label')}: {selectedLunar.day}/{selectedLunar.month}
                     {selectedLunar.isFirstDay && (
-                      <span className="ml-1 inline-flex items-center rounded-full bg-rose-50 px-1.5 py-0.5 text-[9px] font-semibold text-rose-600">
+                      <span className="ml-1 inline-flex items-center rounded-full bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 text-[9px] font-semibold text-rose-600 dark:text-rose-400">
                         {t('lunar_first_day')}
                       </span>
                     )}
                     {selectedLunar.isFullMoon && (
-                      <span className="ml-1 inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold text-amber-700">
+                      <span className="ml-1 inline-flex items-center rounded-full bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 text-[9px] font-semibold text-amber-700 dark:text-amber-400">
                         {t('lunar_full_moon')}
                       </span>
                     )}
@@ -231,7 +231,7 @@ export default function CalendarPage() {
                 </div>
               </div>
               {selectedItems.length > 0 && (
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                <span className="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
                   {selectedItems.length} {t('events_count')}
                 </span>
               )}

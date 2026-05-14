@@ -188,7 +188,7 @@ export function ImportantDateFormModal({
           </div>
 
           {error && (
-            <p className="rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">
+            <p className="rounded-md bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs text-rose-700 dark:text-rose-300">
               {error}
             </p>
           )}

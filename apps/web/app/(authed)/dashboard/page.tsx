@@ -179,8 +179,8 @@ function FundsWidget({ funds, loading, t }: { funds: FundView[]; loading: boolea
       {!loading && funds.map((f) => {
         const isPrivate = f.accessLevel === 'private';
         const tone = {
-          owner: 'border-emerald-100 bg-emerald-50/40',
-          joint: 'border-amber-100 bg-amber-50/40',
+          owner: 'border-emerald-100 dark:border-emerald-900 bg-emerald-50/40 dark:bg-emerald-950/40',
+          joint: 'border-amber-100 dark:border-amber-900 bg-amber-50/40 dark:bg-amber-950/40',
           private: 'border-border bg-muted',
         }[f.accessLevel];
         return (

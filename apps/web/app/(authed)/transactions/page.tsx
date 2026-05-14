@@ -188,7 +188,7 @@ export default function TransactionsPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={`${t('note')}, ${t('category')}…`}
-                  className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
                 />
               </div>
             </div>

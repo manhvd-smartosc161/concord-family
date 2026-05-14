@@ -88,7 +88,7 @@ function YearlyGoalSection() {
             value={target}
             onChange={(e) => setTarget(e.target.value === '' ? '' : Number(e.target.value))}
             placeholder={t('goal_placeholder')}
-            className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
           />
           <p className="mt-1 text-[11px] text-muted-foreground">
             {target !== '' && Number(target) > 0
@@ -101,7 +101,7 @@ function YearlyGoalSection() {
               <button key={p} type="button" onClick={() => setTarget(p)}
                 className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                   target === p
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                    ? 'border-emerald-300 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
                     : 'border-border bg-background text-muted-foreground hover:bg-muted'
                 }`}>
                 {formatVND(p)}
@@ -197,7 +197,7 @@ function OpeningBalanceRow({ fund, onSaved }: { fund: FundView; onSaved: () => v
   }
 
   return (
-    <div className={`rounded-lg border px-4 py-3 ${isJoint ? 'border-amber-100 bg-amber-50/40' : 'border-emerald-100 bg-emerald-50/30'}`}>
+    <div className={`rounded-lg border px-4 py-3 ${isJoint ? 'border-amber-100 dark:border-amber-900 bg-amber-50/40 dark:bg-amber-950/40' : 'border-emerald-100 dark:border-emerald-900 bg-emerald-50/30 dark:bg-emerald-950/40'}`}>
       <div className="mb-2 flex items-baseline justify-between">
         <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
           <span>{pickFundIcon(fund)}</span> {fund.name}
@@ -211,7 +211,7 @@ function OpeningBalanceRow({ fund, onSaved }: { fund: FundView; onSaved: () => v
           type="number" min={0} value={value}
           onChange={(e) => setValue(e.target.value === '' ? '' : Number(e.target.value))}
           placeholder="0"
-          className="min-w-0 flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="min-w-0 flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
         />
         <span className="font-mono text-xs tabular-nums text-muted-foreground">
           {value !== '' && Number(value) >= 0 ? formatVND(Number(value)) : '—'}

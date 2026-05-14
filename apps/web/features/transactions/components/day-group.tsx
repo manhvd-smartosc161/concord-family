@@ -93,7 +93,7 @@ function TxnRow({
             onClick={onEdit}
             aria-label="Edit"
             title="Edit fund / amount / category"
-            className="rounded-md p-1 text-emerald-500 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+            className="rounded-md p-1 text-emerald-500 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-900/60 hover:text-emerald-700"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -103,7 +103,7 @@ function TxnRow({
             onClick={onDelete}
             aria-label="Delete"
             title="Delete and restore balance"
-            className="rounded-md p-1 text-rose-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+            className="rounded-md p-1 text-rose-400 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/60 hover:text-rose-600"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />

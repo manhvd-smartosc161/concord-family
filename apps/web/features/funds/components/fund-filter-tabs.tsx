@@ -30,7 +30,7 @@ export function FundFilterTabs({
             disabled={t.disabled}
             className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
               active
-                ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+                ? 'border-emerald-300 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300'
                 : t.disabled
                   ? 'cursor-not-allowed border-border bg-muted text-muted-foreground/40'
                   : 'border-border bg-card text-foreground hover:bg-muted'

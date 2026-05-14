@@ -62,7 +62,7 @@ export function TaskQuickAdd({ onAdd }: Props) {
     <form
       onSubmit={handleSubmit}
       onKeyDown={handleKeyDown}
-      className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-2.5 ring-1 ring-emerald-100"
+      className="rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/40 dark:bg-emerald-950/40 p-2.5 ring-1 ring-emerald-100 dark:ring-emerald-900"
     >
       <input
         ref={inputRef}
@@ -82,7 +82,7 @@ export function TaskQuickAdd({ onAdd }: Props) {
               onClick={() => setAssignee(a.value)}
               className={`rounded px-1.5 py-0.5 text-xs transition-colors ${
                 assignee === a.value
-                  ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300'
+                  ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-300 dark:ring-emerald-900'
                   : 'bg-muted text-muted-foreground hover:bg-muted'
               }`}
             >

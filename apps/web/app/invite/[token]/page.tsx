@@ -53,8 +53,8 @@ export default function InviteTokenPage({
   if (error) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="w-full max-w-md rounded-2xl border border-rose-200 bg-rose-50 p-6">
-          <div className="text-base font-semibold text-rose-900">
+        <div className="w-full max-w-md rounded-2xl border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 p-6">
+          <div className="text-base font-semibold text-rose-900 dark:text-rose-300">
             ⚠️ {error}
           </div>
           <Link
@@ -83,7 +83,7 @@ export default function InviteTokenPage({
           <h1 className="text-lg font-semibold text-foreground">
             ✉️ {t('title')}
           </h1>
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+          <div className="rounded-lg border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 p-3 text-sm text-emerald-900 dark:text-emerald-300">
             <strong>{preview.inviter.name}</strong> {t('invite_verb')} <strong>{preview.family.name}</strong>.
           </div>
           <p className="text-xs text-muted-foreground">

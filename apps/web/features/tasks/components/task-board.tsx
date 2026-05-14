@@ -48,8 +48,8 @@ export function TaskBoard() {
   const locale = useLocale();
   const STATUSES: { status: TaskStatus; label: string; dot: string; badgeBg: string; badgeText: string }[] = [
     { status: 'todo',        label: t('status_todo'),        dot: 'bg-muted-foreground/50', badgeBg: 'bg-muted',   badgeText: 'text-muted-foreground'   },
-    { status: 'in_progress', label: t('status_in_progress'), dot: 'bg-amber-400',   badgeBg: 'bg-amber-100',   badgeText: 'text-amber-700'   },
-    { status: 'done',        label: t('status_done'),        dot: 'bg-emerald-500', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-700' },
+    { status: 'in_progress', label: t('status_in_progress'), dot: 'bg-amber-400',   badgeBg: 'bg-amber-100 dark:bg-amber-900/40',   badgeText: 'text-amber-700 dark:text-amber-300'   },
+    { status: 'done',        label: t('status_done'),        dot: 'bg-emerald-500', badgeBg: 'bg-emerald-100 dark:bg-emerald-900/40', badgeText: 'text-emerald-700 dark:text-emerald-300' },
   ];
   const [currentWeek, setCurrentWeek] = useState(() => getISOWeek(new Date()));
   const [tasks, setTasks] = useState<Task[]>([]);

@@ -59,7 +59,7 @@ type Theme = {
 const THEMES: Record<'private' | 'public', Theme> = {
   private: {
     accent: 'bg-slate-700',
-    accentSoft: 'bg-slate-50',
+    accentSoft: 'bg-slate-50 dark:bg-slate-900/40',
     accentText: 'text-slate-700',
     accentBorder: 'border-slate-400',
     accentBorderSoft: 'border-slate-300',
@@ -72,15 +72,15 @@ const THEMES: Record<'private' | 'public', Theme> = {
   },
   public: {
     accent: 'bg-emerald-700',
-    accentSoft: 'bg-emerald-50',
+    accentSoft: 'bg-emerald-50 dark:bg-emerald-950/40',
     accentText: 'text-emerald-700',
-    accentBorder: 'border-emerald-300',
-    accentBorderSoft: 'border-emerald-200',
-    ring: 'focus-within:ring-2 focus-within:ring-emerald-200/60 focus-within:border-emerald-300',
+    accentBorder: 'border-emerald-300 dark:border-emerald-900',
+    accentBorderSoft: 'border-emerald-200 dark:border-emerald-900',
+    ring: 'focus-within:ring-2 focus-within:ring-emerald-200/60 dark:focus-within:ring-emerald-900 focus-within:border-emerald-300 dark:focus-within:border-emerald-900',
     icon: '🏠',
     bubbleAgent: 'bg-card ring-1 ring-border',
     borderStyle: 'border-solid',
-    composerBorder: 'border-solid border-emerald-200',
+    composerBorder: 'border-solid border-emerald-200 dark:border-emerald-900',
     chatBg: '',
   },
 };
@@ -653,7 +653,7 @@ function SessionItem({
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
           aria-label="Delete conversation"
-          className="hidden rounded p-1 text-muted-foreground transition-colors hover:bg-rose-50 hover:text-rose-600 group-hover:block"
+          className="hidden rounded p-1 text-muted-foreground transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/60 hover:text-rose-600 group-hover:block"
         >
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -759,7 +759,7 @@ function SessionItemDrawer({
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
           aria-label="Delete conversation"
-          className="hidden rounded p-1 text-muted-foreground transition-colors hover:bg-rose-50 hover:text-rose-600 group-hover:block"
+          className="hidden rounded p-1 text-muted-foreground transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/60 hover:text-rose-600 group-hover:block"
         >
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -900,7 +900,7 @@ function MessageBubble({
       <div
         className={`rounded-lg px-3 py-2 text-sm ${
           msg.error
-            ? 'border border-rose-200 bg-rose-50 text-rose-800'
+            ? 'border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300'
             : 'bg-muted text-muted-foreground'
         }`}
       >
@@ -928,7 +928,7 @@ function MessageBubble({
             alignRight
               ? `${theme.accent} text-white shadow-sm`
               : isUser
-                ? 'bg-amber-100 text-amber-950'
+                ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-950 dark:text-amber-100'
                 : theme.bubbleAgent + ' text-foreground shadow-sm'
           }`}
         >
@@ -990,8 +990,8 @@ function ActionCard({
       <div
         className={`rounded-md border px-3 py-2 text-xs ${
           isExpense
-            ? 'border-rose-200 bg-rose-50 text-rose-900'
-            : 'border-emerald-200 bg-emerald-50 text-emerald-900'
+            ? 'border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-300'
+            : 'border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300'
         }`}
       >
         <div className="font-mono font-semibold tabular-nums">
@@ -1013,8 +1013,8 @@ function ActionCard({
       <div
         className={`rounded-md border px-3 py-2 text-xs ${
           isExpense
-            ? 'border-amber-200 bg-amber-50 text-amber-900'
-            : 'border-sky-200 bg-sky-50 text-sky-900'
+            ? 'border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300'
+            : 'border-sky-200 dark:border-sky-900 bg-sky-50 dark:bg-sky-950/40 text-sky-900 dark:text-sky-300'
         }`}
       >
         <div className="flex items-center gap-1.5 font-semibold">
@@ -1039,7 +1039,7 @@ function ActionCard({
   }
   if (action.kind === 'clarify') {
     return (
-      <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+      <div className="rounded-md border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-900 dark:text-amber-300">
         ❓ {action.question}
       </div>
     );
@@ -1072,7 +1072,7 @@ function ActionCard({
   }
   if (action.kind === 'important_date_logged') {
     return (
-      <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
+      <div className="rounded-md border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-2 text-xs text-emerald-900 dark:text-emerald-300">
         ✅ {t('action_date_logged')} <span className="font-medium">{action.name}</span>
         <span className="ml-1 text-muted-foreground">
           — {formatImportantDate(action.date, false, t('lunar_suffix'))}
@@ -1089,7 +1089,7 @@ function ActionCard({
   }
   if (action.kind === 'tool_error') {
     return (
-      <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-900">
+      <div className="rounded-md border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs text-rose-900 dark:text-rose-300">
         ⚠️ {action.message}
       </div>
     );
@@ -1200,7 +1200,7 @@ function ImportantDateBatchCard({
   }
 
   return (
-    <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2.5 text-xs text-sky-900">
+    <div className="rounded-md border border-sky-200 dark:border-sky-900 bg-sky-50 dark:bg-sky-950/40 px-3 py-2.5 text-xs text-sky-900 dark:text-sky-300">
       <div className="flex items-center gap-1.5 font-semibold">
         🗓 <span>Đề xuất {items.length} ngày quan trọng</span>
       </div>
@@ -1325,7 +1325,7 @@ function ImportantDateProposedCard({
   }
 
   return (
-    <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2.5 text-xs text-sky-900">
+    <div className="rounded-md border border-sky-200 dark:border-sky-900 bg-sky-50 dark:bg-sky-950/40 px-3 py-2.5 text-xs text-sky-900 dark:text-sky-300">
       <div className="flex items-center gap-1.5 font-semibold">
         {icon} <span>Đề xuất ngày quan trọng</span>
       </div>

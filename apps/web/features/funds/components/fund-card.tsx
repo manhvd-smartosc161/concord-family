@@ -40,10 +40,10 @@ export function FundCard({ fund }: { fund: FundView }) {
   const isGoalFund = fund.purpose === 'savings' || fund.purpose === 'investment';
   const variant = {
     owner:
-      'border-emerald-200 bg-gradient-to-br from-emerald-50 to-white',
+      'border-emerald-200 dark:border-emerald-900 bg-gradient-to-br from-emerald-50 dark:from-emerald-950/40 to-white dark:to-card',
     joint: isGoalFund
-      ? 'border-sky-200 bg-gradient-to-br from-sky-50 to-white'
-      : 'border-amber-200 bg-gradient-to-br from-amber-50 to-white',
+      ? 'border-sky-200 dark:border-sky-900 bg-gradient-to-br from-sky-50 dark:from-sky-950/40 to-white dark:to-card'
+      : 'border-amber-200 dark:border-amber-900 bg-gradient-to-br from-amber-50 dark:from-amber-950/40 to-white dark:to-card',
     private: 'border-border bg-muted',
   }[fund.accessLevel];
 

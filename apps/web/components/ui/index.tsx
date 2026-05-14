@@ -109,10 +109,10 @@ export function Badge({
   tone?: 'emerald' | 'amber' | 'rose' | 'sky' | 'neutral';
 }) {
   const cls = {
-    emerald: 'bg-emerald-100 text-emerald-800',
-    amber: 'bg-amber-100 text-amber-800',
-    rose: 'bg-rose-100 text-rose-800',
-    sky: 'bg-sky-100 text-sky-800',
+    emerald: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300',
+    amber: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300',
+    rose: 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300',
+    sky: 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300',
     neutral: 'bg-muted text-muted-foreground',
   }[tone];
   return (
