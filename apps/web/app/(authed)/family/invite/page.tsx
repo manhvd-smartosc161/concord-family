@@ -85,7 +85,7 @@ export default function FamilyInvitePage() {
 
   if (!view) {
     return (
-      <main className="flex min-h-full items-center justify-center text-sm text-stone-400">
+      <main className="flex min-h-full items-center justify-center text-sm text-muted-foreground">
         {tCommon('loading')}
       </main>
     );
@@ -94,14 +94,14 @@ export default function FamilyInvitePage() {
   const isComplete = view.members.length === 2;
 
   return (
-    <main className="min-h-full bg-stone-50 px-3 py-6 sm:px-4 lg:px-6 lg:py-8">
+    <main className="min-h-full bg-background px-3 py-6 sm:px-4 lg:px-6 lg:py-8">
       <div className="mx-auto w-full max-w-2xl space-y-4">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h1 className="text-xl font-semibold text-stone-900">
+            <h1 className="text-xl font-semibold text-foreground">
               🏠 {view.family.name} — {t('invite_title')}
             </h1>
-            <p className="mt-1 text-xs text-stone-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {t('members_count', { count: view.members.length })} ·{' '}
               {isComplete ? t('complete') : t('waiting_spouse')}
             </p>
@@ -110,7 +110,7 @@ export default function FamilyInvitePage() {
             <button
               type="button"
               onClick={() => setEditingFamily(true)}
-              className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 hover:bg-stone-50"
+              className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
             >
               ✏️ {t('edit')}
             </button>
@@ -129,11 +129,11 @@ export default function FamilyInvitePage() {
           />
         )}
 
-        <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-5">
-          <div className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t('members_section')}
           </div>
-          <ul className="mt-3 divide-y divide-stone-100">
+          <ul className="mt-3 divide-y divide-border">
             {view.members.map((m) => {
               const isMe = m.id === user.id;
               if (isMe && editingProfile) {
@@ -161,7 +161,7 @@ export default function FamilyInvitePage() {
               );
             })}
             {!isComplete && (
-              <li className="py-3 text-sm italic text-stone-400">
+              <li className="py-3 text-sm italic text-muted-foreground">
                 {t('waiting_spouse_slot')}
               </li>
             )}
@@ -169,14 +169,14 @@ export default function FamilyInvitePage() {
         </div>
 
         {view.family.weddingDate && !editingFamily && (
-          <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-5">
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
             <div className="flex items-center gap-2">
               <span className="text-xl">💍</span>
               <div>
-                <div className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {t('wedding_date_section')}
                 </div>
-                <div className="text-sm font-medium text-stone-800">
+                <div className="text-sm font-medium text-foreground">
                   {formatDate(view.family.weddingDate)}
                 </div>
               </div>
@@ -187,10 +187,10 @@ export default function FamilyInvitePage() {
         {!isComplete && !invitation && (
           <form
             onSubmit={onInvite}
-            className="space-y-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-5"
+            className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5"
           >
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-stone-700">
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                 {t('invite_email_label')}
               </label>
               <input
@@ -199,19 +199,19 @@ export default function FamilyInvitePage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="vochong@gmail.com"
-                className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 disabled={submitting}
               />
             </div>
             {error && (
-              <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+              <div className="rounded-lg border border-rose-200 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 {error}
               </div>
             )}
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:bg-stone-300 sm:w-auto"
+              className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:bg-muted sm:w-auto"
             >
               {submitting ? t('creating_link') : t('send_link')}
             </button>
@@ -226,11 +226,11 @@ export default function FamilyInvitePage() {
             <p className="text-xs text-emerald-800">
               {t('invite_fallback_hint')}
             </p>
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-300 bg-white p-2">
+            <div className="flex items-center gap-2 rounded-lg border border-emerald-300 bg-background p-2">
               <input
                 value={invitation.link}
                 readOnly
-                className="flex-1 bg-transparent font-mono text-[11px] text-stone-700 focus:outline-none"
+                className="flex-1 bg-transparent font-mono text-[11px] text-foreground focus:outline-none"
               />
               <button
                 type="button"
@@ -286,10 +286,10 @@ function MemberRow({
       <span className="text-2xl">{genderIcon}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-stone-800">
+          <span className="text-sm font-medium text-foreground">
             {member.name}
           </span>
-          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-stone-600">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             {roleLabel}
           </span>
           {canEdit && (
@@ -298,15 +298,15 @@ function MemberRow({
             </span>
           )}
         </div>
-        <div className="mt-0.5 truncate text-xs text-stone-500">
+        <div className="mt-0.5 truncate text-xs text-muted-foreground">
           {member.email}
         </div>
         {member.birthdate ? (
-          <div className="mt-1 text-[11px] text-stone-500">
+          <div className="mt-1 text-[11px] text-muted-foreground">
             🎂 {t('birthday_label')} {formatDate(member.birthdate)}
           </div>
         ) : canEdit ? (
-          <div className="mt-1 text-[11px] italic text-stone-400">
+          <div className="mt-1 text-[11px] italic text-muted-foreground">
             {t('no_birthday')}
           </div>
         ) : null}
@@ -315,7 +315,7 @@ function MemberRow({
         <button
           type="button"
           onClick={onEdit}
-          className="rounded-lg border border-stone-200 bg-white px-2 py-1 text-[11px] text-stone-700 hover:bg-stone-50"
+          className="rounded-lg border border-border bg-card px-2 py-1 text-[11px] text-muted-foreground hover:bg-muted"
         >
           {t('edit')}
         </button>
@@ -362,13 +362,13 @@ function EditFamilyForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="space-y-3 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm sm:p-5"
+      className="space-y-3 rounded-2xl border border-emerald-200 bg-card p-4 shadow-sm sm:p-5"
     >
       <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
         {t('edit_family_title')}
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-stone-700">
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">
           {t('family_name_label')}
         </label>
         <input
@@ -377,27 +377,27 @@ function EditFamilyForm({
           onChange={(e) => setName(e.target.value)}
           required
           maxLength={120}
-          className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
           disabled={saving}
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-stone-700">
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">
           {t('wedding_label')}
         </label>
         <input
           type="date"
           value={wedding}
           onChange={(e) => setWedding(e.target.value)}
-          className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
           disabled={saving}
         />
-        <p className="mt-1 text-[10px] text-stone-400">
+        <p className="mt-1 text-[10px] text-muted-foreground">
           {t('wedding_clear_hint')}
         </p>
       </div>
       {err && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+        <div className="rounded-lg border border-rose-200 bg-destructive/10 px-3 py-2 text-xs text-destructive">
           {err}
         </div>
       )}
@@ -406,14 +406,14 @@ function EditFamilyForm({
           type="button"
           onClick={onCancel}
           disabled={saving}
-          className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 hover:bg-stone-50"
+          className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
         >
           {tCommon('cancel')}
         </button>
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 disabled:bg-stone-300"
+          className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 disabled:bg-muted"
         >
           {saving ? tCommon('saving') : tCommon('save')}
         </button>
@@ -463,7 +463,7 @@ function EditProfileForm({
         {t('edit_profile_title')}
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-stone-700">
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">
           {t('display_name_label')}
         </label>
         <input
@@ -472,24 +472,24 @@ function EditProfileForm({
           onChange={(e) => setName(e.target.value)}
           required
           maxLength={80}
-          className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
           disabled={saving}
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-stone-700">
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">
           {t('birthdate_label_form')}
         </label>
         <input
           type="date"
           value={birthdate}
           onChange={(e) => setBirthdate(e.target.value)}
-          className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
           disabled={saving}
         />
       </div>
       {err && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+        <div className="rounded-lg border border-rose-200 bg-destructive/10 px-3 py-2 text-xs text-destructive">
           {err}
         </div>
       )}
@@ -498,14 +498,14 @@ function EditProfileForm({
           type="button"
           onClick={onCancel}
           disabled={saving}
-          className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 hover:bg-stone-50"
+          className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
         >
           {tCommon('cancel')}
         </button>
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 disabled:bg-stone-300"
+          className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 disabled:bg-muted"
         >
           {saving ? tCommon('saving') : tCommon('save')}
         </button>
