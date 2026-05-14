@@ -117,17 +117,9 @@ function LoginInner() {
             </div>
 
             <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-xs font-medium text-stone-700">
-                  {t('password')}
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-stone-400 hover:text-emerald-700 hover:underline"
-                >
-                  {t('forgot_password')}
-                </Link>
-              </div>
+              <label className="mb-1.5 block text-xs font-medium text-stone-700">
+                {t('password')}
+              </label>
               <input
                 type="password"
                 value={password}
@@ -154,12 +146,20 @@ function LoginInner() {
             </button>
           </form>
 
-          <p className="mt-4 text-center text-xs text-stone-500">
-            {t('no_account')}{' '}
-            <Link href="/register" className="font-medium text-emerald-700 hover:underline">
-              {t('register_link')}
+          <div className="mt-4 flex flex-col items-center gap-2 text-xs text-stone-500 sm:flex-row sm:justify-between sm:gap-0">
+            <span>
+              {t('no_account')}{' '}
+              <Link href="/register" className="font-medium text-emerald-700 hover:underline">
+                {t('register_link')}
+              </Link>
+            </span>
+            <Link
+              href="/forgot-password"
+              className="text-stone-400 hover:text-emerald-700 hover:underline"
+            >
+              {t('forgot_password')}
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </main>
