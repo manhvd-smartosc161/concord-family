@@ -32,7 +32,7 @@ export default function ReportsPage() {
   const { funds } = useAuthedLayout();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1); // 1-indexed
+  const [month, setMonth] = useState(now.getMonth() + 1);
   const [fundFilter, setFundFilter] = useState<string>('');
   const [report, setReport] = useState<MonthlyReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,7 +94,6 @@ export default function ReportsPage() {
             />
           </Card>
 
-          {/* Stats */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard
               label={t('income')}
@@ -121,9 +120,8 @@ export default function ReportsPage() {
             />
           </div>
 
-          {/* Chart */}
           <Card>
-            <h3 className="mb-4 text-sm font-semibold text-stone-800">
+            <h3 className="mb-4 text-sm font-semibold text-foreground">
               {t('current_month')}
             </h3>
             {loading && <Skeleton className="h-72 w-full" />}
@@ -132,9 +130,8 @@ export default function ReportsPage() {
             )}
           </Card>
 
-          {/* Category breakdown */}
           <Card>
-            <h3 className="mb-4 text-sm font-semibold text-stone-800">
+            <h3 className="mb-4 text-sm font-semibold text-foreground">
               {t('expense_by_category')}
             </h3>
             {loading && (
@@ -161,8 +158,6 @@ export default function ReportsPage() {
   );
 }
 
-// ─── Sub-components ────────────────────────────────────────────────────
-
 function MonthSwitcher({
   year,
   month,
@@ -181,21 +176,21 @@ function MonthSwitcher({
     { month: 'long', year: 'numeric' },
   );
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white p-0.5">
+    <div className="flex items-center gap-1 rounded-lg border border-border bg-background p-0.5">
       <button
         onClick={() => onShift(-1)}
-        className="rounded-md p-1.5 text-stone-600 transition-colors hover:bg-stone-100"
+        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted"
         aria-label={tReports('current_month')}
       >
         <ChevronIcon dir="left" />
       </button>
-      <div className="min-w-[140px] px-3 py-1 text-center text-sm font-medium text-stone-800">
+      <div className="min-w-[140px] px-3 py-1 text-center text-sm font-medium text-foreground">
         {monthLabel}
       </div>
       <button
         onClick={() => onShift(1)}
         disabled={isCurrent}
-        className="rounded-md p-1.5 text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
+        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"
         aria-label={tReports('current_month')}
       >
         <ChevronIcon dir="right" />
@@ -239,17 +234,17 @@ function DailyChart({ report }: { report: MonthlyReport }) {
 
   const barChart = (
     <BarChart data={data} margin={{ top: 8, right: 0, left: -8, bottom: 0 }}>
-      <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
+      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
       <XAxis
         dataKey="day"
-        tick={{ fontSize: 11, fill: '#78716c' }}
+        tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
         tickLine={false}
-        axisLine={{ stroke: '#e7e5e4' }}
+        axisLine={{ stroke: 'var(--border)' }}
       />
       <YAxis
-        tick={{ fontSize: 11, fill: '#78716c' }}
+        tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
         tickLine={false}
-        axisLine={{ stroke: '#e7e5e4' }}
+        axisLine={{ stroke: 'var(--border)' }}
         tickFormatter={(v: number) => {
           const a = Math.abs(v);
           if (a >= 1_000_000) return `${(v / 1_000_000).toFixed(0)}M`;
@@ -258,7 +253,7 @@ function DailyChart({ report }: { report: MonthlyReport }) {
         }}
       />
       <Tooltip
-        cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+        cursor={{ fill: 'var(--muted)' }}
         content={<ChartTooltip />}
       />
       <Bar
@@ -305,16 +300,16 @@ function ChartTooltip({
 }) {
   if (!active || !payload || payload.length === 0) return null;
   return (
-    <div className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs shadow-md">
-      <div className="mb-1 font-medium text-stone-700">Ngày {label}</div>
+    <div className="rounded-lg border border-border bg-popover px-3 py-2 text-xs shadow-md">
+      <div className="mb-1 font-medium text-foreground">Ngày {label}</div>
       {payload.map((p, i) => (
         <div key={i} className="flex items-center gap-2">
           <span
             className="inline-block h-2 w-2 rounded-full"
             style={{ background: p.color }}
           />
-          <span className="text-stone-600">{p.name}:</span>
-          <span className="font-mono font-semibold tabular-nums text-stone-900">
+          <span className="text-muted-foreground">{p.name}:</span>
+          <span className="font-mono font-semibold tabular-nums text-foreground">
             {formatVND(Math.abs(p.value))}
           </span>
         </div>
@@ -337,22 +332,22 @@ function CategoryList({
         return (
           <div key={c.categoryId ?? c.categoryName}>
             <div className="mb-1 flex items-baseline justify-between">
-              <span className="flex items-center gap-2 text-sm text-stone-800">
+              <span className="flex items-center gap-2 text-sm text-foreground">
                 <span>{c.icon ?? '·'}</span> {c.categoryName}
-                <span className="text-[11px] text-stone-400">
+                <span className="text-[11px] text-muted-foreground">
                   ({c.count} giao dịch)
                 </span>
               </span>
               <span className="flex items-baseline gap-2">
-                <span className="font-mono text-sm font-semibold tabular-nums text-stone-900">
+                <span className="font-mono text-sm font-semibold tabular-nums text-foreground">
                   −{formatVND(c.amount)}
                 </span>
-                <span className="text-[11px] tabular-nums text-stone-400">
+                <span className="text-[11px] tabular-nums text-muted-foreground">
                   {pct.toFixed(1)}%
                 </span>
               </span>
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-stone-100">
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
               <div
                 className="h-full bg-rose-400 transition-all duration-500"
                 style={{ width: `${pct}%` }}
