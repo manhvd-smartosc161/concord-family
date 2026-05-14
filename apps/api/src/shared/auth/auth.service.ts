@@ -96,7 +96,12 @@ export class AuthService {
     const token = randomUUID();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
     await this.resetTokenRepo.save(
-      this.resetTokenRepo.create({ token, userId: user.id, expiresAt, usedAt: null }),
+      this.resetTokenRepo.create({
+        token,
+        userId: user.id,
+        expiresAt,
+        usedAt: null,
+      }),
     );
 
     const baseUrl = process.env.WEB_BASE_URL ?? 'http://localhost:3000';

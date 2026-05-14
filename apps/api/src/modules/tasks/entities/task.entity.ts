@@ -1,7 +1,15 @@
 import { Column, Entity, Index } from 'typeorm';
 import { BaseEntity } from '../../../shared/common/base.entity';
 
-export type TaskCategory = 'shopping' | 'chores' | 'finance' | 'goal' | 'cooking' | 'health' | 'kids' | 'transport';
+export type TaskCategory =
+  | 'shopping'
+  | 'chores'
+  | 'finance'
+  | 'goal'
+  | 'cooking'
+  | 'health'
+  | 'kids'
+  | 'transport';
 export type TaskAssignee = 'husband' | 'wife' | 'both';
 export type TaskStatus = 'todo' | 'in_progress' | 'done';
 
@@ -17,13 +25,29 @@ export class Task extends BaseEntity {
   @Column({ type: 'varchar', length: 200 })
   title!: string;
 
-  @Column({ type: 'enum', enum: ['shopping', 'chores', 'finance', 'goal', 'cooking', 'health', 'kids', 'transport'] })
+  @Column({
+    type: 'enum',
+    enum: [
+      'shopping',
+      'chores',
+      'finance',
+      'goal',
+      'cooking',
+      'health',
+      'kids',
+      'transport',
+    ],
+  })
   category!: TaskCategory;
 
   @Column({ type: 'enum', enum: ['husband', 'wife', 'both'] })
   assignee!: TaskAssignee;
 
-  @Column({ type: 'enum', enum: ['todo', 'in_progress', 'done'], default: 'todo' })
+  @Column({
+    type: 'enum',
+    enum: ['todo', 'in_progress', 'done'],
+    default: 'todo',
+  })
   status!: TaskStatus;
 
   @Index()

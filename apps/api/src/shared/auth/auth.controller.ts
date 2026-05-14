@@ -92,15 +92,23 @@ export class AuthController {
   ): Promise<AuthUserDto> {
     if (!file) throw new BadRequestException('No file uploaded');
     if (!ALLOWED_MIME.includes(file.mimetype)) {
-      throw new BadRequestException('Only JPEG, PNG, or WebP images are allowed');
+      throw new BadRequestException(
+        'Only JPEG, PNG, or WebP images are allowed',
+      );
     }
     if (file.size > MAX_BYTES) {
       throw new BadRequestException('File must be under 5MB');
     }
 
-    const newUrl = await this.avatarService.upload(user.id, file.buffer, file.mimetype);
+    const newUrl = await this.avatarService.upload(
+      user.id,
+      file.buffer,
+      file.mimetype,
+    );
     const oldUrl = user.avatarUrl;
-    const updated = await this.usersService.updateProfile(user.id, { avatarUrl: newUrl });
+    const updated = await this.usersService.updateProfile(user.id, {
+      avatarUrl: newUrl,
+    });
     if (oldUrl) {
       await this.avatarService.delete(oldUrl);
     }

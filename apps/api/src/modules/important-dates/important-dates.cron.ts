@@ -37,7 +37,9 @@ export class ImportantDatesCron implements OnModuleInit {
       await this.yearlyAi
         .ensureCache(year, f.id)
         .catch((err: unknown) =>
-          this.logger.warn(`AI cache fail for ${f.id}/${year}: ${(err as Error).message}`),
+          this.logger.warn(
+            `AI cache fail for ${f.id}/${year}: ${(err as Error).message}`,
+          ),
         );
     }
   }
@@ -59,7 +61,9 @@ export class ImportantDatesCron implements OnModuleInit {
       try {
         await this.yearlyAi.regenerate(year, f.id);
       } catch (err) {
-        this.logger.error(`yearly AI regen failed for ${f.id}: ${(err as Error).message}`);
+        this.logger.error(
+          `yearly AI regen failed for ${f.id}: ${(err as Error).message}`,
+        );
       }
     }
   }
@@ -88,7 +92,9 @@ export class ImportantDatesCron implements OnModuleInit {
       }
 
       const aiDue = await this.findAiDueOn(family.id, today);
-      this.logger.log(`tick family=${family.id}: ${aiDue.length} AI reminder(s) due`);
+      this.logger.log(
+        `tick family=${family.id}: ${aiDue.length} AI reminder(s) due`,
+      );
       for (const { item, daysBefore } of aiDue) {
         try {
           await this.notifications.notifyAiDate(

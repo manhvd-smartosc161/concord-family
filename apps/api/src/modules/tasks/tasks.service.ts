@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AnthropicService } from '../../agent/core/anthropic.service';
@@ -8,19 +12,36 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task, TaskCategory } from './entities/task.entity';
 
 function isoWeekYear(date: Date): string {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const d = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  );
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const week = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  const week = Math.ceil(
+    ((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
+  );
   return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 
 function currentWeekYear(): string {
-  return isoWeekYear(new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' })));
+  return isoWeekYear(
+    new Date(
+      new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }),
+    ),
+  );
 }
 
-const VALID_CATEGORIES: TaskCategory[] = ['shopping', 'chores', 'finance', 'goal', 'cooking', 'health', 'kids', 'transport'];
+const VALID_CATEGORIES: TaskCategory[] = [
+  'shopping',
+  'chores',
+  'finance',
+  'goal',
+  'cooking',
+  'health',
+  'kids',
+  'transport',
+];
 
 @Injectable()
 export class TasksService {
@@ -35,9 +56,10 @@ export class TasksService {
       const msg = await this.anthropic.client.messages.create({
         model: this.anthropic.fastModel,
         max_tokens: 10,
-        messages: [{
-          role: 'user',
-          content: `Classify this household task into exactly one category. Reply with only the category keyword, nothing else.
+        messages: [
+          {
+            role: 'user',
+            content: `Classify this household task into exactly one category. Reply with only the category keyword, nothing else.
 
 Categories:
 - shopping: mua sắm, siêu thị, order hàng, tạp hóa
@@ -50,9 +72,12 @@ Categories:
 - transport: sửa xe, đổ xăng, bảo dưỡng xe, di chuyển
 
 Task: "${title}"`,
-        }],
+          },
+        ],
       });
-      const text = (msg.content[0] as { type: string; text: string }).text.trim().toLowerCase();
+      const text = (msg.content[0] as { type: string; text: string }).text
+        .trim()
+        .toLowerCase();
       const match = VALID_CATEGORIES.find((c) => text.includes(c));
       return match ?? 'chores';
     } catch {
@@ -69,7 +94,7 @@ Task: "${title}"`,
   }
 
   async create(user: User, dto: CreateTaskDto): Promise<Task> {
-    const category = dto.category ?? await this.classifyCategory(dto.title);
+    const category = dto.category ?? (await this.classifyCategory(dto.title));
     const task = this.taskRepo.create({
       familyId: user.familyId!,
       createdBy: user.id,

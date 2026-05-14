@@ -25,7 +25,10 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  list(@CurrentUser() user: User, @Query('week') week?: string): Promise<Task[]> {
+  list(
+    @CurrentUser() user: User,
+    @Query('week') week?: string,
+  ): Promise<Task[]> {
     return this.tasksService.list(user, week);
   }
 

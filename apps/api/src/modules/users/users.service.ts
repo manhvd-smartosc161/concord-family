@@ -28,7 +28,11 @@ export class UsersService {
 
   async updateProfile(
     userId: string,
-    dto: { name?: string; birthdate?: string | null; avatarUrl?: string | null },
+    dto: {
+      name?: string;
+      birthdate?: string | null;
+      avatarUrl?: string | null;
+    },
   ): Promise<User> {
     const user = await this.repo.findOneByOrFail({ id: userId });
     if (dto.name !== undefined) user.name = dto.name;

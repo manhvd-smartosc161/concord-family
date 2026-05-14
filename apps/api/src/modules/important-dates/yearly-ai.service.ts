@@ -13,7 +13,10 @@ export class YearlyAiService {
     private readonly repo: Repository<YearlyAiCache>,
   ) {}
 
-  async findCache(year: number, familyId: string): Promise<YearlyAiCache | null> {
+  async findCache(
+    year: number,
+    familyId: string,
+  ): Promise<YearlyAiCache | null> {
     const found = await this.repo.findOne({ where: { year, familyId } });
     if (!found) return null;
     if (found.version !== AGENDA_VERSION) return null;
@@ -39,7 +42,8 @@ export class YearlyAiService {
       { conflictPaths: ['familyId', 'year'] },
     );
     const saved = await this.repo.findOne({ where: { year, familyId } });
-    if (!saved) throw new Error('yearly_ai_dates_cache row missing after upsert');
+    if (!saved)
+      throw new Error('yearly_ai_dates_cache row missing after upsert');
     return saved;
   }
 }

@@ -136,7 +136,9 @@ export class ImportantDatesService {
   async listForYear(familyId: string, year: number): Promise<YearAgendaView> {
     await this.yearlyAi.ensureCache(year, familyId);
     const today = todayInTimezone(TZ);
-    const collected = await this.collectAgenda(familyId, today, year, { fullYear: true });
+    const collected = await this.collectAgenda(familyId, today, year, {
+      fullYear: true,
+    });
     const future = collected.items.filter((i) => i.daysUntil >= 0);
     future.sort((a, b) => a.occursOn.localeCompare(b.occursOn));
     return {
