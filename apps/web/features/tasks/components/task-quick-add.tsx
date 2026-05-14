@@ -48,7 +48,7 @@ export function TaskQuickAdd({ onAdd }: Props) {
       <button
         type="button"
         onClick={handleOpen}
-        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
+        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
           <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -70,7 +70,7 @@ export function TaskQuickAdd({ onAdd }: Props) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={t('title_placeholder')}
-        className="w-full bg-transparent text-sm font-medium text-stone-800 placeholder-stone-400 focus:outline-none"
+        className="w-full bg-transparent text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none"
         disabled={loading}
       />
       <div className="mt-2 flex items-center gap-2">
@@ -83,7 +83,7 @@ export function TaskQuickAdd({ onAdd }: Props) {
               className={`rounded px-1.5 py-0.5 text-xs transition-colors ${
                 assignee === a.value
                   ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300'
-                  : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                  : 'bg-muted text-muted-foreground hover:bg-muted'
               }`}
             >
               {a.label}
@@ -94,7 +94,7 @@ export function TaskQuickAdd({ onAdd }: Props) {
           <button
             type="button"
             onClick={() => { setOpen(false); setTitle(''); }}
-            className="rounded px-2 py-0.5 text-xs text-stone-400 hover:bg-stone-100"
+            className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted"
           >
             {tCommon('cancel')}
           </button>

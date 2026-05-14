@@ -92,7 +92,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
   }
 
   return (
-    <div className={`overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-100/80 transition-shadow hover:shadow-md ${isDone ? 'opacity-55' : ''}`}>
+    <div className={`overflow-hidden rounded-2xl bg-card shadow-sm ring-1 ring-border/80 transition-shadow hover:shadow-md ${isDone ? 'opacity-55' : ''}`}>
 
       {editing ? (
         /* ── Edit mode ── */
@@ -103,7 +103,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
             value={draftTitle}
             onChange={(e) => setDraftTitle(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') void saveEdit(); if (e.key === 'Escape') setEditing(false); }}
-            className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-800 placeholder-stone-400 focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-xl border border-input bg-muted px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:border-emerald-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
             placeholder={t('title_placeholder')}
             disabled={saving}
           />
@@ -117,7 +117,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
                   draftAssignee === a.value
                     ? 'bg-emerald-100 text-emerald-700 shadow-sm ring-1 ring-emerald-200'
-                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                    : 'bg-muted text-muted-foreground hover:bg-muted'
                 }`}
               >
                 {a.label}
@@ -126,7 +126,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
           </div>
 
           <textarea
-            className="w-full resize-none rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-600 placeholder-stone-400 focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className="w-full resize-none rounded-xl border border-input bg-muted px-3 py-2 text-xs text-muted-foreground placeholder:text-muted-foreground focus:border-emerald-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
             rows={2}
             placeholder={t('note_placeholder')}
             value={draftNote}
@@ -137,7 +137,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="rounded-lg px-3 py-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+              className="rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               {tCommon('cancel')}
             </button>
@@ -157,13 +157,13 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
           <svg className="shrink-0 text-red-400" width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M8 2a6 6 0 100 12A6 6 0 008 2zm0 3.5v3m0 2h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
-          <p className="flex-1 text-xs font-medium text-stone-700 leading-snug">
-            {tCommon('delete')} &ldquo;<span className="text-stone-900">{task.title}</span>&rdquo;?
+          <p className="flex-1 text-xs font-medium text-muted-foreground leading-snug">
+            {tCommon('delete')} &ldquo;<span className="text-foreground">{task.title}</span>&rdquo;?
           </p>
           <button
             type="button"
             onClick={() => setConfirmDelete(false)}
-            className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+            className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             {tCommon('cancel')}
           </button>
@@ -185,14 +185,14 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
             {/* Title + actions */}
             <div className="flex items-start gap-1.5">
               <p
-                className={`flex-1 min-w-0 text-sm font-medium leading-snug text-stone-800 ${isDone ? 'line-through decoration-stone-400 decoration-[1.5px]' : ''}`}
+                className={`flex-1 min-w-0 text-sm font-medium leading-snug text-foreground ${isDone ? 'line-through decoration-muted-foreground decoration-[1.5px]' : ''}`}
               >
                 {task.title}
               </p>
               <button
                 type="button"
                 onClick={openEdit}
-                className="shrink-0 mt-px flex h-6 w-6 items-center justify-center rounded-md text-stone-300 transition-colors hover:bg-stone-100 hover:text-stone-500"
+                className="shrink-0 mt-px flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:bg-muted hover:text-muted-foreground"
                 aria-label={tCommon('edit')}
               >
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
@@ -202,7 +202,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}
-                className="shrink-0 mt-px flex h-6 w-6 items-center justify-center rounded-md text-stone-300 transition-colors hover:bg-red-50 hover:text-red-400"
+                className="shrink-0 mt-px flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground/40 transition-colors hover:bg-red-50 hover:text-red-400"
                 aria-label={tCommon('delete')}
               >
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
@@ -212,7 +212,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
             </div>
 
             {task.note && (
-              <p className="mt-0.5 truncate text-[11px] text-stone-400">{task.note}</p>
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{task.note}</p>
             )}
 
             {/* Footer: chip + avatars + action */}
@@ -227,7 +227,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
               {assigneeAvatars.length > 0 && (
                 <div className="flex -space-x-1.5">
                   {assigneeAvatars.map((m) => (
-                    <div key={m.id} className="rounded-full ring-[1.5px] ring-white">
+                    <div key={m.id} className="rounded-full ring-[1.5px] ring-card">
                       <UserAvatar user={m} size={20} />
                     </div>
                   ))}
@@ -241,7 +241,7 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
                   onClick={handleStatusAdvance}
                   className={`ml-auto flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all disabled:opacity-40 ${
                     task.status === 'todo'
-                      ? 'bg-stone-100 text-stone-500 hover:bg-amber-50 hover:text-amber-600'
+                      ? 'bg-muted text-muted-foreground hover:bg-amber-50 hover:text-amber-600'
                       : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
                   }`}
                 >

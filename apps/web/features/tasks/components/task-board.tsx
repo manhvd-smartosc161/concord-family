@@ -47,7 +47,7 @@ export function TaskBoard() {
   const t = useTranslations('tasks');
   const locale = useLocale();
   const STATUSES: { status: TaskStatus; label: string; dot: string; badgeBg: string; badgeText: string }[] = [
-    { status: 'todo',        label: t('status_todo'),        dot: 'bg-stone-300',   badgeBg: 'bg-stone-100',   badgeText: 'text-stone-500'   },
+    { status: 'todo',        label: t('status_todo'),        dot: 'bg-muted-foreground/50', badgeBg: 'bg-muted',   badgeText: 'text-muted-foreground'   },
     { status: 'in_progress', label: t('status_in_progress'), dot: 'bg-amber-400',   badgeBg: 'bg-amber-100',   badgeText: 'text-amber-700'   },
     { status: 'done',        label: t('status_done'),        dot: 'bg-emerald-500', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-700' },
   ];
@@ -92,32 +92,32 @@ export function TaskBoard() {
   const progress = totalAll > 0 ? Math.round((totalDone / totalAll) * 100) : 0;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-stone-50">
+    <div className="flex h-full flex-col overflow-hidden bg-muted/40">
 
       {/* ── Header ── */}
-      <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-3 lg:px-6">
+      <div className="shrink-0 border-b border-border bg-card px-4 py-3 lg:px-6">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-base font-semibold text-stone-900">{t('this_week')}</h1>
-            <p className="text-xs text-stone-400">{formatWeekLabel(currentWeek, locale)}</p>
+            <h1 className="text-base font-semibold text-foreground">{t('this_week')}</h1>
+            <p className="text-xs text-muted-foreground">{formatWeekLabel(currentWeek, locale)}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <button
               type="button"
               onClick={() => setCurrentWeek((w) => addWeeks(w, -1))}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-            <span className="min-w-[60px] text-center text-xs font-medium tabular-nums text-stone-500">
+            <span className="min-w-[60px] text-center text-xs font-medium tabular-nums text-muted-foreground">
               {currentWeek}
             </span>
             <button
               type="button"
               onClick={() => setCurrentWeek((w) => addWeeks(w, 1))}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -127,7 +127,7 @@ export function TaskBoard() {
               <button
                 type="button"
                 onClick={() => setCurrentWeek(getISOWeek(new Date()))}
-                className="ml-1 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-xs text-stone-500 transition-colors hover:bg-stone-50 hover:text-stone-700"
+                className="ml-1 rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 {t('today')}
               </button>
@@ -137,13 +137,13 @@ export function TaskBoard() {
 
         {totalAll > 0 && (
           <div className="mt-2.5 flex items-center gap-2.5">
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-stone-100">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
               <div
                 className="h-full rounded-full bg-emerald-500 transition-all duration-700"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="shrink-0 text-[11px] tabular-nums text-stone-400">
+            <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
               {totalDone}/{totalAll} {t('status_done')}
             </span>
           </div>
@@ -151,7 +151,7 @@ export function TaskBoard() {
       </div>
 
       {/* ── Quick add ── */}
-      <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-2 lg:px-6">
+      <div className="shrink-0 border-b border-border bg-card px-4 py-2 lg:px-6">
         <TaskQuickAdd onAdd={handleAdd} />
       </div>
 
@@ -160,8 +160,8 @@ export function TaskBoard() {
           <div className="flex gap-4">
             {[1,2,3].map(i => (
               <div key={i} className="flex-1">
-                <div className="mb-3 h-5 w-20 animate-pulse rounded bg-stone-200" />
-                {[1,2].map(j => <div key={j} className="mb-2 h-16 animate-pulse rounded-xl bg-stone-200/60" />)}
+                <div className="mb-3 h-5 w-20 animate-pulse rounded bg-muted" />
+                {[1,2].map(j => <div key={j} className="mb-2 h-16 animate-pulse rounded-xl bg-muted/60" />)}
               </div>
             ))}
           </div>
@@ -170,7 +170,7 @@ export function TaskBoard() {
         <>
           {/* ── MOBILE: tabs ── */}
           <div className="flex min-h-0 flex-1 flex-col lg:hidden">
-            <div className="flex shrink-0 border-b border-stone-200 bg-white">
+            <div className="flex shrink-0 border-b border-border bg-card">
               {STATUSES.map((s) => {
                 const count = tasks.filter((t) => t.status === s.status).length;
                 const active = mobileStatus === s.status;
@@ -180,14 +180,14 @@ export function TaskBoard() {
                     type="button"
                     onClick={() => setMobileStatus(s.status)}
                     className={`relative flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
-                      active ? 'text-stone-800' : 'text-stone-400 hover:text-stone-600'
+                      active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
                     {s.label}
                     {count > 0 && (
                       <span className={`rounded-full px-1.5 py-px text-[10px] font-semibold ${
-                        active ? 'bg-stone-800 text-white' : `${s.badgeBg} ${s.badgeText}`
+                        active ? 'bg-foreground text-background' : `${s.badgeBg} ${s.badgeText}`
                       }`}>
                         {count}
                       </span>
@@ -207,7 +207,7 @@ export function TaskBoard() {
                     <TaskCard key={task.id} task={task} members={members} onUpdate={handleUpdate} onDelete={handleDelete} />
                   ))}
                 {tasks.filter((t) => t.status === mobileStatus).length === 0 && (
-                  <div className="rounded-xl border border-dashed border-stone-200 py-8 text-center text-sm text-stone-300">
+                  <div className="rounded-xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground/50">
                     {t('no_tasks_col')}
                   </div>
                 )}
@@ -222,12 +222,12 @@ export function TaskBoard() {
               return (
                 <div
                   key={s.status}
-                  className={`flex min-h-0 flex-1 flex-col ${idx < STATUSES.length - 1 ? 'border-r border-stone-200' : ''}`}
+                  className={`flex min-h-0 flex-1 flex-col ${idx < STATUSES.length - 1 ? 'border-r border-border' : ''}`}
                 >
                   {/* Column header */}
                   <div className="flex shrink-0 items-center gap-2 px-4 py-3">
                     <span className={`h-2 w-2 shrink-0 rounded-full ${s.dot}`} />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">{s.label}</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{s.label}</span>
                     {col.length > 0 && (
                       <span className={`ml-auto rounded-full px-1.5 py-px text-[10px] font-semibold ${s.badgeBg} ${s.badgeText}`}>
                         {col.length}
@@ -235,7 +235,7 @@ export function TaskBoard() {
                     )}
                   </div>
 
-                  <div className="h-px shrink-0 bg-stone-100" />
+                  <div className="h-px shrink-0 bg-border" />
 
                   {/* Cards */}
                   <div className="flex-1 overflow-y-auto p-3">
@@ -244,7 +244,7 @@ export function TaskBoard() {
                         <TaskCard key={task.id} task={task} members={members} onUpdate={handleUpdate} onDelete={handleDelete} />
                       ))}
                       {col.length === 0 && (
-                        <div className="mt-4 rounded-xl border border-dashed border-stone-200 py-8 text-center text-sm text-stone-300">
+                        <div className="mt-4 rounded-xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground/50">
                           {t('no_tasks_col')}
                         </div>
                       )}

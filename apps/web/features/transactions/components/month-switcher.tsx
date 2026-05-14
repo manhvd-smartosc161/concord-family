@@ -20,21 +20,21 @@ export function MonthSwitcher({
     { month: 'long', year: 'numeric' },
   );
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white p-1 sm:p-0.5">
+    <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1 sm:p-0.5">
       <button
         onClick={() => onShift(-1)}
-        className="flex h-8 w-8 items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-100"
+        className="flex h-8 w-8 items-center justify-center rounded-md text-foreground transition-colors hover:bg-muted"
         aria-label={t('prev_month')}
       >
         <Chevron dir="left" />
       </button>
-      <div className="min-w-[100px] px-2 py-1 text-center text-xs font-medium text-stone-800 sm:min-w-[120px] sm:px-3 sm:py-1 sm:text-sm">
+      <div className="min-w-[100px] px-2 py-1 text-center text-xs font-medium text-foreground sm:min-w-[120px] sm:px-3 sm:py-1 sm:text-sm">
         {label}
       </div>
       <button
         onClick={() => onShift(1)}
         disabled={isCurrent}
-        className="flex h-8 w-8 items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
+        className="flex h-8 w-8 items-center justify-center rounded-md text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"
         aria-label={t('next_month')}
       >
         <Chevron dir="right" />

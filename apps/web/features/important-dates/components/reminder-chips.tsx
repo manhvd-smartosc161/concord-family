@@ -38,7 +38,7 @@ export function ReminderChips({
             className={`rounded-full px-3 py-1 text-xs font-medium ring-1 transition-colors ${
               active
                 ? 'bg-emerald-600 text-white ring-emerald-600'
-                : 'bg-white text-stone-700 ring-stone-300 hover:bg-stone-50'
+                : 'bg-card text-foreground ring-border hover:bg-muted'
             }`}
           >
             {p.label}

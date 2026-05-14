@@ -21,11 +21,11 @@ export function DayGroup({
   const dayLabel = formatDayLabel(day, { today: tDayGroup('day_today'), yesterday: tDayGroup('day_yesterday') }, locale);
   return (
     <div className="mb-4 last:mb-0">
-      <div className="mb-1 flex items-baseline justify-between border-b border-stone-100 pb-1">
-        <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+      <div className="mb-1 flex items-baseline justify-between border-b border-border pb-1">
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {dayLabel}
         </span>
-        <span className="text-[11px] text-stone-400">
+        <span className="text-[11px] text-muted-foreground">
           {items.length} {tDayGroup('title').toLowerCase()}
         </span>
       </div>
@@ -56,15 +56,15 @@ function TxnRow({
   const isExpense = t.amount < 0;
   const isInternal = t.category?.name === 'Chuyển nội bộ';
   return (
-    <div className="group flex items-center gap-3 border-b border-stone-50 py-2.5 last:border-0">
+    <div className="group flex items-center gap-3 border-b border-border/50 py-2.5 last:border-0">
       <span className="text-base flex-shrink-0">
         {t.category?.icon ?? (isExpense ? '💸' : '💰')}
       </span>
       <div className="leading-tight min-w-0 flex-1 truncate">
-        <div className="text-sm text-stone-800 truncate">
+        <div className="text-sm text-foreground truncate">
           {t.note ?? t.category?.name ?? tTxn('no_category')}
         </div>
-        <div className="text-[11px] text-stone-500">
+        <div className="text-[11px] text-muted-foreground">
           <span className="font-medium">{t.fund.name}</span>
           {t.category && ` · ${t.category.name}`}
           {' · '}
@@ -73,14 +73,14 @@ function TxnRow({
             minute: '2-digit',
           })}
           {' · '}
-          <span className="text-stone-400">{t.loggedBy.name}</span>
+          <span className="text-muted-foreground/70">{t.loggedBy.name}</span>
         </div>
       </div>
       <div className="ml-auto flex items-center gap-2 flex-shrink-0">
         <span
           className={`text-right font-mono text-sm font-semibold tabular-nums whitespace-nowrap ${
             isInternal
-              ? 'text-stone-500'
+              ? 'text-muted-foreground'
               : isExpense
                 ? 'text-rose-700'
                 : 'text-emerald-700'

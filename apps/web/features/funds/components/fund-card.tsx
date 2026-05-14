@@ -44,7 +44,7 @@ export function FundCard({ fund }: { fund: FundView }) {
     joint: isGoalFund
       ? 'border-sky-200 bg-gradient-to-br from-sky-50 to-white'
       : 'border-amber-200 bg-gradient-to-br from-amber-50 to-white',
-    private: 'border-stone-200 bg-stone-50',
+    private: 'border-border bg-muted',
   }[fund.accessLevel];
 
   const icon = pickFundIcon(fund);
@@ -63,21 +63,21 @@ export function FundCard({ fund }: { fund: FundView }) {
     <div className={`rounded-lg border ${variant} p-3`}>
       <div className="flex items-start justify-between gap-2">
         <span
-          className="flex min-w-0 flex-1 items-center gap-1.5 text-sm font-medium text-stone-800"
+          className="flex min-w-0 flex-1 items-center gap-1.5 text-sm font-medium text-foreground"
           title={fund.name}
         >
           <span className="shrink-0">{icon}</span>
           <span className="truncate">{fund.name}</span>
         </span>
-        <span className="shrink-0 whitespace-nowrap text-[10px] uppercase tracking-wide text-stone-400">
+        <span className="shrink-0 whitespace-nowrap text-[10px] uppercase tracking-wide text-muted-foreground">
           {label}
         </span>
       </div>
       <div className="mt-1 font-mono text-base font-semibold tabular-nums">
         {isPrivate ? (
-          <span className="text-stone-300">— — — đ</span>
+          <span className="text-muted-foreground/40">— — — đ</span>
         ) : (
-          <span className="text-stone-900">{formatVND(fund.balance ?? 0)}</span>
+          <span className="text-foreground">{formatVND(fund.balance ?? 0)}</span>
         )}
       </div>
     </div>

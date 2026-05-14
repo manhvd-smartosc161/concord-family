@@ -86,19 +86,19 @@ export function ChangePasswordModal({ open, onClose }: Props) {
         type="button"
         aria-label={tCommon('close')}
         onClick={onClose}
-        className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
       />
 
       {/* Panel */}
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-4 shadow-2xl shadow-stone-900/20 sm:p-6">
+      <div className="relative w-full max-w-md rounded-2xl bg-card p-4 shadow-2xl shadow-foreground/20 sm:p-6">
         <div className="mb-1 flex items-start justify-between">
-          <h3 className="text-base font-semibold text-stone-900">
+          <h3 className="text-base font-semibold text-foreground">
             {t('change_password')}
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700"
+            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <svg
               className="h-4 w-4"
@@ -115,7 +115,7 @@ export function ChangePasswordModal({ open, onClose }: Props) {
             </svg>
           </button>
         </div>
-        <p className="mb-5 text-xs text-stone-500">
+        <p className="mb-5 text-xs text-muted-foreground">
           {t('change_password_hint')}
         </p>
 
@@ -157,14 +157,14 @@ export function ChangePasswordModal({ open, onClose }: Props) {
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 sm:w-auto"
+                className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted sm:w-auto"
               >
                 {tCommon('cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting || !current || !next || !confirm}
-                className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300 sm:w-auto"
+                className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground sm:w-auto"
               >
                 {submitting ? tCommon('saving') : t('change_password')}
               </button>
@@ -193,7 +193,7 @@ function PasswordField({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-stone-700">
+      <label className="mb-1.5 block text-xs font-medium text-foreground">
         {label}
       </label>
       <input
@@ -203,9 +203,9 @@ function PasswordField({
         required
         autoFocus={autoFocus}
         disabled={disabled}
-        className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+        className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
       />
-      {hint && <p className="mt-1 text-[11px] text-stone-400">{hint}</p>}
+      {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
     </div>
   );
 }

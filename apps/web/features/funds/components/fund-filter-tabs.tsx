@@ -32,8 +32,8 @@ export function FundFilterTabs({
               active
                 ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
                 : t.disabled
-                  ? 'cursor-not-allowed border-stone-200 bg-stone-50 text-stone-300'
-                  : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                  ? 'cursor-not-allowed border-border bg-muted text-muted-foreground/40'
+                  : 'border-border bg-card text-foreground hover:bg-muted'
             }`}
           >
             <span>{t.icon}</span> {t.label}

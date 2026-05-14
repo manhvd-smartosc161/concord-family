@@ -17,7 +17,7 @@ const DOT_TONE: Record<string, string> = {
   birthday: 'bg-emerald-500',
   death_anniversary: 'bg-rose-500',
   anniversary: 'bg-amber-500',
-  other: 'bg-stone-400',
+  other: 'bg-muted-foreground',
   lunar: 'bg-sky-500',
   national: 'bg-rose-500',
   international: 'bg-violet-500',
@@ -35,13 +35,13 @@ export function CalendarGrid({
   const todayIso = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200/70">
-      <div className="grid grid-cols-7 border-b border-stone-100">
+    <div className="overflow-hidden rounded-2xl bg-card shadow-sm ring-1 ring-border/70">
+      <div className="grid grid-cols-7 border-b border-border">
         {DOW_LABELS.map((d, i) => (
           <div
             key={d}
             className={`py-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.1em] ${
-              i === 0 ? 'text-rose-400' : 'text-stone-400'
+              i === 0 ? 'text-rose-400' : 'text-muted-foreground'
             }`}
           >
             {d}
@@ -65,8 +65,8 @@ export function CalendarGrid({
               type="button"
               onClick={() => onSelect(cell.iso)}
               className={`group relative flex h-16 flex-col items-center justify-start pt-1.5 transition-colors sm:h-[72px] ${
-                isFirstRow ? '' : 'border-t border-stone-100/70'
-              } ${isCurrentMonth ? 'hover:bg-stone-50/60' : ''}`}
+                isFirstRow ? '' : 'border-t border-border/70'
+              } ${isCurrentMonth ? 'hover:bg-muted/60' : ''}`}
             >
               <span
                 className={`flex h-7 w-7 items-center justify-center rounded-full text-[13px] tabular-nums transition-colors sm:h-8 sm:w-8 sm:text-sm ${
@@ -75,10 +75,10 @@ export function CalendarGrid({
                     : isToday
                       ? 'bg-emerald-600 font-semibold text-white shadow-sm shadow-emerald-600/30'
                       : !isCurrentMonth
-                        ? 'font-normal text-stone-300'
+                        ? 'font-normal text-muted-foreground/40'
                         : isSunday
                           ? 'font-medium text-rose-500'
-                          : 'font-medium text-stone-800'
+                          : 'font-medium text-foreground'
                 }`}
               >
                 {cell.day}
@@ -86,10 +86,10 @@ export function CalendarGrid({
               <span
                 className={`mt-0.5 text-[9px] tabular-nums leading-none sm:text-[10px] ${
                   !isCurrentMonth
-                    ? 'text-stone-200'
+                    ? 'text-muted-foreground/30'
                     : isLunarSpecial
                       ? 'font-semibold text-rose-500'
-                      : 'text-stone-400'
+                      : 'text-muted-foreground'
                 }`}
               >
                 {lunar.day}/{lunar.month}
@@ -100,12 +100,12 @@ export function CalendarGrid({
                     <span
                       key={i}
                       className={`h-2 w-2 rounded-full ${
-                        DOT_TONE[it.kind] ?? 'bg-stone-400'
+                        DOT_TONE[it.kind] ?? 'bg-muted-foreground'
                       }`}
                     />
                   ))}
                   {items.length > 3 && (
-                    <span className="text-[8px] font-medium leading-none text-stone-500">
+                    <span className="text-[8px] font-medium leading-none text-muted-foreground">
                       +{items.length - 3}
                     </span>
                   )}

@@ -116,17 +116,17 @@ export function EditTransactionModal({
         type="button"
         aria-label={tCommon('close')}
         onClick={onClose}
-        className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
       />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
+      <div className="relative w-full max-w-md rounded-2xl bg-card p-4 shadow-2xl sm:p-6">
         <div className="mb-1 flex items-start justify-between">
-          <h3 className="text-base font-semibold text-stone-900">
+          <h3 className="text-base font-semibold text-foreground">
             {t('edit_title')}
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700"
+            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <svg
               className="h-4 w-4"
@@ -143,7 +143,7 @@ export function EditTransactionModal({
             </svg>
           </button>
         </div>
-        <p className="mb-5 text-xs text-stone-500">
+        <p className="mb-5 text-xs text-muted-foreground">
           Đổi quỹ / số tiền / category — số dư cả 2 quỹ sẽ được tính lại tự động.
         </p>
 
@@ -156,7 +156,7 @@ export function EditTransactionModal({
               className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                 isExpense
                   ? 'border-rose-300 bg-rose-50 text-rose-800'
-                  : 'border-stone-200 bg-white text-stone-500 hover:bg-stone-50'
+                  : 'border-border bg-card text-muted-foreground hover:bg-muted'
               }`}
             >
               − {t('expense')}
@@ -167,7 +167,7 @@ export function EditTransactionModal({
               className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                 !isExpense
                   ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                  : 'border-stone-200 bg-white text-stone-500 hover:bg-stone-50'
+                  : 'border-border bg-card text-muted-foreground hover:bg-muted'
               }`}
             >
               + {t('income')}
@@ -180,7 +180,7 @@ export function EditTransactionModal({
               <select
                 value={fundId}
                 onChange={(e) => setFundId(e.target.value)}
-                className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 disabled={submitting}
               >
                 {writableFunds.map((f) => (
@@ -199,11 +199,11 @@ export function EditTransactionModal({
                   setAmountStr(e.target.value.replace(/[^\d]/g, ''))
                 }
                 placeholder="200000"
-                className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-mono tabular-nums focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm font-mono tabular-nums focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 disabled={submitting}
               />
               {amountStr && (
-                <p className="mt-1 text-[11px] text-stone-400">
+                <p className="mt-1 text-[11px] text-muted-foreground">
                   ={' '}
                   {formatVND(
                     (isExpense ? -1 : 1) * parseInt(amountStr || '0', 10),
@@ -219,7 +219,7 @@ export function EditTransactionModal({
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
               disabled={submitting}
             >
               <option value="">— {t('no_category')} —</option>
@@ -243,7 +243,7 @@ export function EditTransactionModal({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="vd: ăn Haidilao chung với cả nhà"
-              className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100"
               disabled={submitting}
               maxLength={200}
             />
@@ -255,19 +255,19 @@ export function EditTransactionModal({
             </div>
           )}
 
-          <div className="flex flex-col-reverse gap-2 border-t border-stone-100 pt-4 sm:flex-row sm:justify-end sm:gap-3">
+          <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end sm:gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 sm:w-auto"
+              className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted sm:w-auto"
             >
               {tCommon('cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting || !fundId || !amountStr}
-              className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300 sm:w-auto"
+              className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-muted disabled:text-muted-foreground sm:w-auto"
             >
               {submitting ? tCommon('saving') : tCommon('save')}
             </button>
@@ -287,7 +287,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-stone-700">
+      <label className="mb-1.5 block text-xs font-medium text-foreground">
         {label}
       </label>
       {children}

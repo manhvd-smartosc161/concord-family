@@ -101,21 +101,21 @@ export function ImportantDateFormModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4"
       onClick={onClose}
     >
       <form
         onSubmit={handleSubmit}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-xl bg-white p-4 sm:p-6 shadow-xl"
+        className="w-full max-w-md rounded-xl bg-card p-4 sm:p-6 shadow-xl"
       >
-        <h2 className="mb-4 text-base font-semibold text-stone-900">
+        <h2 className="mb-4 text-base font-semibold text-foreground">
           {entry ? t('form_edit_title') : t('form_add_title')}
         </h2>
 
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               {t('form_name_label')}
             </label>
             <input
@@ -123,19 +123,19 @@ export function ImportantDateFormModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t('form_name_placeholder')}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-input px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               maxLength={120}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               {t('form_type_label')}
             </label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as ImportantDateType)}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-input px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             >
               {TYPE_OPTIONS_I18N.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -146,36 +146,36 @@ export function ImportantDateFormModal({
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               {t('form_date_label')} {isLunar && <span className="text-amber-600">{t('form_date_lunar_hint')}</span>}
             </label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-input px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-stone-700">
+          <label className="flex items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={isLunar}
               onChange={(e) => setIsLunar(e.target.checked)}
-              className="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500"
+              className="rounded border-input text-emerald-600 focus:ring-emerald-500"
             />
             {t('form_lunar_checkbox')}
           </label>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               {t('form_remind_label')}
             </label>
             <ReminderChips value={reminders} onChange={setReminders} />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               {t('form_notes_label')}
             </label>
             <textarea
@@ -183,7 +183,7 @@ export function ImportantDateFormModal({
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               maxLength={2000}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-input px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>
 
@@ -198,7 +198,7 @@ export function ImportantDateFormModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-full rounded-lg px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 sm:w-auto"
+            className="w-full rounded-lg px-4 py-2 text-sm text-muted-foreground hover:bg-muted sm:w-auto"
           >
             Hủy
           </button>

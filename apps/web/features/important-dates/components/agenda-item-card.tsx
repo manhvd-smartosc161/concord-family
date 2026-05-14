@@ -35,9 +35,9 @@ const KIND_STYLE: Record<AgendaItemKind, KindStyle> = {
     badgeTone: "rose",
   },
   death_anniversary: {
-    rail: "bg-stone-500",
-    stamp: "bg-stone-100 border-stone-300",
-    stampText: "text-stone-700",
+    rail: "bg-muted-foreground",
+    stamp: "bg-muted border-border",
+    stampText: "text-foreground",
     badgeTone: "neutral",
   },
   anniversary: {
@@ -47,9 +47,9 @@ const KIND_STYLE: Record<AgendaItemKind, KindStyle> = {
     badgeTone: "rose",
   },
   other: {
-    rail: "bg-stone-400",
-    stamp: "bg-stone-50 border-stone-200",
-    stampText: "text-stone-700",
+    rail: "bg-muted-foreground/60",
+    stamp: "bg-muted border-border",
+    stampText: "text-foreground",
     badgeTone: "neutral",
   },
   lunar: {
@@ -159,7 +159,7 @@ export function AgendaItemCard({
   const railBg = imminent ? "bg-emerald-500" : style.rail;
 
   return (
-    <div className="group/card relative rounded-xl bg-white shadow-sm ring-1 ring-stone-200/70 transition-all hover:shadow-md hover:ring-stone-300">
+    <div className="group/card relative rounded-xl bg-card shadow-sm ring-1 ring-border/70 transition-all hover:shadow-md hover:ring-border">
       <div className="relative overflow-hidden rounded-xl">
         <div
           className={`absolute inset-y-0 left-0 w-1 ${railBg} transition-all group-hover/card:w-1.5`}
@@ -184,11 +184,11 @@ export function AgendaItemCard({
               <span className="mt-0.5 shrink-0 text-base leading-none">
                 {ICONS[item.kind] ?? "📌"}
               </span>
-              <h3 className="min-w-0 flex-1 break-words text-[15px] font-semibold leading-snug text-stone-900">
+              <h3 className="min-w-0 flex-1 break-words text-[15px] font-semibold leading-snug text-foreground">
                 {item.name}
               </h3>
               {!isUser && (
-                <span className="mt-1 shrink-0 rounded-full bg-stone-900 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-white">
+                <span className="mt-1 shrink-0 rounded-full bg-foreground px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-background">
                   AI
                 </span>
               )}
@@ -203,7 +203,7 @@ export function AgendaItemCard({
                 className={
                   imminent
                     ? "inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 ring-1 ring-emerald-300"
-                    : "inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-600 ring-1 ring-stone-200"
+                    : "inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground ring-1 ring-border"
                 }
               >
                 {imminent && (
@@ -215,13 +215,13 @@ export function AgendaItemCard({
 
             {item.remindDaysBefore.length > 0 && (
               <div className="hidden flex-wrap items-center gap-1.5 sm:flex">
-                <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-stone-400">
+                <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Nhắc
                 </span>
                 {item.remindDaysBefore.map((d) => (
                   <span
                     key={d}
-                    className="rounded-md bg-stone-50 px-2 py-0.5 text-[10px] font-medium text-stone-600 ring-1 ring-stone-200/70"
+                    className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground ring-1 ring-border/70"
                   >
                     {REMIND_LABEL[d] ?? t('remind_days_before', { days: d })}
                   </span>
@@ -230,12 +230,12 @@ export function AgendaItemCard({
             )}
 
             {(item.notes || lunarHint) && (
-              <div className="flex flex-col gap-0.5 border-l-2 border-stone-200 pl-3">
+              <div className="flex flex-col gap-0.5 border-l-2 border-border pl-3">
                 {item.notes && (
-                  <p className="text-xs italic text-stone-500">{item.notes}</p>
+                  <p className="text-xs italic text-muted-foreground">{item.notes}</p>
                 )}
                 {lunarHint && !item.notes && (
-                  <p className="text-xs italic text-stone-500">{lunarHint}</p>
+                  <p className="text-xs italic text-muted-foreground">{lunarHint}</p>
                 )}
               </div>
             )}
@@ -249,8 +249,8 @@ export function AgendaItemCard({
           onClick={() => setMenuOpen((v) => !v)}
           onPointerDown={(e) => e.stopPropagation()}
           aria-label="Mở menu"
-          className={`flex h-7 w-7 items-center justify-center rounded-full text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 ${
-            menuOpen ? "bg-stone-100 text-stone-700" : ""
+          className={`flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground ${
+            menuOpen ? "bg-muted text-foreground" : ""
           }`}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -267,7 +267,7 @@ export function AgendaItemCard({
               onPointerDown={() => setMenuOpen(false)}
               aria-hidden="true"
             />
-            <div className="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
+            <div className="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-lg border border-border bg-popover shadow-lg">
               {isUser && (
                 <>
                   <MenuItem
@@ -287,7 +287,7 @@ export function AgendaItemCard({
                     label={t('delete')}
                     danger
                   />
-                  <div className="border-t border-stone-100" />
+                  <div className="border-t border-border" />
                 </>
               )}
               <MenuItem
@@ -328,7 +328,7 @@ function MenuItem({
       className={`flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors disabled:cursor-wait disabled:opacity-60 ${
         danger
           ? "text-rose-700 hover:bg-rose-50"
-          : "text-stone-700 hover:bg-stone-50"
+          : "text-foreground hover:bg-muted"
       }`}
     >
       <span>{icon}</span>
