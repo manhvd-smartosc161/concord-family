@@ -61,11 +61,15 @@ export function FundCard({ fund }: { fund: FundView }) {
 
   return (
     <div className={`rounded-lg border ${variant} p-3`}>
-      <div className="flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-sm font-medium text-stone-800">
-          <span>{icon}</span> {fund.name}
+      <div className="flex items-start justify-between gap-2">
+        <span
+          className="flex min-w-0 flex-1 items-center gap-1.5 text-sm font-medium text-stone-800"
+          title={fund.name}
+        >
+          <span className="shrink-0">{icon}</span>
+          <span className="truncate">{fund.name}</span>
         </span>
-        <span className="text-[10px] uppercase tracking-wide text-stone-400">
+        <span className="shrink-0 whitespace-nowrap text-[10px] uppercase tracking-wide text-stone-400">
           {label}
         </span>
       </div>
