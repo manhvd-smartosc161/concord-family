@@ -551,7 +551,7 @@ function EnvelopeFormModal({
         <h2 className="mb-1 text-base font-semibold text-foreground">
           {isEdit ? tCommonModal('edit') : tGoalsModal('create_fund')}
         </h2>
-        <p className="mb-5 text-xs text-stone-500">
+        <p className="mb-5 text-xs text-muted-foreground">
           Quỹ tiết kiệm & đầu tư — cả 2 vợ chồng cùng thấy và góp được.
         </p>
 
@@ -571,7 +571,7 @@ function EnvelopeFormModal({
                   className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                     purpose === opt.value
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                      : 'border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100'
+                      : 'border-border bg-muted text-muted-foreground hover:bg-muted'
                   }`}
                 >
                   {opt.label}
@@ -586,7 +586,7 @@ function EnvelopeFormModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={tGoalsModal('fund_name_placeholder')}
-              className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             />
           </Field>
 
@@ -605,7 +605,7 @@ function EnvelopeFormModal({
                 setTargetAmount(e.target.value === '' ? '' : Number(e.target.value))
               }
               placeholder="vd: 50000000"
-              className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             />
           </Field>
 
@@ -614,7 +614,7 @@ function EnvelopeFormModal({
               type="date"
               value={targetDeadline}
               onChange={(e) => setTargetDeadline(e.target.value)}
-              className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             />
           </Field>
 
@@ -633,7 +633,7 @@ function EnvelopeFormModal({
                 setMonthly(e.target.value === '' ? '' : Number(e.target.value))
               }
               placeholder="vd: 10000000"
-              className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
             />
           </Field>
 
@@ -648,14 +648,14 @@ function EnvelopeFormModal({
           <button
             onClick={onClose}
             disabled={saving}
-            className="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-50 sm:w-auto"
+            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted sm:w-auto"
           >
             {tCommonModal('cancel')}
           </button>
           <button
             onClick={onSubmit}
             disabled={saving || !name.trim()}
-            className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-stone-300 sm:w-auto"
+            className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-muted sm:w-auto"
           >
             {saving ? tCommonModal('saving') : isEdit ? tCommonModal('save') : tGoalsModal('create_fund')}
           </button>
@@ -678,12 +678,12 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-stone-700">
+      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
         {label}
         {required && <span className="text-rose-500"> *</span>}
       </label>
       {children}
-      {hint && <p className="mt-1 text-[11px] text-stone-400">{hint}</p>}
+      {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
     </div>
   );
 }
