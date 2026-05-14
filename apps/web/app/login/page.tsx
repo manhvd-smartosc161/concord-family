@@ -72,35 +72,35 @@ function LoginInner() {
         <LocaleToggle />
       </div>
 
-      <div className="relative flex min-h-screen flex-col px-5 pb-10 pt-12 sm:px-8 lg:min-h-0 lg:items-center lg:justify-center lg:bg-stone-50 lg:px-6 lg:pt-10">
+      <div className="relative flex min-h-screen flex-col px-5 pb-10 pt-12 sm:px-8 lg:min-h-0 lg:items-center lg:justify-center lg:bg-background lg:px-6 lg:pt-10">
         <div className="mx-auto w-full max-w-sm">
           <div className="mb-8 flex flex-col items-center lg:hidden">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-700 text-xl font-bold text-white shadow-lg shadow-emerald-700/25">
               C
             </div>
             <div className="mt-4 text-center">
-              <div className="text-lg font-semibold tracking-tight text-stone-900">
+              <div className="text-lg font-semibold tracking-tight text-foreground">
                 Concord
               </div>
-              <div className="mt-0.5 text-[12px] text-stone-500">
+              <div className="mt-0.5 text-[12px] text-muted-foreground">
                 {t('login_tagline')}
               </div>
             </div>
           </div>
 
-          <div className="rounded-3xl bg-white/90 p-6 shadow-[0_20px_40px_-20px_rgba(15,42,30,0.15)] ring-1 ring-stone-200/60 backdrop-blur-sm sm:p-7 lg:rounded-2xl lg:bg-transparent lg:p-0 lg:shadow-none lg:ring-0 lg:backdrop-blur-none">
+          <div className="rounded-3xl bg-card/90 p-6 shadow-[0_20px_40px_-20px_rgba(15,42,30,0.15)] ring-1 ring-border/60 backdrop-blur-sm sm:p-7 lg:rounded-2xl lg:bg-transparent lg:p-0 lg:shadow-none lg:ring-0 lg:backdrop-blur-none">
             <div className="lg:text-left">
-              <h1 className="text-xl font-semibold tracking-tight text-stone-900 lg:text-2xl">
+              <h1 className="text-xl font-semibold tracking-tight text-foreground lg:text-2xl">
                 {t('login_title')}
               </h1>
-              <p className="mt-1 text-sm text-stone-500">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {t('login_subtitle')}
               </p>
             </div>
 
             <form onSubmit={onSubmit} className="mt-6 space-y-4 lg:mt-8">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-stone-700">
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   {t('email')}
                 </label>
                 <input
@@ -117,7 +117,7 @@ function LoginInner() {
 
               <div>
                 <div className="mb-1.5 flex items-center justify-between">
-                  <label className="block text-xs font-medium text-stone-700">
+                  <label className="block text-xs font-medium text-muted-foreground">
                     {t('password')}
                   </label>
                   <Link
@@ -154,7 +154,7 @@ function LoginInner() {
             </form>
           </div>
 
-          <p className="mt-6 text-center text-sm text-stone-500">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             {t('no_account')}{' '}
             <Link
               href="/register"
@@ -180,4 +180,4 @@ function MobileBackdrop() {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm transition-colors placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 lg:rounded-lg lg:px-3.5 lg:py-2.5';
+  'w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 lg:rounded-lg lg:px-3.5 lg:py-2.5';

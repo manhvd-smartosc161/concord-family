@@ -94,28 +94,28 @@ function RegisterInner() {
         <LocaleToggle />
       </div>
 
-      <div className="relative flex min-h-screen flex-col px-5 pb-10 pt-10 sm:px-8 lg:min-h-0 lg:items-center lg:justify-center lg:bg-stone-50 lg:px-6 lg:py-10">
+      <div className="relative flex min-h-screen flex-col px-5 pb-10 pt-10 sm:px-8 lg:min-h-0 lg:items-center lg:justify-center lg:bg-background lg:px-6 lg:py-10">
         <div className="mx-auto w-full max-w-sm">
           <div className="mb-6 flex flex-col items-center lg:hidden">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-700 text-lg font-bold text-white shadow-lg shadow-emerald-700/25">
               C
             </div>
             <div className="mt-3 text-center">
-              <div className="text-base font-semibold tracking-tight text-stone-900">
+              <div className="text-base font-semibold tracking-tight text-foreground">
                 Concord
               </div>
-              <div className="mt-0.5 text-[12px] text-stone-500">
+              <div className="mt-0.5 text-[12px] text-muted-foreground">
                 {t('brand_eyebrow')}
               </div>
             </div>
           </div>
 
-          <div className="rounded-3xl bg-white/90 p-6 shadow-[0_20px_40px_-20px_rgba(15,42,30,0.15)] ring-1 ring-stone-200/60 backdrop-blur-sm sm:p-7 lg:rounded-2xl lg:bg-transparent lg:p-0 lg:shadow-none lg:ring-0 lg:backdrop-blur-none">
+          <div className="rounded-3xl bg-card/90 p-6 shadow-[0_20px_40px_-20px_rgba(15,42,30,0.15)] ring-1 ring-border/60 backdrop-blur-sm sm:p-7 lg:rounded-2xl lg:bg-transparent lg:p-0 lg:shadow-none lg:ring-0 lg:backdrop-blur-none">
             <div className="lg:text-left">
-              <h1 className="text-xl font-semibold tracking-tight text-stone-900 lg:text-2xl">
+              <h1 className="text-xl font-semibold tracking-tight text-foreground lg:text-2xl">
                 {t('register_title')}
               </h1>
-              <p className="mt-1 hidden text-sm text-stone-500 lg:block">
+              <p className="mt-1 hidden text-sm text-muted-foreground lg:block">
                 {t('brand_subhead')}
               </p>
             </div>
@@ -225,7 +225,7 @@ function RegisterInner() {
             </form>
           </div>
 
-          <p className="mt-6 text-center text-sm text-stone-500">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             {t('already_account')}{' '}
             <Link
               href="/login"
@@ -251,7 +251,7 @@ function MobileBackdrop() {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm transition-colors placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 lg:rounded-lg lg:px-3.5 lg:py-2.5';
+  'w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 lg:rounded-lg lg:px-3.5 lg:py-2.5';
 
 function DateInput({
   value,
@@ -288,13 +288,13 @@ function DateInput({
       type="button"
       onClick={openPicker}
       disabled={disabled}
-      className={`relative flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 text-left text-sm transition-colors hover:border-emerald-300 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 lg:rounded-lg lg:px-3.5 lg:py-2.5 ${
-        formatted ? 'text-stone-900' : 'text-stone-400'
+      className={`relative flex w-full items-center justify-between rounded-xl border border-input bg-background px-4 py-3 text-left text-sm transition-colors hover:border-emerald-300 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 lg:rounded-lg lg:px-3.5 lg:py-2.5 ${
+        formatted ? 'text-foreground' : 'text-muted-foreground'
       }`}
     >
       <span>{formatted || placeholder}</span>
       <svg
-        className="h-4 w-4 text-stone-400"
+        className="h-4 w-4 text-muted-foreground"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -330,11 +330,11 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-stone-700">
+      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
         {label}
       </label>
       {children}
-      {hint && <p className="mt-1 text-[11px] text-stone-400">{hint}</p>}
+      {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -358,7 +358,7 @@ function GenderRadio({
       className={`flex-1 rounded-xl border px-3 py-2.5 text-sm transition-colors lg:rounded-lg lg:py-2 ${
         active
           ? 'border-emerald-500 bg-emerald-50 font-medium text-emerald-900'
-          : 'border-stone-200 bg-white text-stone-700 hover:border-emerald-200 hover:bg-emerald-50/50'
+          : 'border-border bg-background text-muted-foreground hover:border-emerald-200 hover:bg-emerald-50/50'
       }`}
     >
       {label}
