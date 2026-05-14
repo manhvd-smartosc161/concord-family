@@ -60,14 +60,14 @@ const THEMES: Record<'private' | 'public', Theme> = {
   private: {
     accent: 'bg-slate-700',
     accentSoft: 'bg-slate-50 dark:bg-slate-900/40',
-    accentText: 'text-slate-700',
-    accentBorder: 'border-slate-400',
-    accentBorderSoft: 'border-slate-300',
-    ring: 'focus-within:ring-2 focus-within:ring-slate-200/60 focus-within:border-slate-400',
+    accentText: 'text-slate-700 dark:text-slate-300',
+    accentBorder: 'border-slate-400 dark:border-slate-700',
+    accentBorderSoft: 'border-slate-300 dark:border-slate-700',
+    ring: 'focus-within:ring-2 focus-within:ring-slate-200/60 dark:focus-within:ring-slate-800 focus-within:border-slate-400 dark:focus-within:border-slate-600',
     icon: '🔒',
-    bubbleAgent: 'bg-card ring-1 ring-dashed ring-slate-300',
+    bubbleAgent: 'bg-card ring-1 ring-dashed ring-slate-300 dark:ring-slate-700',
     borderStyle: 'border-dashed',
-    composerBorder: 'border-dashed border-slate-300',
+    composerBorder: 'border-dashed border-slate-300 dark:border-slate-700',
     chatBg: '',
   },
   public: {
@@ -541,7 +541,7 @@ function VisibilityToggle({
           onClick={() => onChange('private')}
           className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
             mode === 'private'
-              ? 'bg-card text-slate-700 shadow-sm ring-1 ring-slate-200'
+              ? 'bg-card text-slate-700 dark:text-slate-300 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
