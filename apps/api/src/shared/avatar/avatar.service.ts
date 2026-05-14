@@ -13,7 +13,9 @@ export class AvatarService {
     const url = config.get<string>('SUPABASE_URL');
     const key = config.get<string>('SUPABASE_SERVICE_ROLE_KEY');
     if (!url || !key) {
-      this.logger.warn('SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY not set — avatar upload disabled');
+      this.logger.warn(
+        'SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY not set — avatar upload disabled',
+      );
       this.supabase = null;
       return;
     }
@@ -25,9 +27,15 @@ export class AvatarService {
     fileBuffer: Buffer,
     mimeType: string,
   ): Promise<string> {
-    if (!this.supabase) throw new BadGatewayException('Avatar upload not configured');
+    if (!this.supabase)
+      throw new BadGatewayException('Avatar upload not configured');
 
-    const ext = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
+    const ext =
+      mimeType === 'image/png'
+        ? 'png'
+        : mimeType === 'image/webp'
+          ? 'webp'
+          : 'jpg';
     const path = `${userId}/${Date.now()}.${ext}`;
 
     const resized = await sharp(fileBuffer)
@@ -54,9 +62,13 @@ export class AvatarService {
       const parts = url.pathname.split(`/object/public/${this.bucket}/`);
       if (parts.length < 2) return;
       const path = parts[1];
-      const { error } = await this.supabase.storage.from(this.bucket).remove([path]);
+      const { error } = await this.supabase.storage
+        .from(this.bucket)
+        .remove([path]);
       if (error) {
-        this.logger.warn(`Failed to delete old avatar (${path}): ${error.message}`);
+        this.logger.warn(
+          `Failed to delete old avatar (${path}): ${error.message}`,
+        );
       }
     } catch {
       this.logger.warn(`Could not parse avatarUrl for deletion: ${avatarUrl}`);

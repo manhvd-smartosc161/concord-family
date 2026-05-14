@@ -53,10 +53,18 @@ export class GoalsService {
     return views;
   }
 
-  async upsertYearlySavings(user: User, targetAmount: number): Promise<GoalView> {
+  async upsertYearlySavings(
+    user: User,
+    targetAmount: number,
+  ): Promise<GoalView> {
     const year = new Date().getFullYear();
     let goal = await this.goalRepo.findOne({
-      where: { familyId: user.familyId!, userId: IsNull(), period: 'year', type: 'save' },
+      where: {
+        familyId: user.familyId!,
+        userId: IsNull(),
+        period: 'year',
+        type: 'save',
+      },
     });
     if (goal) {
       goal.targetAmount = targetAmount;
@@ -97,15 +105,22 @@ export class GoalsService {
     if (isCoupleSave) {
       fundIds = (
         await this.fundRepo.find({
-          where: { familyId: g.familyId, purpose: In(['savings', 'investment']) },
+          where: {
+            familyId: g.familyId,
+            purpose: In(['savings', 'investment']),
+          },
         })
       ).map((f) => f.id);
     } else if (g.userId) {
       fundIds = (
-        await this.fundRepo.find({ where: { familyId: g.familyId, ownerId: g.userId } })
+        await this.fundRepo.find({
+          where: { familyId: g.familyId, ownerId: g.userId },
+        })
       ).map((f) => f.id);
     } else {
-      fundIds = (await this.fundRepo.find({ where: { familyId: g.familyId } })).map((f) => f.id);
+      fundIds = (
+        await this.fundRepo.find({ where: { familyId: g.familyId } })
+      ).map((f) => f.id);
     }
 
     const allTxns = fundIds.length

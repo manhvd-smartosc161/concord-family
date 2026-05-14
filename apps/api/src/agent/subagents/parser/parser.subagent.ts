@@ -326,12 +326,15 @@ export class ParserSubagent {
         } else if (block.name === 'create_category') {
           const input = block.input as CreateCategoryInput;
           try {
-            const category = await this.categoriesService.createCategory({
-              name: input.name,
-              icon: input.icon,
-              isEssential: input.isEssential,
-              parentName: input.parentName,
-            }, user);
+            const category = await this.categoriesService.createCategory(
+              {
+                name: input.name,
+                icon: input.icon,
+                isEssential: input.isEssential,
+                parentName: input.parentName,
+              },
+              user,
+            );
             actions.push({
               kind: 'category_created',
               name: category.name,

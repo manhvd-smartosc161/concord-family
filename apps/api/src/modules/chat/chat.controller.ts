@@ -49,13 +49,13 @@ export class ChatController {
     return this.sessions.listForUser(user);
   }
 
-  /** POST /api/chat/sessions — body { fundId, title? }. */
+  /** POST /api/chat/sessions — body { visibility, title? }. */
   @Post('sessions')
   createSession(
     @CurrentUser() user: User,
     @Body() dto: CreateSessionDto,
   ): Promise<ChatSessionView> {
-    return this.sessions.create(user, dto.fundId, dto.title);
+    return this.sessions.create(user, dto.visibility, dto.title);
   }
 
   /** GET /api/chat/sessions/:id/messages — full history. */

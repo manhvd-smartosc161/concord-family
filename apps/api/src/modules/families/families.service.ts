@@ -67,11 +67,7 @@ export class FamiliesService {
       if (remaining === 0) {
         await manager.delete(Family, { id: familyId });
       } else {
-        await manager.update(
-          Family,
-          { id: familyId },
-          { completedAt: null },
-        );
+        await manager.update(Family, { id: familyId }, { completedAt: null });
       }
     });
 

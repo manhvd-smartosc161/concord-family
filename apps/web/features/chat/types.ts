@@ -57,8 +57,7 @@ export interface ChatSessionView {
   createdAt: string;
   lastMessageAt: string;
   messageCount: number;
-  fundId: string;
-  fundName: string;
+  visibility: 'private' | 'public';
 }
 
 export interface ChatMessageView {

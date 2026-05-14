@@ -1,5 +1,9 @@
 import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
-import type { TaskAssignee, TaskCategory, TaskStatus } from '../entities/task.entity';
+import type {
+  TaskAssignee,
+  TaskCategory,
+  TaskStatus,
+} from '../entities/task.entity';
 
 export class UpdateTaskDto {
   @IsOptional()
@@ -8,7 +12,16 @@ export class UpdateTaskDto {
   title?: string;
 
   @IsOptional()
-  @IsEnum(['shopping', 'chores', 'finance', 'goal', 'cooking', 'health', 'kids', 'transport'])
+  @IsEnum([
+    'shopping',
+    'chores',
+    'finance',
+    'goal',
+    'cooking',
+    'health',
+    'kids',
+    'transport',
+  ])
   category?: TaskCategory;
 
   @IsOptional()

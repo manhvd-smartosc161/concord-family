@@ -18,7 +18,10 @@ export class CategoriesService {
     private readonly categoryRepo: Repository<Category>,
   ) {}
 
-  async createCategory(input: CreateCategoryInput, user: User): Promise<Category> {
+  async createCategory(
+    input: CreateCategoryInput,
+    user: User,
+  ): Promise<Category> {
     const familyId = user.familyId!;
     const trimmedName = input.name.trim();
 
@@ -47,7 +50,10 @@ export class CategoriesService {
     return this.categoryRepo.save(created);
   }
 
-  private async resolveByName(name: string, familyId: string): Promise<Category | null> {
+  private async resolveByName(
+    name: string,
+    familyId: string,
+  ): Promise<Category | null> {
     const trimmed = name.trim();
     if (!trimmed) return null;
     const exact = await this.categoryRepo

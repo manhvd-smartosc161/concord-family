@@ -20,12 +20,12 @@ export function listChatSessions(): Promise<ChatSessionView[]> {
 }
 
 export function createChatSession(
-  fundId: string,
+  visibility: 'private' | 'public',
   title?: string,
 ): Promise<ChatSessionView> {
   return apiFetch<ChatSessionView>('/api/chat/sessions', {
     method: 'POST',
-    body: JSON.stringify(title ? { fundId, title } : { fundId }),
+    body: JSON.stringify(title ? { visibility, title } : { visibility }),
   });
 }
 

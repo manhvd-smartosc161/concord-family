@@ -278,10 +278,11 @@ export class FundsService {
       if (!t) throw new BadRequestException('Tên không được rỗng');
       const dup = await this.fundRepo
         .createQueryBuilder('f')
-        .where(
-          'f.name = :n AND f.id <> :id AND f.family_id = :familyId',
-          { n: t, id: fundId, familyId: user.familyId! },
-        )
+        .where('f.name = :n AND f.id <> :id AND f.family_id = :familyId', {
+          n: t,
+          id: fundId,
+          familyId: user.familyId!,
+        })
         .getOne();
       if (dup)
         throw new BadRequestException(`Đã có quỹ tên "${t}". Đặt tên khác đi.`);

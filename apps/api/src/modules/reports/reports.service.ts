@@ -76,7 +76,11 @@ export class ReportsService {
     }
 
     const allTxns = await this.txnRepo.find({
-      where: { familyId: user.familyId!, fundId: In(fundIds), date: Between(start, end) },
+      where: {
+        familyId: user.familyId!,
+        fundId: In(fundIds),
+        date: Between(start, end),
+      },
       relations: { category: true },
     });
     const txns = allTxns.filter((t) => t.note !== OPENING_BALANCE_NOTE);

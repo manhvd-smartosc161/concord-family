@@ -1,4 +1,11 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { BaseEntity } from '../../../shared/common/base.entity';
 import { bigintTransformer } from '../../../shared/common/transformers';
 import { Transaction } from '../../transactions/entities/transaction.entity';

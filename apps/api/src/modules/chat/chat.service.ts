@@ -1,5 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ParserSubagent } from '../../agent/subagents/parser/parser.subagent';
+import { Fund } from '../funds/entities/fund.entity';
 import { User } from '../users/entities/user.entity';
 import { ChatSessionsService } from './chat-sessions.service';
 import type { ChatRequestDto, ChatResponseDto } from './chat.dto';
@@ -9,25 +12,45 @@ export class ChatService {
   constructor(
     private readonly parser: ParserSubagent,
     private readonly sessions: ChatSessionsService,
+    @InjectRepository(Fund)
+    private readonly fundRepo: Repository<Fund>,
   ) {}
+
+  private async resolveDefaultFundName(
+    visibility: 'private' | 'public',
+    user: User,
+  ): Promise<string | undefined> {
+    if (visibility === 'private') {
+      const fund = await this.fundRepo.findOne({
+        where: {
+          familyId: user.familyId!,
+          type: 'personal',
+          ownerId: user.id,
+          purpose: 'spending',
+        },
+      });
+      return fund?.name;
+    }
+    const fund = await this.fundRepo.findOne({
+      where: { familyId: user.familyId!, type: 'joint', purpose: 'spending' },
+    });
+    return fund?.name;
+  }
 
   async handle(dto: ChatRequestDto, user: User): Promise<ChatResponseDto> {
     if (!dto.sessionId) {
-      throw new BadRequestException(
-        'sessionId is required — chat must be in a fund-scoped session',
-      );
+      throw new BadRequestException('sessionId is required');
     }
 
-    // Verify access + load fund context
     const session = await this.sessions.findAccessible(user, dto.sessionId);
     const sessionId = session.id;
-    const defaultFundName = session.fund.name;
+    const defaultFundName = await this.resolveDefaultFundName(
+      session.visibility,
+      user,
+    );
 
-    // Lấy history TRƯỚC khi append message hiện tại — parser sẽ tự append
-    // current message vào cuối khi build payload.
     const history = await this.sessions.recentMessages(sessionId, 20);
 
-    // Persist user message (with author = current user)
     const userMsg = await this.sessions.appendMessage(
       sessionId,
       user.id,
@@ -36,7 +59,6 @@ export class ChatService {
     );
     await this.sessions.maybeSetTitle(sessionId, dto.message);
 
-    // Run the parser with the session's fund as default + conversation history
     const result = await this.parser.parse(dto.message, user, {
       defaultFundName,
       history,
