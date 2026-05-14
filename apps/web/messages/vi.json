@@ -20,7 +20,11 @@
     "fund_label_private": "Riêng tư",
     "fund_type_savings": "🐷 Tiết kiệm",
     "fund_type_investment": "📈 Đầu tư",
-    "all": "Tất cả"
+    "all": "Tất cả",
+    "themeToggle": "Đổi giao diện",
+    "themeLight": "Sáng",
+    "themeDark": "Tối",
+    "themeSystem": "Hệ thống"
   },
   "nav": {
     "overview": "Tổng quan",

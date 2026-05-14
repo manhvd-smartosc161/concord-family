@@ -20,7 +20,11 @@
     "fund_label_private": "Private",
     "fund_type_savings": "🐷 Savings",
     "fund_type_investment": "📈 Investment",
-    "all": "All"
+    "all": "All",
+    "themeToggle": "Toggle theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System"
   },
   "nav": {
     "overview": "Overview",
