@@ -31,7 +31,7 @@ function ResetPasswordInner() {
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-stone-50 to-amber-50"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-amber-50"
       />
       <div
         aria-hidden
@@ -164,7 +164,7 @@ function ResetPasswordInner() {
         <button
           type="submit"
           disabled={submitting || !newPassword || !confirm}
-          className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
+          className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
         >
           {submitting ? t('reset_submitting') : t('reset_submit')}
         </button>

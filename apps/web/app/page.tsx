@@ -14,7 +14,7 @@ export default function Home() {
   }, [auth.status, router]);
 
   return (
-    <div className="flex h-screen items-center justify-center text-stone-400">
+    <div className="flex h-screen items-center justify-center text-muted-foreground">
       <div className="text-sm">Đang mở Concord…</div>
     </div>
   );

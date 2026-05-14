@@ -122,7 +122,7 @@ function UpcomingWidget({
   return (
     <Card>
       <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-stone-800">📅 {t('upcoming_title')}</h3>
+        <h3 className="text-sm font-semibold text-foreground">📅 {t('upcoming_title')}</h3>
         <Link href="/important-dates" className="text-xs text-emerald-700 hover:text-emerald-900">
           {t('upcoming_view_all')}
         </Link>
@@ -136,12 +136,12 @@ function UpcomingWidget({
         <EmptyState icon="🗓️" title={t('upcoming_empty')} description="" />
       )}
       {!loading && items.map((item) => (
-        <div key={`${item.occursOn}-${item.kind}-${item.name}`} className="flex items-center justify-between border-b border-stone-100 py-2 last:border-0">
+        <div key={`${item.occursOn}-${item.kind}-${item.name}`} className="flex items-center justify-between border-b border-border py-2 last:border-0">
           <div className="flex items-center gap-2">
             <span className="text-base">{KIND_LABELS[item.kind] ?? '📅'}</span>
             <div className="leading-tight">
-              <div className="text-sm text-stone-800">{item.name}</div>
-              <div className="text-[11px] text-stone-500">
+              <div className="text-sm text-foreground">{item.name}</div>
+              <div className="text-[11px] text-muted-foreground">
                 {new Date(item.occursOn).toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
                   day: 'numeric',
                   month: 'long',
@@ -150,7 +150,7 @@ function UpcomingWidget({
               </div>
             </div>
           </div>
-          <span className={`shrink-0 text-xs font-semibold tabular-nums ${item.daysUntil === 0 ? 'text-rose-600' : item.daysUntil <= 3 ? 'text-amber-600' : 'text-stone-500'}`}>
+          <span className={`shrink-0 text-xs font-semibold tabular-nums ${item.daysUntil === 0 ? 'text-rose-600' : item.daysUntil <= 3 ? 'text-amber-600' : 'text-muted-foreground'}`}>
             {item.daysUntil === 0 ? t('upcoming_today') : t('upcoming_days', { days: item.daysUntil })}
           </span>
         </div>
@@ -163,7 +163,7 @@ function FundsWidget({ funds, loading, t }: { funds: FundView[]; loading: boolea
   return (
     <Card>
       <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-stone-800">💰 {t('funds_title')}</h3>
+        <h3 className="text-sm font-semibold text-foreground">💰 {t('funds_title')}</h3>
         <Link href="/transactions" className="text-xs text-emerald-700 hover:text-emerald-900">
           {t('funds_transactions')}
         </Link>
@@ -181,17 +181,17 @@ function FundsWidget({ funds, loading, t }: { funds: FundView[]; loading: boolea
         const tone = {
           owner: 'border-emerald-100 bg-emerald-50/40',
           joint: 'border-amber-100 bg-amber-50/40',
-          private: 'border-stone-200 bg-stone-50',
+          private: 'border-border bg-muted',
         }[f.accessLevel];
         return (
           <div key={f.id} className={`flex items-center justify-between rounded-lg border ${tone} px-3 py-2.5 mb-2 last:mb-0`}>
-            <span className="flex items-center gap-2 text-sm font-medium text-stone-700">
+            <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <span>{pickFundIcon(f)}</span> {f.name}
             </span>
             <span className="font-mono text-sm font-semibold tabular-nums">
               {isPrivate
-                ? <span className="text-stone-300">— — — đ</span>
-                : <span className="text-stone-900">{formatVND(f.balance ?? 0)}</span>}
+                ? <span className="text-muted-foreground">— — — đ</span>
+                : <span className="text-foreground">{formatVND(f.balance ?? 0)}</span>}
             </span>
           </div>
         );
@@ -214,7 +214,7 @@ function MonthStatsWidget({
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-stone-800">📊 {t('month_title')}</h3>
+        <h3 className="text-sm font-semibold text-foreground">📊 {t('month_title')}</h3>
         <Link href="/reports" className="text-xs text-emerald-700 hover:text-emerald-900">
           {t('month_detail')}
         </Link>
@@ -256,7 +256,7 @@ function YearGoalWidget({
   if (!goal) return (
     <Card>
       <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-stone-800">🎯 {t('goal_title')}</h3>
+        <h3 className="text-sm font-semibold text-foreground">🎯 {t('goal_title')}</h3>
         <Link href="/goals" className="text-xs text-emerald-700 hover:text-emerald-900">{t('goal_manage')}</Link>
       </div>
       <EmptyState icon="🎯" title={t('goal_empty')} description={t('goal_empty_desc')} />
@@ -272,23 +272,23 @@ function YearGoalWidget({
   return (
     <Card>
       <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-stone-800">🎯 {t('goal_title')}</h3>
+        <h3 className="text-sm font-semibold text-foreground">🎯 {t('goal_title')}</h3>
         <div className="flex items-center gap-2">
           <Badge tone={tone}>{paceLabel}</Badge>
           <Link href="/goals" className="text-xs text-emerald-700 hover:text-emerald-900">{t('goal_detail')}</Link>
         </div>
       </div>
       <div className="mb-1 flex items-baseline justify-between">
-        <span className="font-mono text-xl font-semibold tabular-nums text-stone-900">
+        <span className="font-mono text-xl font-semibold tabular-nums text-foreground">
           {formatVND(goal.currentProgress)}
         </span>
-        <span className="text-sm text-stone-500">
+        <span className="text-sm text-muted-foreground">
           / {formatVND(goal.targetAmount)}{' '}
-          <span className="text-xs text-stone-400">({pctRaw.toFixed(1)}%)</span>
+          <span className="text-xs text-muted-foreground">({pctRaw.toFixed(1)}%)</span>
         </span>
       </div>
       <ProgressBar value={pct} max={100} tone={tone} />
-      <div className="mt-2 text-[11px] text-stone-400">{t('goal_days_remaining', { days: goal.daysRemaining })}</div>
+      <div className="mt-2 text-[11px] text-muted-foreground">{t('goal_days_remaining', { days: goal.daysRemaining })}</div>
     </Card>
   );
 }
@@ -308,7 +308,7 @@ function TasksWidget({
   return (
     <Card>
       <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-stone-800">✅ {t('tasks_title')}</h3>
+        <h3 className="text-sm font-semibold text-foreground">✅ {t('tasks_title')}</h3>
         <Link href="/weekly" className="text-xs text-emerald-700 hover:text-emerald-900">
           {t('tasks_view_all')}
         </Link>
@@ -320,24 +320,24 @@ function TasksWidget({
       {!loading && total > 0 && (
         <>
           <div className="mb-3 flex items-baseline gap-2">
-            <span className="font-mono text-2xl font-semibold tabular-nums text-stone-900">{incomplete.length}</span>
-            <span className="text-sm text-stone-500">{t('tasks_incomplete', { total })}</span>
+            <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">{incomplete.length}</span>
+            <span className="text-sm text-muted-foreground">{t('tasks_incomplete', { total })}</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-stone-100">
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-emerald-500 transition-all"
               style={{ width: `${total > 0 ? (done / total) * 100 : 0}%` }}
             />
           </div>
-          <div className="mt-1.5 text-[11px] text-stone-400">{t('tasks_done', { done, total })}</div>
+          <div className="mt-1.5 text-[11px] text-muted-foreground">{t('tasks_done', { done, total })}</div>
           {incomplete.slice(0, 3).map((task) => (
-            <div key={task.id} className="mt-2 flex items-center gap-2 text-sm text-stone-700">
+            <div key={task.id} className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
               {task.title}
             </div>
           ))}
           {incomplete.length > 3 && (
-            <div className="mt-1 text-[11px] text-stone-400">{t('tasks_more', { count: incomplete.length - 3 })}</div>
+            <div className="mt-1 text-[11px] text-muted-foreground">{t('tasks_more', { count: incomplete.length - 3 })}</div>
           )}
         </>
       )}

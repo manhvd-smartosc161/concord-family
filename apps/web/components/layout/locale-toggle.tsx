@@ -31,11 +31,11 @@ export function LocaleToggle() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         onPointerDown={(e) => e.stopPropagation()}
-        className="flex items-center gap-1 rounded-lg border border-transparent px-2 py-1.5 text-sm transition-colors hover:border-stone-200 hover:bg-stone-50"
+        className="flex items-center gap-1 rounded-lg border border-transparent px-2 py-1.5 text-sm transition-colors hover:border-border hover:bg-muted"
       >
         <span className="text-xl leading-none">{current.flag}</span>
         <svg
-          className={`h-3 w-3 text-stone-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`h-3 w-3 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -45,14 +45,14 @@ export function LocaleToggle() {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onPointerDown={() => setOpen(false)} />
-          <div className="absolute right-0 z-20 mt-1 w-36 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
+          <div className="absolute right-0 z-20 mt-1 w-36 overflow-hidden rounded-lg border border-border bg-popover shadow-lg">
             {LOCALES.map((l) => (
               <button
                 key={l.key}
                 type="button"
                 onClick={() => switchLocale(l.key)}
-                className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-stone-50 ${
-                  locale === l.key ? 'font-medium text-emerald-700' : 'text-stone-700'
+                className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-muted ${
+                  locale === l.key ? 'font-medium text-emerald-700' : 'text-muted-foreground'
                 }`}
               >
                 <span className="text-base leading-none">{l.flag}</span>

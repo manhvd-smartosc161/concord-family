@@ -147,7 +147,7 @@ function LoginInner() {
               <button
                 type="submit"
                 disabled={submitting || !email || !password}
-                className="mt-2 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-medium text-white shadow-sm shadow-emerald-700/20 transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none lg:rounded-lg lg:py-2.5"
+                className="mt-2 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-medium text-white shadow-sm shadow-emerald-700/20 transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none lg:rounded-lg lg:py-2.5"
               >
                 {submitting ? t('submitting') : t('login_title')}
               </button>
@@ -172,7 +172,7 @@ function LoginInner() {
 function MobileBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden lg:hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/70 via-stone-50 to-amber-50/40" />
+      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/70 via-background to-amber-50/40" />
       <div className="absolute -left-32 -top-32 h-72 w-72 rounded-full bg-emerald-200/50 blur-3xl" />
       <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-amber-200/40 blur-3xl" />
     </div>
