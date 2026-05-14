@@ -74,7 +74,7 @@ function ResetPasswordInner() {
     );
   }
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (newPassword.length < 6) {
       setError(t('pw_min_chars'));
@@ -84,6 +84,7 @@ function ResetPasswordInner() {
       setError(t('pw_mismatch'));
       return;
     }
+    if (!token) return;
     setError(null);
     setSubmitting(true);
     try {
