@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
       "lib/use-auth.ts",
       "app/(authed)/layout.tsx",
       "app/(authed)/**/page.tsx",
+      "app/invite/**/page.tsx",
       "features/**/components/**",
       "features/**/hooks.ts",
       "components/ui/mobile-drawer.tsx",
