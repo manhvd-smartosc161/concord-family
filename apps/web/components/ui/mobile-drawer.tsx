@@ -65,7 +65,7 @@ export function MobileDrawer({
         aria-hidden="true"
       />
       <aside
-        className={`fixed inset-y-0 ${sideClass} ${widthClass} z-50 overflow-y-auto bg-white shadow-xl transition-transform duration-200 ${
+        className={`fixed inset-y-0 ${sideClass} ${widthClass} z-50 overflow-y-auto bg-background shadow-xl transition-transform duration-200 ${
           animateIn ? 'translate-x-0' : closedTranslate
         }`}
         role="dialog"

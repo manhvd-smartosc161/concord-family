@@ -12,13 +12,13 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-2 border-b border-stone-200 bg-white px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
+    <div className="flex flex-wrap items-start justify-between gap-2 border-b border-border bg-background px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight text-stone-900">
+        <h1 className="text-lg font-semibold tracking-tight text-foreground">
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-0.5 text-xs text-stone-500">{subtitle}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
         )}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
@@ -37,7 +37,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-xl bg-white shadow-sm ring-1 ring-stone-200/60 ${padding} ${className}`}
+      className={`rounded-xl bg-card shadow-sm ring-1 ring-border/60 ${padding} ${className}`}
     >
       {children}
     </div>
@@ -56,14 +56,14 @@ export function StatCard({
   tone?: 'default' | 'positive' | 'negative' | 'neutral';
 }) {
   const valueColor = {
-    default: 'text-stone-900',
+    default: 'text-foreground',
     positive: 'text-emerald-700',
     negative: 'text-rose-700',
-    neutral: 'text-stone-600',
+    neutral: 'text-muted-foreground',
   }[tone];
   return (
     <Card>
-      <div className="text-[11px] font-medium uppercase tracking-wide text-stone-500">
+      <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
       <div
@@ -71,7 +71,7 @@ export function StatCard({
       >
         {value}
       </div>
-      {hint && <div className="mt-1 text-[11px] text-stone-400">{hint}</div>}
+      {hint && <div className="mt-1 text-[11px] text-muted-foreground">{hint}</div>}
     </Card>
   );
 }
@@ -92,7 +92,7 @@ export function ProgressBar({
     rose: 'bg-rose-500',
   }[tone];
   return (
-    <div className="h-2 overflow-hidden rounded-full bg-stone-100">
+    <div className="h-2 overflow-hidden rounded-full bg-muted">
       <div
         className={`h-full ${fill} transition-all duration-500`}
         style={{ width: `${pct}%` }}
@@ -113,7 +113,7 @@ export function Badge({
     amber: 'bg-amber-100 text-amber-800',
     rose: 'bg-rose-100 text-rose-800',
     sky: 'bg-sky-100 text-sky-800',
-    neutral: 'bg-stone-100 text-stone-700',
+    neutral: 'bg-muted text-muted-foreground',
   }[tone];
   return (
     <span
@@ -136,9 +136,9 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
       <div className="text-3xl">{icon}</div>
-      <div className="text-sm font-medium text-stone-700">{title}</div>
+      <div className="text-sm font-medium text-foreground">{title}</div>
       {description && (
-        <div className="max-w-md text-xs text-stone-500">{description}</div>
+        <div className="max-w-md text-xs text-muted-foreground">{description}</div>
       )}
     </div>
   );
@@ -149,7 +149,7 @@ export function Skeleton({
 }: {
   className?: string;
 }) {
-  return <div className={`animate-pulse rounded-md bg-stone-100 ${className}`} />;
+  return <div className={`animate-pulse rounded-md bg-muted ${className}`} />;
 }
 
 export { MobileDrawer } from './mobile-drawer';
