@@ -64,6 +64,7 @@
     "female": "Nữ",
     "birthdate_optional": "Ngày sinh (tuỳ chọn)",
     "wedding_date_optional": "Ngày cưới (tuỳ chọn)",
+    "date_hint": "Chạm để chọn ngày",
     "register_submitting": "Đang tạo…",
     "pw_mismatch": "Mật khẩu mới và xác nhận không khớp",
     "pw_too_short": "Mật khẩu mới tối thiểu 6 ký tự",
@@ -88,7 +89,13 @@
     "reset_success_title": "Đổi mật khẩu thành công!",
     "reset_success_desc": "Đang chuyển về trang đăng nhập…",
     "reset_failed": "Đặt lại mật khẩu thất bại. Vui lòng thử lại.",
-    "reset_invalid_link": "Link không hợp lệ hoặc đã hết hạn."
+    "reset_invalid_link": "Link không hợp lệ hoặc đã hết hạn.",
+    "brand_eyebrow": "Tài chính gia đình, đơn giản hơn",
+    "brand_headline": "Cùng tích lũy.\nCùng tiến xa.",
+    "brand_subhead": "Concord giúp cặp đôi quản lý ba quỹ chung, ghi chi tiêu chỉ bằng cách chat, và đạt mục tiêu tiết kiệm năm — mà vẫn riêng tư.",
+    "brand_bullet_1": "Ba quỹ: của anh, của em, của chung",
+    "brand_bullet_2": "Ghi chi tiêu bằng cách chat với AI",
+    "brand_bullet_3": "Mục tiêu tiết kiệm cả hai cùng theo đuổi"
   },
   "settings": {
     "title": "Cài đặt",
