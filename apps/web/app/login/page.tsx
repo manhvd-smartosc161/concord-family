@@ -117,9 +117,17 @@ function LoginInner() {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-stone-700">
-                {t('password')}
-              </label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="text-xs font-medium text-stone-700">
+                  {t('password')}
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-stone-400 hover:text-emerald-700 hover:underline"
+                >
+                  {t('forgot_password')}
+                </Link>
+              </div>
               <input
                 type="password"
                 value={password}
