@@ -5,13 +5,18 @@ import sharp from 'sharp';
 
 @Injectable()
 export class AvatarService {
-  private readonly supabase: SupabaseClient;
+  private readonly supabase: SupabaseClient | null;
   private readonly bucket = 'avatars';
   private readonly logger = new Logger(AvatarService.name);
 
   constructor(private readonly config: ConfigService) {
-    const url = config.getOrThrow<string>('SUPABASE_URL');
-    const key = config.getOrThrow<string>('SUPABASE_SERVICE_ROLE_KEY');
+    const url = config.get<string>('SUPABASE_URL');
+    const key = config.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+    if (!url || !key) {
+      this.logger.warn('SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY not set — avatar upload disabled');
+      this.supabase = null;
+      return;
+    }
     this.supabase = createClient(url, key);
   }
 
@@ -20,6 +25,8 @@ export class AvatarService {
     fileBuffer: Buffer,
     mimeType: string,
   ): Promise<string> {
+    if (!this.supabase) throw new BadGatewayException('Avatar upload not configured');
+
     const ext = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
     const path = `${userId}/${Date.now()}.${ext}`;
 
@@ -41,6 +48,7 @@ export class AvatarService {
   }
 
   async delete(avatarUrl: string): Promise<void> {
+    if (!this.supabase) return;
     try {
       const url = new URL(avatarUrl);
       const parts = url.pathname.split(`/object/public/${this.bucket}/`);

@@ -49,8 +49,8 @@ export class AddTaskCategories1778598554621 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "public"."IDX_important_dates_date"`);
         await queryRunner.query(`DROP INDEX "public"."IDX_yearly_ai_dates_cache_family"`);
         await queryRunner.query(`DROP INDEX "public"."IDX_insights_type_period_start"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_tasks_family_id"`);
-        await queryRunner.query(`DROP INDEX "public"."idx_tasks_week_year"`);
+        await queryRunner.query(`DROP INDEX IF EXISTS "public"."idx_tasks_family_id"`);
+        await queryRunner.query(`DROP INDEX IF EXISTS "public"."idx_tasks_week_year"`);
         await queryRunner.query(`ALTER TABLE "yearly_ai_dates_cache" DROP CONSTRAINT "UQ_yearly_ai_dates_cache_family_year"`);
         await queryRunner.query(`ALTER TABLE "funds" DROP COLUMN "type"`);
         await queryRunner.query(`CREATE TYPE "public"."funds_type_enum" AS ENUM('personal', 'joint')`);

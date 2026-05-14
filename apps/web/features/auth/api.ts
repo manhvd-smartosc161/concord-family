@@ -53,3 +53,22 @@ export function uploadAvatar(file: File): Promise<AuthUser> {
     body: form,
   });
 }
+
+export async function forgotPassword(email: string): Promise<void> {
+  await apiFetch<void>('/api/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+    auth: false,
+  });
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string,
+): Promise<void> {
+  await apiFetch<void>('/api/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, newPassword }),
+    auth: false,
+  });
+}
