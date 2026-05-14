@@ -97,7 +97,7 @@ export default function GoalsPage() {
 
           {archived.length > 0 && (
             <details className="mt-6">
-              <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-stone-500 hover:text-stone-700">
+              <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground">
                 Đã archive ({archived.length})
               </summary>
               <div className="mt-3 space-y-3">
@@ -202,7 +202,7 @@ function EnvelopeCard({
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-stone-900">
+            <h3 className="text-base font-semibold text-foreground">
               {envelope.purpose === 'investment' ? '📈 ' : '🐷 '}
               {envelope.name}
             </h3>
@@ -214,7 +214,7 @@ function EnvelopeCard({
             {isArchived && <Badge tone="neutral">Archived</Badge>}
           </div>
           {deadline && (
-            <p className="mt-1 text-[11px] text-stone-500">
+            <p className="mt-1 text-[11px] text-muted-foreground">
               Deadline: {deadline.toLocaleDateString('vi-VN')}
               {progress?.daysRemaining != null && (
                 <span className="ml-1">· {tGoals('days_remaining', { days: progress.daysRemaining })}</span>
@@ -225,13 +225,13 @@ function EnvelopeCard({
         <div className="flex shrink-0 gap-1">
           <button
             onClick={onEdit}
-            className="rounded-md border border-stone-200 px-2.5 py-1 text-[11px] text-stone-600 transition-colors hover:bg-stone-50"
+            className="rounded-md border border-border px-2.5 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted"
           >
             {tCommonCard('edit')}
           </button>
           <button
             onClick={onArchive}
-            className="rounded-md border border-stone-200 px-2.5 py-1 text-[11px] text-stone-600 transition-colors hover:bg-stone-50"
+            className="rounded-md border border-border px-2.5 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted"
           >
             {isArchived ? 'Unarchive' : 'Archive'}
           </button>
@@ -239,13 +239,13 @@ function EnvelopeCard({
       </div>
 
       <div className="mb-1 flex items-baseline justify-between">
-        <span className="font-mono text-lg font-semibold tabular-nums text-stone-900 sm:text-xl lg:text-2xl">
+        <span className="font-mono text-lg font-semibold tabular-nums text-foreground sm:text-xl lg:text-2xl">
           {formatVND(balance)}
         </span>
         {hasTarget && (
-          <span className="text-sm text-stone-500">
+          <span className="text-sm text-muted-foreground">
             / {formatVND(target)}
-            <span className="ml-2 text-xs text-stone-400">
+            <span className="ml-2 text-xs text-muted-foreground">
               ({pctRaw.toFixed(1)}%)
             </span>
           </span>
@@ -253,7 +253,7 @@ function EnvelopeCard({
       </div>
       {hasTarget && <ProgressBar value={pct} max={100} tone={barTone} />}
       {!hasTarget && !hasMonthlyTarget && (
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-muted-foreground">
           {tGoals('no_goals_desc')}
         </p>
       )}
@@ -285,10 +285,10 @@ function EnvelopeCard({
         </div>
       )}
 
-      <div className="mt-3 border-t border-stone-100 pt-3">
+      <div className="mt-3 border-t border-border pt-3">
         <button
           onClick={() => setShowLedger((v) => !v)}
-          className="flex items-center gap-1 text-[11px] font-medium text-stone-500 hover:text-stone-700"
+          className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
         >
           <span>{showLedger ? '▲' : '▼'}</span> {tGoals('manage')}
         </button>
@@ -312,7 +312,7 @@ function FundLedgerPanel({ fundId }: { fundId: string }) {
     return <Skeleton className="mt-3 h-16 w-full rounded-lg" />;
   if (txns.length === 0)
     return (
-      <p className="mt-3 text-center text-[11px] text-stone-400">
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
         {tLedger('no_transactions')}
       </p>
     );
@@ -333,7 +333,7 @@ function FundLedgerPanel({ fundId }: { fundId: string }) {
       />
       {prevYears.length > 0 && (
         <details>
-          <summary className="cursor-pointer text-[11px] text-stone-400 hover:text-stone-600">
+          <summary className="cursor-pointer text-[11px] text-muted-foreground hover:text-foreground">
             {tLedger('prev_years', { count: prevYears.length })}
           </summary>
           <div className="mt-2 space-y-3">
@@ -370,11 +370,11 @@ function LedgerYearSection({
         className={`rounded-lg px-3 py-2 ${
           isCurrentYear
             ? 'border border-sky-100 bg-sky-50'
-            : 'bg-stone-50'
+            : 'bg-muted'
         }`}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-stone-600">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Năm {year}
           </span>
           {isCurrentYear && (
@@ -388,7 +388,7 @@ function LedgerYearSection({
             </span>
           )}
         </div>
-        <div className="mt-0.5 flex gap-3 text-[10px] text-stone-500">
+        <div className="mt-0.5 flex gap-3 text-[10px] text-muted-foreground">
           <span>
             Vào:{' '}
             <span className="font-mono text-emerald-700">
@@ -404,7 +404,7 @@ function LedgerYearSection({
         </div>
       </div>
       {txns.length > 0 && (
-        <div className="mt-1 divide-y divide-stone-100">
+        <div className="mt-1 divide-y divide-border">
           {txns.map((t) => (
             <LedgerRow key={t.id} txn={t} />
           ))}
@@ -419,11 +419,11 @@ function LedgerRow({ txn }: { txn: TransactionView }) {
   return (
     <div className="flex items-center justify-between py-1.5">
       <div className="min-w-0">
-        <div className="truncate text-xs text-stone-700">
+        <div className="truncate text-xs text-foreground">
           {txn.category?.icon}{' '}
           {txn.note ?? txn.category?.name ?? '—'}
         </div>
-        <div className="text-[10px] text-stone-400">
+        <div className="text-[10px] text-muted-foreground">
           {formatLedgerDate(txn.date)}
           {txn.category?.name ? ` · ${txn.category.name}` : ''}
         </div>
@@ -541,14 +541,14 @@ function EnvelopeFormModal({
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-stone-900/30 p-4"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-foreground/30 p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+        className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="mb-1 text-base font-semibold text-stone-900">
+        <h2 className="mb-1 text-base font-semibold text-foreground">
           {isEdit ? tCommonModal('edit') : tGoalsModal('create_fund')}
         </h2>
         <p className="mb-5 text-xs text-stone-500">
