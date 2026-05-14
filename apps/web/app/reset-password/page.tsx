@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { resetPassword } from '@/features/auth/api';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 export default function ResetPasswordPage() {
   return (
@@ -29,6 +30,9 @@ function ResetPasswordInner() {
 
   const shell = (children: React.ReactNode) => (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12">
+      <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
+        <ThemeToggle />
+      </div>
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 dark:from-emerald-950/20 via-background to-amber-50 dark:to-amber-950/20"

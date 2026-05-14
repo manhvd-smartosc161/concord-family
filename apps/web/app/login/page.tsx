@@ -9,6 +9,7 @@ import { login } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/hooks';
 import { BrandPanel } from '@/features/auth/components/brand-panel';
 import { LocaleToggle } from '@/components/layout/locale-toggle';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 export default function LoginPage() {
   return (
@@ -68,7 +69,8 @@ function LoginInner() {
 
       <MobileBackdrop />
 
-      <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
+      <div className="absolute right-4 top-4 z-20 flex items-center gap-2 sm:right-6 sm:top-6">
+        <ThemeToggle />
         <LocaleToggle />
       </div>
 

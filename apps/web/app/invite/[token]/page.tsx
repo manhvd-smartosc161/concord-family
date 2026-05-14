@@ -8,6 +8,7 @@ import { setToken } from '@/lib/api-client';
 import { acceptInvitation, getInvitation } from '@/features/families/api';
 import { useAuth } from '@/features/auth/hooks';
 import type { InvitationPreview } from '@/features/families/types';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 export default function InviteTokenPage({
   params,
@@ -78,7 +79,10 @@ export default function InviteTokenPage({
 
   if (auth.status === 'unauthed') {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
+      <main className="relative flex min-h-screen items-center justify-center bg-background px-4 py-8">
+        <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-md space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
           <h1 className="text-lg font-semibold text-foreground">
             ✉️ {t('title')}
