@@ -23,8 +23,8 @@
   --destructive: oklch(0.55 0.20 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --chat-private-bg: oklch(0.98 0.01 280);
-  --chat-public-bg: oklch(0.98 0.015 140);
+  --chat-private-bg: oklch(0.96 0.022 280);
+  --chat-public-bg: oklch(0.96 0.028 150);
 }
 
 .dark {
@@ -48,8 +48,8 @@
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --chat-private-bg: oklch(0.225 0.022 280);
-  --chat-public-bg: oklch(0.225 0.022 150);
+  --chat-private-bg: oklch(0.24 0.028 280);
+  --chat-public-bg: oklch(0.24 0.03 150);
 }
 
 @theme inline {
