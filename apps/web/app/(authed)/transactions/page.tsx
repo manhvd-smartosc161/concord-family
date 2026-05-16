@@ -76,12 +76,13 @@ export default function TransactionsPage() {
   }
 
   const fetchData = useCallback(async () => {
+    if (!fundFilter) return;
     setLoading(true);
     const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
     const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
     try {
       const res = await listTransactions({
-        fundId: fundFilter || undefined,
+        fundId: fundFilter,
         from: start.toISOString(),
         to: end.toISOString(),
         q: debouncedSearch.trim() || undefined,
