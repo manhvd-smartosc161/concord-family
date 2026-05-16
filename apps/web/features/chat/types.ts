@@ -39,7 +39,25 @@ export type ParseAction =
       date: string;
       type: 'birthday' | 'death_anniversary' | 'anniversary' | 'other';
     }
-  | { kind: 'important_date_dismissed' };
+  | { kind: 'important_date_dismissed' }
+  | {
+      kind: 'debt_payment_logged';
+      debtId: string;
+      counterparty: string;
+      amount: number;
+      fundName: string;
+      outstanding: number;
+      direction: 'i_owe' | 'they_owe_me';
+      txnId: string | null;
+    }
+  | {
+      kind: 'debt_created';
+      debtId: string;
+      counterparty: string;
+      principal: number;
+      direction: 'i_owe' | 'they_owe_me';
+      visibility: 'private' | 'shared';
+    };
 
 export interface ChatResponse {
   reply: string;

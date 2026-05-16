@@ -193,6 +193,87 @@ export const proposeImportantDateTool: Anthropic.Tool = {
   },
 };
 
+export const logDebtPaymentTool: Anthropic.Tool = {
+  name: 'log_debt_payment',
+  description:
+    'Ghi 1 lần thanh toán cho khoản nợ/cho vay đã có. Tự động tạo transaction (chi nếu trả nợ, thu nếu nhận lại tiền cho vay) trên quỹ user chọn + giảm outstanding của debt. ' +
+    'Dùng khi user nói "đã trả X cho thẻ Y", "trả nợ Z 500k bằng quỹ chung", "nhận lại 1tr từ anh A", v.v. ' +
+    'PHẢI gọi sau khi đã xác định được debtId từ list "Khoản nợ/cho vay đang mở" trong context (hoặc qua match fuzzy). ' +
+    'Nếu không tìm thấy debt phù hợp → dùng ask_clarification hoặc propose_new_debt thay vì bịa.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      debtId: {
+        type: 'string',
+        description:
+          'UUID của debt từ list "Khoản nợ/cho vay đang mở" trong context. KHÔNG bịa.',
+      },
+      fundName: {
+        type: 'string',
+        description:
+          'Tên quỹ EXACT từ list "Quỹ user CÓ THỂ ghi vào". Nguồn tiền chi để trả nợ, hoặc đích đến khi nhận trả lại tiền cho vay.',
+      },
+      amount: {
+        type: 'number',
+        description:
+          'Số VND của lần thanh toán (luôn DƯƠNG, không phụ thuộc hướng debt). Vd: 2000000.',
+      },
+      paidAt: {
+        type: 'string',
+        description: 'ISO 8601 datetime của ngày trả. Bỏ trống = now.',
+      },
+      note: {
+        type: 'string',
+        description: 'Ghi chú ngắn ≤80 chars (tuỳ chọn).',
+      },
+    },
+    required: ['debtId', 'fundName', 'amount'],
+  },
+};
+
+export const proposeNewDebtTool: Anthropic.Tool = {
+  name: 'propose_new_debt',
+  description:
+    'Tạo MỚI 1 khoản nợ/cho vay khi user vừa phát sinh nợ/cho vay mới (chưa có trong list). ' +
+    'Vd: "vay anh Tuấn 5tr", "cho em Hằng vay 3 triệu", "nợ thẻ Sacombank 8tr". ' +
+    'Tự động tạo debt entity với outstanding = principal. KHÔNG tự log transaction kèm — nếu user muốn ghi tiền vào quỹ, gọi thêm log_transaction.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      direction: {
+        type: 'string',
+        enum: ['i_owe', 'they_owe_me'],
+        description:
+          '"i_owe" = tôi đang nợ ai (vay tiền, thẻ tín dụng); "they_owe_me" = tôi cho ai vay.',
+      },
+      counterparty: {
+        type: 'string',
+        description:
+          'Tên bên đối tác, tiếng Việt, ≤200 chars. Vd: "Thẻ Sacombank", "Anh Tuấn", "Em Hằng".',
+      },
+      principal: {
+        type: 'number',
+        description: 'Số tiền gốc (VND, luôn dương). Vd: 5000000.',
+      },
+      visibility: {
+        type: 'string',
+        enum: ['private', 'shared'],
+        description:
+          '"private" = chỉ mình thấy (mặc định cho khoản cá nhân); "shared" = cả nhà thấy (khi nói "gia đình", "vợ chồng", "chúng tôi").',
+      },
+      dueDate: {
+        type: 'string',
+        description: 'Ngày đến hạn YYYY-MM-DD (tuỳ chọn).',
+      },
+      note: {
+        type: 'string',
+        description: 'Ghi chú (tuỳ chọn, ≤500 chars).',
+      },
+    },
+    required: ['direction', 'counterparty', 'principal'],
+  },
+};
+
 export const parserTools: Anthropic.Tool[] = [
   logTransactionTool,
   askClarificationTool,
@@ -200,6 +281,8 @@ export const parserTools: Anthropic.Tool[] = [
   deleteTransactionTool,
   createCategoryTool,
   proposeImportantDateTool,
+  logDebtPaymentTool,
+  proposeNewDebtTool,
 ];
 
 // ─── Input types (mirror of input_schema for type safety in executor) ─────
@@ -242,4 +325,21 @@ export interface ProposeImportantDateInput {
   isLunar: boolean;
   remindDaysBefore: number[];
   notes?: string;
+}
+
+export interface LogDebtPaymentInput {
+  debtId: string;
+  fundName: string;
+  amount: number;
+  paidAt?: string;
+  note?: string;
+}
+
+export interface ProposeNewDebtInput {
+  direction: 'i_owe' | 'they_owe_me';
+  counterparty: string;
+  principal: number;
+  visibility?: 'private' | 'shared';
+  dueDate?: string;
+  note?: string;
 }

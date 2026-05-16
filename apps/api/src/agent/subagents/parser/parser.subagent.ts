@@ -6,6 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { Category } from '../../../modules/categories/entities/category.entity';
 import { CategoriesService } from '../../../modules/categories/categories.service';
+import { DebtPaymentsService } from '../../../modules/debts/debt-payments.service';
+import { DebtsService } from '../../../modules/debts/debts.service';
 import { Fund } from '../../../modules/funds/entities/fund.entity';
 import { ImportantDate } from '../../../modules/important-dates/entities/important-date.entity';
 import { TransactionsService } from '../../../modules/transactions/transactions.service';
@@ -15,8 +17,10 @@ import {
   AskClarificationInput,
   CreateCategoryInput,
   DeleteTransactionInput,
+  LogDebtPaymentInput,
   LogTransactionInput,
   ProposeImportantDateInput,
+  ProposeNewDebtInput,
   UpdateTransactionInput,
   parserTools,
 } from './parser.tools';
@@ -54,6 +58,24 @@ export type ParseAction =
       isLunar: boolean;
       remindDaysBefore: number[];
       notes: string | null;
+    }
+  | {
+      kind: 'debt_payment_logged';
+      debtId: string;
+      counterparty: string;
+      amount: number;
+      fundName: string;
+      outstanding: number;
+      direction: 'i_owe' | 'they_owe_me';
+      txnId: string | null;
+    }
+  | {
+      kind: 'debt_created';
+      debtId: string;
+      counterparty: string;
+      principal: number;
+      direction: 'i_owe' | 'they_owe_me';
+      visibility: 'private' | 'shared';
     };
 
 export interface ParseResult {
@@ -72,6 +94,8 @@ export class ParserSubagent {
     private readonly anthropic: AnthropicService,
     private readonly transactionsService: TransactionsService,
     private readonly categoriesService: CategoriesService,
+    private readonly debtsService: DebtsService,
+    private readonly debtPaymentsService: DebtPaymentsService,
     @InjectRepository(Fund)
     private readonly fundRepo: Repository<Fund>,
     @InjectRepository(Category)
@@ -185,6 +209,15 @@ export class ParserSubagent {
         })
       : ['  (chưa có ngày nào trong hệ thống)'];
 
+    const openDebts = await this.debtsService.listForUser(user, { status: 'open' });
+    const openDebtLines = openDebts.length
+      ? openDebts.map((d) => {
+          const dir = d.direction === 'i_owe' ? 'tôi nợ' : 'cho vay';
+          const vis = d.visibility === 'shared' ? '👥' : '🔒';
+          return `  - id=\`${d.id}\` · ${vis} ${dir} "${d.counterparty}" · còn ${d.outstanding.toLocaleString('vi-VN')}đ`;
+        })
+      : ['  (chưa có khoản nợ/cho vay nào)'];
+
     return [
       '## Current Context',
       '',
@@ -218,6 +251,14 @@ export class ParserSubagent {
       '> Khi gọi propose_important_date, kiểm tra xem ngày đó đã có trong list trên chưa.',
       '> Nếu name + date trùng (cùng tên + cùng ngày DD/MM) → KHÔNG propose lại và KHÔNG nhắc tới ngày đó trong reply (BE sẽ tự bỏ qua, đừng làm noise).',
       '> KHÔNG re-propose nội dung từ history (turn cũ). Chỉ xử lý các ngày user nhắc trong CURRENT message.',
+      '',
+      '### Khoản nợ / cho vay đang mở',
+      ...openDebtLines,
+      '',
+      '> Khi user nói "trả X", "trả nợ Y", "trả thẻ Z", "nhận lại N từ A" → match với list trên và gọi log_debt_payment với debtId EXACT.',
+      '> Khi user phát sinh khoản nợ/cho vay MỚI (không có trong list) → gọi propose_new_debt.',
+      '> Nếu user không nói rõ trả từ quỹ nào → dùng ask_clarification, KHÔNG bịa quỹ.',
+      '> Nếu nhiều debt cùng counterparty → chọn theo hướng phù hợp ("trả" = i_owe, "nhận từ" = they_owe_me).',
     ].join('\n');
   }
 
@@ -387,6 +428,93 @@ export class ParserSubagent {
               message: msg,
             });
           }
+        } else if (block.name === 'log_debt_payment') {
+          const input = block.input as LogDebtPaymentInput;
+          try {
+            const debt = await this.debtsService.findByIdRaw(input.debtId);
+            if (!debt || debt.familyId !== user.familyId) {
+              throw new Error('Không tìm thấy khoản nợ');
+            }
+            this.debtsService.assertCanEdit(debt, user);
+            const fund = await this.fundRepo.findOne({
+              where: { name: input.fundName, familyId: user.familyId! },
+            });
+            if (!fund) {
+              throw new Error(`Không tìm thấy quỹ "${input.fundName}"`);
+            }
+            const txnAmount =
+              debt.direction === 'i_owe' ? -input.amount : input.amount;
+            const txnCategoryName =
+              debt.direction === 'i_owe' ? 'Trả nợ' : 'Nhận trả nợ';
+            const { txn } = await this.transactionsService.createFromAgent(
+              {
+                fundName: fund.name,
+                amount: txnAmount,
+                categoryName: txnCategoryName,
+                note: `${debt.direction === 'i_owe' ? 'Trả' : 'Nhận từ'} ${debt.counterparty}`,
+                date: input.paidAt,
+              },
+              user,
+              rawText,
+            );
+            const payment = await this.debtPaymentsService.create(
+              user,
+              debt.id,
+              {
+                amount: input.amount,
+                paidAt: input.paidAt ?? new Date().toISOString(),
+                transactionId: txn.id,
+                note: input.note,
+              },
+            );
+            const refreshed = await this.debtsService.findByIdRaw(debt.id);
+            actions.push({
+              kind: 'debt_payment_logged',
+              debtId: debt.id,
+              counterparty: debt.counterparty,
+              amount: input.amount,
+              fundName: fund.name,
+              outstanding: refreshed?.outstanding ?? 0,
+              direction: debt.direction,
+              txnId: payment.transactionId,
+            });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`log_debt_payment failed: ${msg}`);
+            actions.push({
+              kind: 'tool_error',
+              toolName: 'log_debt_payment',
+              message: msg,
+            });
+          }
+        } else if (block.name === 'propose_new_debt') {
+          const input = block.input as ProposeNewDebtInput;
+          try {
+            const view = await this.debtsService.create(user, {
+              direction: input.direction,
+              counterparty: input.counterparty,
+              principal: input.principal,
+              visibility: input.visibility ?? 'private',
+              dueDate: input.dueDate,
+              note: input.note,
+            });
+            actions.push({
+              kind: 'debt_created',
+              debtId: view.id,
+              counterparty: view.counterparty,
+              principal: view.principal,
+              direction: view.direction,
+              visibility: view.visibility,
+            });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`propose_new_debt failed: ${msg}`);
+            actions.push({
+              kind: 'tool_error',
+              toolName: 'propose_new_debt',
+              message: msg,
+            });
+          }
         }
       }
     }
@@ -502,6 +630,27 @@ function synthesizeReply(actions: ParseAction[]): string {
         `✨ Đã tạo category: **${c.name}**${parentPart} — ${essentialLabel}`,
       );
     }
+  }
+  const debtPayments = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'debt_payment_logged' }> =>
+      a.kind === 'debt_payment_logged',
+  );
+  for (const p of debtPayments) {
+    const verb = p.direction === 'i_owe' ? 'trả' : 'nhận';
+    const status = p.outstanding === 0 ? ' — đã tất toán ✅' : ` (còn ${formatVND(p.outstanding)})`;
+    parts.push(
+      `💳 Đã ${verb} ${formatVND(p.amount)} cho **${p.counterparty}** từ ${p.fundName}${status}`,
+    );
+  }
+  const debtCreated = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'debt_created' }> =>
+      a.kind === 'debt_created',
+  );
+  for (const d of debtCreated) {
+    const verb = d.direction === 'i_owe' ? 'nợ' : 'cho vay';
+    parts.push(
+      `📒 Đã ghi khoản ${verb}: **${d.counterparty}** — ${formatVND(d.principal)}`,
+    );
   }
   if (errors.length > 0) {
     parts.push(...errors.map((e) => `⚠️ ${e.message}`));

@@ -1087,6 +1087,43 @@ function ActionCard({
       </div>
     );
   }
+  if (action.kind === 'debt_payment_logged') {
+    const isPaidOff = action.outstanding === 0;
+    const isOwe = action.direction === 'i_owe';
+    return (
+      <div
+        className={`rounded-md border px-3 py-2 text-xs ${
+          isOwe
+            ? 'border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300'
+        }`}
+      >
+        <div className="flex items-center gap-1.5 font-semibold">
+          💳 {isOwe ? 'Đã trả' : 'Đã nhận'} {formatVND(action.amount)} — {action.counterparty}
+        </div>
+        <div className="mt-0.5 text-[11px] opacity-80">
+          Quỹ: {action.fundName} ·{' '}
+          {isPaidOff ? (
+            <span className="font-medium">Đã tất toán ✅</span>
+          ) : (
+            <>Còn: <span className="font-mono tabular-nums">{formatVND(action.outstanding)}</span></>
+          )}
+        </div>
+      </div>
+    );
+  }
+  if (action.kind === 'debt_created') {
+    const isOwe = action.direction === 'i_owe';
+    return (
+      <div className="rounded-md border border-border bg-muted px-3 py-2 text-xs text-foreground">
+        📒 Đã ghi khoản {isOwe ? 'nợ' : 'cho vay'}:{' '}
+        <span className="font-medium">{action.counterparty}</span> — {formatVND(action.principal)}
+        {action.visibility === 'shared' && (
+          <span className="ml-1 text-muted-foreground">· 👥 cả nhà thấy</span>
+        )}
+      </div>
+    );
+  }
   if (action.kind === 'tool_error') {
     return (
       <div className="rounded-md border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs text-rose-900 dark:text-rose-300">

@@ -341,3 +341,35 @@ Nếu bạn không chắc, gọi `ask_clarification` thay vì bịa.
 
 **User:** "ăn trưa hết tiền"
 → `ask_clarification({ question: "Bạn ăn trưa hết bao nhiêu? Trả từ quỹ nào (riêng/chung)?" })`
+
+---
+
+## Khoản nợ / cho vay (Debts)
+
+Khi user nhắc "nợ", "vay", "cho vay", "trả nợ", "trả thẻ", "thẻ tín dụng", hoặc tên một người + động từ "vay/trả":
+
+### Phát sinh khoản MỚI → `propose_new_debt`
+- "Vừa vay anh Tuấn 5 triệu" → `propose_new_debt({ direction: 'i_owe', counterparty: 'Anh Tuấn', principal: 5000000 })`
+- "Cho em Hằng vay 3tr" → `propose_new_debt({ direction: 'they_owe_me', counterparty: 'Em Hằng', principal: 3000000 })`
+- "Nợ thẻ Sacombank 8 triệu" → `propose_new_debt({ direction: 'i_owe', counterparty: 'Thẻ Sacombank', principal: 8000000 })`
+
+`visibility`:
+- Mặc định `private` (khoản cá nhân).
+- Dùng `shared` nếu user nói "vợ chồng", "gia đình", "chúng tôi" vay/cho vay.
+
+### Thanh toán khoản ĐÃ CÓ → `log_debt_payment`
+1. Match counterparty với list "Khoản nợ / cho vay đang mở" trong context (so sánh không phân biệt hoa thường).
+2. Nếu match: gọi `log_debt_payment` với `debtId` EXACT từ context.
+3. Lấy `fundName` từ message (vd "trả bằng quỹ chung" → "Quỹ Chung").
+4. `amount` luôn DƯƠNG.
+
+Ví dụ:
+- "Trả thẻ Sacombank 2 triệu bằng quỹ riêng" + context có debt id=`abc-123` "Thẻ Sacombank"
+  → `log_debt_payment({ debtId: 'abc-123', fundName: 'Quỹ Mạnh', amount: 2000000 })`
+- "Em Hằng vừa trả 1tr" + context có debt id=`xyz-456` direction=they_owe_me "Em Hằng"
+  → `log_debt_payment({ debtId: 'xyz-456', fundName: 'Quỹ Mạnh', amount: 1000000 })`
+
+### Edge cases
+- Không match được counterparty trong list → `ask_clarification({ question: "Bạn muốn trả cho khoản nào? (chưa thấy trong hệ thống)" })`. KHÔNG tự `propose_new_debt` rồi `log_debt_payment` cùng turn — phải để user confirm.
+- User không nói rõ quỹ → `ask_clarification({ question: "Trả từ quỹ nào?" })`.
+- Nhiều khoản cùng counterparty (hiếm) → match theo direction phù hợp ("trả" = i_owe; "nhận từ" = they_owe_me).
