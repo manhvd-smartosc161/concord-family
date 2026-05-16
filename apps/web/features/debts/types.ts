@@ -14,6 +14,7 @@ export interface DebtView {
   openedAt: string;
   closedAt: string | null;
   note: string | null;
+  isLegacy: boolean;
 }
 
 export interface DebtPaymentView {
@@ -44,6 +45,7 @@ export interface CreateDebtPayload {
   fundId: string;
   note?: string;
   openedAt?: string;
+  isLegacy?: boolean;
 }
 
 export interface RecordPaymentPayload {

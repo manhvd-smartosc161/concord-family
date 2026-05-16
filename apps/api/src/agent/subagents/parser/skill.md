@@ -348,16 +348,29 @@ Nếu bạn không chắc, gọi `ask_clarification` thay vì bịa.
 
 Nhận diện pattern:
 
-**Mở khoản cho vay** (direction=lent — bạn cho người khác mượn):
+**Mở khoản cho vay MỚI** (direction=lent, isLegacy=false — bạn vừa cho mượn, trừ tiền khỏi quỹ):
 - "cho [tên] vay [số]" / "cho [tên] mượn [số]"
 - "[tên] mượn [số] của tôi"
-→ Gọi `open_debt({ direction: 'lent', counterpartyName: '<tên>', amount: <số>, fundName: '<quỹ cá nhân của current user nếu không nói rõ>' })`
+→ Gọi `open_debt({ direction: 'lent', counterpartyName: '<tên>', amount: <số>, fundName: '<quỹ>' })`
 
-**Mở khoản đi vay** (direction=borrowed — bạn mượn của người khác):
+**Mở khoản đi vay MỚI** (direction=borrowed, isLegacy=false — bạn vừa vay, cộng tiền vào quỹ):
 - "tôi vay [tên/ngân hàng] [số]"
 - "mượn [tên] [số]"
 - "vay [tên] [số]"
 → Gọi `open_debt({ direction: 'borrowed', ... })`
+
+**Ghi nhận khoản nợ ĐÃ CÓ TỪ TRƯỚC** (isLegacy=true — chỉ ghi sổ, KHÔNG đổi balance):
+Pattern dấu hiệu: dùng thì hiện tại tiếp diễn "đang", hoặc nói tới trạng thái sẵn có thay vì hành động vừa làm.
+- "[tên] đang nợ tôi [số]" / "[tên] nợ tôi [số]" / "[tên] còn nợ [số]" → `direction: 'lent', isLegacy: true`
+- "tôi đang nợ [tên] [số]" / "tôi nợ [tên] [số]" / "còn nợ [tên] [số]" → `direction: 'borrowed', isLegacy: true`
+- "ghi nhận [tên] đang nợ [số]" / "có khoản [tên] nợ [số] từ trước" → isLegacy=true
+→ Gọi `open_debt({ direction: ..., counterpartyName, amount, fundName: '<quỹ mặc định, dùng cho lần trả sau>', isLegacy: true })`
+
+**Phân biệt MỚI vs ĐÃ CÓ:**
+- "cho Hoàng vay 5tr" → vừa mới cho mượn → MỚI, trừ quỹ.
+- "Hoàng đang nợ tôi 5tr" → đã nợ từ trước → ĐÃ CÓ, không trừ quỹ.
+- "tôi vay VCB 100tr" → vừa vay → MỚI, cộng quỹ.
+- "tôi đang nợ VCB 100tr" → đã nợ từ trước → ĐÃ CÓ, không cộng quỹ.
 
 **Ghi trả nợ** (record_debt_payment): chỉ dùng khi có khoản đang mở match trong context "Khoản nợ đang mở":
 - "[tên] trả [số]" → match khoản lent với [tên]

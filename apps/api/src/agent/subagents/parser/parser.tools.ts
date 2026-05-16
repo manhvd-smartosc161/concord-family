@@ -196,7 +196,7 @@ export const proposeImportantDateTool: Anthropic.Tool = {
 export const openDebtTool: Anthropic.Tool = {
   name: 'open_debt',
   description:
-    'Mở khoản cho vay (lent: bạn cho người khác mượn tiền) hoặc đi vay (borrowed: bạn mượn tiền). Sẽ tự tạo transaction cash flow: lent → trừ quỹ; borrowed → cộng quỹ.',
+    'Mở khoản cho vay (lent: bạn cho người khác mượn tiền) hoặc đi vay (borrowed: bạn mượn tiền). Mặc định tự tạo transaction cash flow: lent → trừ quỹ; borrowed → cộng quỹ. Đặt isLegacy=true khi user ghi nhận khoản đã có TỪ TRƯỚC khi dùng app (không trừ quỹ).',
   input_schema: {
     type: 'object',
     properties: {
@@ -206,9 +206,14 @@ export const openDebtTool: Anthropic.Tool = {
         description: 'Tên người hoặc đơn vị: "Hoàng", "VCB", "Mẹ"',
       },
       amount: { type: 'integer', description: 'Số tiền nguyên VND, luôn dương' },
-      fundName: { type: 'string', description: 'Exact tên quỹ từ context' },
+      fundName: { type: 'string', description: 'Exact tên quỹ từ context. Vẫn cần khi isLegacy=true (dùng cho các lần trả sau).' },
       note: { type: 'string' },
       openedAt: { type: 'string', description: 'ISO date, mặc định now' },
+      isLegacy: {
+        type: 'boolean',
+        description:
+          'true = khoản đã có TỪ TRƯỚC khi dùng app, KHÔNG đổi balance quỹ khi tạo. Pattern: "X đang nợ Y", "X nợ tôi Y", "tôi đang nợ X Y", "ghi nhận X đang nợ". Mặc định false (khoản mới, đổi balance).',
+      },
     },
     required: ['direction', 'counterpartyName', 'amount', 'fundName'],
   },
@@ -290,6 +295,7 @@ export interface OpenDebtInput {
   fundName: string;
   note?: string;
   openedAt?: string;
+  isLegacy?: boolean;
 }
 
 export interface RecordDebtPaymentInput {

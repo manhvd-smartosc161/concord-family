@@ -54,6 +54,9 @@ export class Debt extends BaseEntity {
   @Column({ type: 'timestamptz', nullable: true, name: 'closed_at' })
   closedAt!: Date | null;
 
+  @Column({ type: 'boolean', name: 'is_legacy', default: false })
+  isLegacy!: boolean;
+
   @OneToMany(() => DebtPayment, (p) => p.debt)
   payments!: DebtPayment[];
 }

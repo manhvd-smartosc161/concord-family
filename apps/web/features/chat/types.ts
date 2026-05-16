@@ -47,6 +47,7 @@ export type ParseAction =
       counterpartyName: string;
       amount: number;
       fundName: string;
+      isLegacy: boolean;
     }
   | {
       kind: 'debt_payment_recorded';

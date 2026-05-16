@@ -24,7 +24,7 @@ function getNavGroups(t: ReturnType<typeof useTranslations>): NavGroup[] {
       label: t("finance"),
       items: [
         { href: "/transactions", label: t("transactions"), icon: "💳" },
-        { href: "/debts", label: t("debts"), icon: "🤝" },
+        { href: "/debts", label: t("debts"), icon: "🧾" },
         { href: "/reports", label: t("reports"), icon: "📈" },
         { href: "/goals", label: t("savings_investment"), icon: "🏦" },
         { href: "/finance-settings", label: t("settings"), icon: "⚙️" },

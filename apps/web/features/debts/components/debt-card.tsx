@@ -41,6 +41,9 @@ export function DebtCard({ debt, onClick, onRecordPayment }: Props) {
               {debt.status === 'settled' && (
                 <Badge tone="neutral">{t('status_settled')}</Badge>
               )}
+              {debt.isLegacy && (
+                <Badge tone="neutral">🗂️ {t('badge_legacy')}</Badge>
+              )}
             </div>
             <div className="mt-0.5 text-xs text-muted-foreground">
               {debt.fundName} · {new Date(debt.openedAt).toLocaleDateString('vi-VN')}

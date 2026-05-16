@@ -66,6 +66,7 @@ export type ParseAction =
       counterpartyName: string;
       amount: number;
       fundName: string;
+      isLegacy: boolean;
     }
   | {
       kind: 'debt_payment_recorded';
@@ -425,6 +426,7 @@ export class ParserSubagent {
                 fundId: fund.id,
                 note: input.note,
                 openedAt: input.openedAt,
+                isLegacy: input.isLegacy ?? false,
               },
               'chat',
               rawText,
@@ -436,6 +438,7 @@ export class ParserSubagent {
               counterpartyName: view.counterpartyName,
               amount: view.principal,
               fundName: view.fundName,
+              isLegacy: view.isLegacy,
             });
           } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : String(err);
@@ -629,10 +632,22 @@ function synthesizeReply(actions: ParseAction[]): string {
   for (const d of debtOpened) {
     const verb =
       d.direction === 'lent'
+        ? `${d.counterpartyName} đang nợ`
+        : `Đang nợ ${d.counterpartyName}`;
+    const newVerb =
+      d.direction === 'lent'
         ? `Cho ${d.counterpartyName} vay`
         : `Vay ${d.counterpartyName}`;
-    const icon = d.direction === 'lent' ? '💸' : '📥';
-    parts.push(`${icon} Đã ghi ${verb} ${formatVND(d.amount)} • ${d.fundName}`);
+    const icon = d.isLegacy ? '🗂️' : d.direction === 'lent' ? '💸' : '📥';
+    if (d.isLegacy) {
+      parts.push(
+        `${icon} Đã ghi nhận ${verb} ${formatVND(d.amount)} (khoản có sẵn, không trừ quỹ)`,
+      );
+    } else {
+      parts.push(
+        `${icon} Đã ghi ${newVerb} ${formatVND(d.amount)} • ${d.fundName}`,
+      );
+    }
   }
   for (const p of debtPaid) {
     if (p.settled) {

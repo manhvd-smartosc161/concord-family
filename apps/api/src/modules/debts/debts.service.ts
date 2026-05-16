@@ -23,6 +23,7 @@ export interface DebtView {
   openedAt: string;
   closedAt: string | null;
   note: string | null;
+  isLegacy: boolean;
 }
 
 export interface DebtPaymentView {
@@ -55,6 +56,7 @@ function toDebtView(d: Debt): DebtView {
     openedAt: d.openedAt.toISOString(),
     closedAt: d.closedAt ? d.closedAt.toISOString() : null,
     note: d.note,
+    isLegacy: d.isLegacy,
   };
 }
 
@@ -147,20 +149,9 @@ export class DebtsService {
 
     const sign = input.direction === 'lent' ? -1 : 1;
     const openedAt = input.openedAt ? new Date(input.openedAt) : new Date();
+    const isLegacy = input.isLegacy === true;
 
     return this.dataSource.transaction(async (m) => {
-      const txn = await this.transactionsService.createInternal({
-        fundId: fund.id,
-        userId: user.id,
-        familyId: user.familyId!,
-        amount: sign * input.principal,
-        categoryId: category?.id ?? null,
-        note: input.note ?? `${input.direction === 'lent' ? 'Cho' : 'Vay'} ${input.counterpartyName}`,
-        date: openedAt,
-        source,
-        rawText: rawText ?? null,
-      }, user, m);
-
       const debt = m.create(Debt, {
         familyId: user.familyId!,
         userId: user.id,
@@ -173,15 +164,30 @@ export class DebtsService {
         note: input.note ?? null,
         openedAt,
         closedAt: null,
+        isLegacy,
       });
       const savedDebt = await m.save(debt);
 
-      await m.save(m.create(DebtPayment, {
-        debtId: savedDebt.id,
-        transactionId: txn.id,
-        kind: 'open',
-        amount: input.principal,
-      }));
+      if (!isLegacy) {
+        const txn = await this.transactionsService.createInternal({
+          fundId: fund.id,
+          userId: user.id,
+          familyId: user.familyId!,
+          amount: sign * input.principal,
+          categoryId: category?.id ?? null,
+          note: input.note ?? `${input.direction === 'lent' ? 'Cho' : 'Vay'} ${input.counterpartyName}`,
+          date: openedAt,
+          source,
+          rawText: rawText ?? null,
+        }, user, m);
+
+        await m.save(m.create(DebtPayment, {
+          debtId: savedDebt.id,
+          transactionId: txn.id,
+          kind: 'open',
+          amount: input.principal,
+        }));
+      }
 
       savedDebt.fund = fund;
       return toDebtView(savedDebt);

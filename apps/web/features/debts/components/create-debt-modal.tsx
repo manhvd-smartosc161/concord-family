@@ -22,6 +22,7 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
   const [principalStr, setPrincipalStr] = useState('');
   const [fundId, setFundId] = useState('');
   const [note, setNote] = useState('');
+  const [isLegacy, setIsLegacy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -36,6 +37,7 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
     setCounterpartyName('');
     setPrincipalStr('');
     setNote('');
+    setIsLegacy(false);
     setError(null);
     setSubmitting(false);
     if (spendingFunds.length > 0) setFundId(spendingFunds[0].id);
@@ -79,6 +81,7 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
         principal,
         fundId,
         note: note.trim() || undefined,
+        isLegacy: isLegacy || undefined,
       });
       onSuccess();
       onClose();
@@ -198,6 +201,24 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
               </select>
             </div>
           </div>
+
+          <label className="flex items-start gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm cursor-pointer hover:bg-muted">
+            <input
+              type="checkbox"
+              checked={isLegacy}
+              onChange={(e) => setIsLegacy(e.target.checked)}
+              disabled={submitting}
+              className="mt-0.5 size-4 accent-emerald-600"
+            />
+            <span className="flex flex-col">
+              <span className="font-medium text-foreground">
+                {t('modal_create_is_legacy')}
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                {t('modal_create_is_legacy_hint')}
+              </span>
+            </span>
+          </label>
 
           <div>
             <label className="mb-1.5 block text-xs font-medium text-foreground">
