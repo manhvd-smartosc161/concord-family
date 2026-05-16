@@ -101,4 +101,22 @@ export const DEFAULT_CATEGORIES: CategorySeed[] = [
       { name: 'Freelance / Khác', icon: '🪙' },
     ],
   },
+  {
+    name: 'Cho vay',
+    icon: '🤝',
+    isEssential: false,
+    children: [],
+  },
+  {
+    name: 'Đi vay',
+    icon: '🏦',
+    isEssential: false,
+    children: [],
+  },
+  {
+    name: 'Trả nợ',
+    icon: '💸',
+    isEssential: false,
+    children: [],
+  },
 ];
