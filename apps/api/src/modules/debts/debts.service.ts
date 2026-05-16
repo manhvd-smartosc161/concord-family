@@ -67,4 +67,49 @@ export class DebtsService {
       closedAt: d.closedAt ? d.closedAt.toISOString() : null,
     };
   }
+
+  async getById(user: User, id: string): Promise<DebtView & { payments: ReturnType<DebtsService['toPaymentView']>[] }> {
+    if (!user.familyId) throw new NotFoundException('Debt not found');
+    const debt = await this.debts.findOne({
+      where: { id, familyId: user.familyId },
+      relations: ['payments'],
+    });
+    if (!debt) throw new NotFoundException('Debt not found');
+    this.assertCanView(debt, user);
+    return {
+      ...this.toView(debt, user),
+      payments: (debt.payments ?? [])
+        .sort((a, b) => b.paidAt.getTime() - a.paidAt.getTime())
+        .map((p) => this.toPaymentView(p)),
+    };
+  }
+
+  toPaymentView(p: DebtPayment) {
+    return {
+      id: p.id,
+      debtId: p.debtId,
+      transactionId: p.transactionId,
+      amount: p.amount,
+      paidAt: p.paidAt.toISOString(),
+      note: p.note,
+    };
+  }
+
+  assertCanView(debt: Debt, user: User): void {
+    if (debt.familyId !== user.familyId) throw new NotFoundException('Debt not found');
+    if (debt.visibility === 'private' && debt.ownerId !== user.id) {
+      throw new NotFoundException('Debt not found');
+    }
+  }
+
+  assertCanEdit(debt: Debt, user: User): void {
+    this.assertCanView(debt, user);
+    if (debt.ownerId !== user.id) {
+      throw new ForbiddenException('Only owner can edit this debt');
+    }
+  }
+
+  async findByIdRaw(id: string): Promise<Debt | null> {
+    return this.debts.findOne({ where: { id } });
+  }
 }
