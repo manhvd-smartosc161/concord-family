@@ -308,7 +308,10 @@ function ChatInner() {
       if (
         res.actions.some(
           (a) =>
-            a.kind === 'logged' || a.kind === 'updated' || a.kind === 'deleted',
+            a.kind === 'logged' ||
+            a.kind === 'updated' ||
+            a.kind === 'deleted' ||
+            a.kind === 'debt_payment_logged',
         )
       ) {
         await reloadFunds();
