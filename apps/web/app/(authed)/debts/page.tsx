@@ -10,6 +10,8 @@ import { DebtFormModal } from '@/features/debts/components/debt-form-modal';
 import type { DebtStatus, DebtView } from '@/features/debts/types';
 import { formatVND } from '@/lib/format';
 
+type Scope = 'personal' | 'family';
+
 function FilterGroup<T extends string>({
   value,
   onChange,
@@ -35,6 +37,43 @@ function FilterGroup<T extends string>({
             }`}
           >
             {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ScopeTabs({
+  value,
+  onChange,
+  personalLabel,
+  familyLabel,
+}: {
+  value: Scope;
+  onChange: (v: Scope) => void;
+  personalLabel: string;
+  familyLabel: string;
+}) {
+  const tabs: { id: Scope; label: string }[] = [
+    { id: 'personal', label: personalLabel },
+    { id: 'family', label: familyLabel },
+  ];
+  return (
+    <div className="flex flex-wrap gap-1">
+      {tabs.map((tab) => {
+        const active = tab.id === value;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onChange(tab.id)}
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+              active
+                ? 'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : 'border-border bg-card text-foreground hover:bg-muted'
+            }`}
+          >
+            {tab.label}
           </button>
         );
       })}
@@ -76,6 +115,7 @@ export default function DebtsPage() {
   const [debts, setDebts] = useState<DebtView[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<DebtStatus | ''>('open');
+  const [scope, setScope] = useState<Scope>('personal');
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<DebtView | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -94,30 +134,25 @@ export default function DebtsPage() {
     void reload();
   }, [reload]);
 
+  const scoped = useMemo(() => {
+    return debts.filter((d) =>
+      scope === 'personal' ? d.visibility === 'private' : d.visibility === 'shared',
+    );
+  }, [debts, scope]);
+
   const groups = useMemo(() => {
-    const isPrivate = (d: DebtView) => d.visibility === 'private';
-    const isShared = (d: DebtView) => d.visibility === 'shared';
     return {
-      myOwe: debts.filter((d) => isPrivate(d) && d.direction === 'i_owe'),
-      myLent: debts.filter((d) => isPrivate(d) && d.direction === 'they_owe_me'),
-      familyOwe: debts.filter((d) => isShared(d) && d.direction === 'i_owe'),
-      familyLent: debts.filter((d) => isShared(d) && d.direction === 'they_owe_me'),
+      iOwe: scoped.filter((d) => d.direction === 'i_owe'),
+      theyOwe: scoped.filter((d) => d.direction === 'they_owe_me'),
     };
-  }, [debts]);
+  }, [scoped]);
 
   const kpi = useMemo(() => {
     const open = (d: DebtView) => d.status === 'open';
-    const owe = debts.filter((d) => d.direction === 'i_owe' && open(d)).reduce((s, d) => s + d.outstanding, 0);
-    const lent = debts.filter((d) => d.direction === 'they_owe_me' && open(d)).reduce((s, d) => s + d.outstanding, 0);
+    const owe = groups.iOwe.filter(open).reduce((s, d) => s + d.outstanding, 0);
+    const lent = groups.theyOwe.filter(open).reduce((s, d) => s + d.outstanding, 0);
     return { owe, lent, net: lent - owe };
-  }, [debts]);
-
-  const openCount =
-    groups.myOwe.filter((d) => d.status === 'open').length +
-    groups.familyOwe.filter((d) => d.status === 'open').length;
-  const lentCount =
-    groups.myLent.filter((d) => d.status === 'open').length +
-    groups.familyLent.filter((d) => d.status === 'open').length;
+  }, [groups]);
 
   const emptyTitle = status === 'closed' ? t('empty_closed') : t('empty_open');
 
@@ -125,7 +160,10 @@ export default function DebtsPage() {
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
         title={t('title')}
-        subtitle={t('subtitle_template', { owe: String(openCount), lent: String(lentCount) })}
+        subtitle={t('subtitle_template', {
+          owe: String(groups.iOwe.filter((d) => d.status === 'open').length),
+          lent: String(groups.theyOwe.filter((d) => d.status === 'open').length),
+        })}
         actions={
           <button
             onClick={() => {
@@ -152,15 +190,23 @@ export default function DebtsPage() {
           </div>
 
           <Card>
-            <FilterGroup
-              value={status}
-              onChange={(v) => setStatus(v)}
-              options={[
-                { value: 'open', label: t('filter_status_open') },
-                { value: 'closed', label: t('filter_status_closed') },
-                { value: '', label: t('filter_status_all') },
-              ]}
-            />
+            <div className="space-y-3">
+              <ScopeTabs
+                value={scope}
+                onChange={setScope}
+                personalLabel={t('scope_personal')}
+                familyLabel={t('scope_family')}
+              />
+              <FilterGroup
+                value={status}
+                onChange={(v) => setStatus(v)}
+                options={[
+                  { value: 'open', label: t('filter_status_open') },
+                  { value: 'closed', label: t('filter_status_closed') },
+                  { value: '', label: t('filter_status_all') },
+                ]}
+              />
+            </div>
           </Card>
 
           {loading ? (
@@ -173,28 +219,14 @@ export default function DebtsPage() {
                 title={t('section_i_owe')}
                 emptyIcon="💳"
                 emptyTitle={emptyTitle}
-                items={groups.myOwe}
+                items={groups.iOwe}
                 onClick={setDetailId}
               />
               <DebtSection
                 title={t('section_they_owe_me')}
                 emptyIcon="🤝"
                 emptyTitle={emptyTitle}
-                items={groups.myLent}
-                onClick={setDetailId}
-              />
-              <DebtSection
-                title={t('section_family_owe')}
-                emptyIcon="🏠"
-                emptyTitle={emptyTitle}
-                items={groups.familyOwe}
-                onClick={setDetailId}
-              />
-              <DebtSection
-                title={t('section_family_lent')}
-                emptyIcon="🏠"
-                emptyTitle={emptyTitle}
-                items={groups.familyLent}
+                items={groups.theyOwe}
                 onClick={setDetailId}
               />
             </>
