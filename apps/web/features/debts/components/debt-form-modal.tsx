@@ -29,7 +29,7 @@ export function DebtFormModal({
       if (initial) {
         setDirection(initial.direction);
         setCounterparty(initial.counterparty);
-        setPrincipal(String(initial.principal));
+        setPrincipal(initial.principal.toLocaleString('vi-VN'));
         setVisibility(initial.visibility);
         setDueDate(initial.dueDate ?? '');
         setNote(initial.note ?? '');
@@ -52,7 +52,7 @@ export function DebtFormModal({
     setError(null);
     setSaving(true);
     try {
-      const amount = parseInt(principal, 10);
+      const amount = parseInt(principal.replace(/\D/g, ''), 10);
       if (!Number.isFinite(amount) || amount <= 0) {
         throw new Error('Số tiền không hợp lệ');
       }
@@ -119,11 +119,14 @@ export function DebtFormModal({
               Số tiền (VND)
             </label>
             <input
-              type="number"
-              min="1"
-              step="1"
+              type="text"
+              inputMode="numeric"
               value={principal}
-              onChange={(e) => setPrincipal(e.target.value)}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '');
+                setPrincipal(digits ? parseInt(digits, 10).toLocaleString('vi-VN') : '');
+              }}
+              placeholder="0"
               required
               className="w-full rounded-lg border border-input bg-background px-3 py-2 font-mono text-sm tabular-nums focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
             />

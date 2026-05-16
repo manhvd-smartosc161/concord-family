@@ -39,7 +39,7 @@ export function PaymentFormModal({
     setError(null);
     setSaving(true);
     try {
-      const amt = parseInt(amount, 10);
+      const amt = parseInt(amount.replace(/\D/g, ''), 10);
       if (!Number.isFinite(amt) || amt <= 0) throw new Error('Số tiền không hợp lệ');
       const saved = await createPayment(debtId, {
         amount: amt,
@@ -65,10 +65,14 @@ export function PaymentFormModal({
               Số tiền (VND) · Còn lại {remaining.toLocaleString('vi-VN')}đ
             </label>
             <input
-              type="number"
-              min="1"
+              type="text"
+              inputMode="numeric"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '');
+                setAmount(digits ? parseInt(digits, 10).toLocaleString('vi-VN') : '');
+              }}
+              placeholder="0"
               required
               className="w-full rounded-lg border border-input bg-background px-3 py-2 font-mono text-sm tabular-nums"
             />
