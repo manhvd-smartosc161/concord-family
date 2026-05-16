@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
 import { Badge, ProgressBar } from '@/components/ui';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function DebtDetailDrawer({ open, debtId, onClose, onMutated }: Props) {
+  const t = useTranslations('debts');
   const [detail, setDetail] = useState<DebtDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export function DebtDetailDrawer({ open, debtId, onClose, onMutated }: Props) {
 
   async function handleDeletePayment(paymentId: string) {
     if (!debt) return;
-    if (!confirm('Xoá lần trả này? Số dư quỹ sẽ được hoàn lại.')) return;
+    if (!confirm(t('btn_delete_payment_confirm'))) return;
     try {
       await deletePayment(debt.id, paymentId);
       await load();
@@ -80,7 +82,7 @@ export function DebtDetailDrawer({ open, debtId, onClose, onMutated }: Props) {
 
   async function handleDeleteDebt() {
     if (!debt) return;
-    if (!confirm('Xoá toàn bộ khoản nợ này? Tất cả giao dịch liên quan sẽ bị xoá.')) return;
+    if (!confirm(t('btn_delete_debt_confirm'))) return;
     setDeleting(true);
     try {
       await deleteDebt(debt.id);
@@ -109,7 +111,7 @@ export function DebtDetailDrawer({ open, debtId, onClose, onMutated }: Props) {
       />
       <div className="relative w-full max-w-md rounded-t-2xl bg-card shadow-2xl sm:rounded-2xl">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <h3 className="text-base font-semibold text-foreground">Chi tiết khoản nợ</h3>
+          <h3 className="text-base font-semibold text-foreground">{t('drawer_title')}</h3>
           <button
             type="button"
             onClick={onClose}
@@ -142,9 +144,9 @@ export function DebtDetailDrawer({ open, debtId, onClose, onMutated }: Props) {
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-semibold text-foreground">{debt.counterpartyName}</span>
                   <Badge tone={debt.direction === 'lent' ? 'emerald' : 'amber'}>
-                    {debt.direction === 'lent' ? 'Cho vay' : 'Đang nợ'}
+                    {debt.direction === 'lent' ? t('direction_lent') : t('direction_borrowed')}
                   </Badge>
-                  {debt.status === 'settled' && <Badge tone="neutral">Đã tất toán</Badge>}
+                  {debt.status === 'settled' && <Badge tone="neutral">{t('status_settled')}</Badge>}
                 </div>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {debt.fundName} · Từ {new Date(debt.openedAt).toLocaleDateString('vi-VN')}
@@ -157,8 +159,8 @@ export function DebtDetailDrawer({ open, debtId, onClose, onMutated }: Props) {
 
               <div className="rounded-lg border border-border bg-muted/50 p-3">
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Đã trả</span>
-                  <span>Còn lại</span>
+                  <span>{t('paid')}</span>
+                  <span>{t('remaining')}</span>
                 </div>
                 <div className="mt-1 flex justify-between">
                   <span className="font-mono text-sm font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
@@ -176,16 +178,16 @@ export function DebtDetailDrawer({ open, debtId, onClose, onMutated }: Props) {
                   />
                 </div>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Gốc: {formatVND(debt.principal)}
+                  {t('principal')}: {formatVND(debt.principal)}
                 </p>
               </div>
 
               <div>
                 <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Lịch sử thanh toán
+                  {t('history')}
                 </h4>
                 {repayments.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Chưa có lần trả nào.</p>
+                  <p className="text-xs text-muted-foreground">{t('no_payments')}</p>
                 ) : (
                   <div className="space-y-2">
                     {repayments.map((p) => (
@@ -207,7 +209,7 @@ export function DebtDetailDrawer({ open, debtId, onClose, onMutated }: Props) {
                           onClick={() => handleDeletePayment(p.id)}
                           className="rounded-md px-2 py-1 text-xs text-rose-600 dark:text-rose-400 transition-colors hover:bg-rose-50 dark:hover:bg-rose-950/40"
                         >
-                          Xoá
+                          {t('btn_delete_payment')}
                         </button>
                       </div>
                     ))}
@@ -222,7 +224,7 @@ export function DebtDetailDrawer({ open, debtId, onClose, onMutated }: Props) {
                   disabled={deleting}
                   className="w-full rounded-lg border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 px-4 py-2 text-sm font-medium text-rose-800 dark:text-rose-300 transition-colors hover:bg-rose-100 dark:hover:bg-rose-950/60 disabled:opacity-50"
                 >
-                  {deleting ? 'Đang xoá…' : 'Xoá toàn bộ khoản nợ'}
+                  {deleting ? t('btn_deleting') : t('btn_delete')}
                 </button>
               </div>
             </div>

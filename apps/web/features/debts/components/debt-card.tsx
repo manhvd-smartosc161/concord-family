@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { formatVND } from '@/lib/format';
 import { ProgressBar, Badge } from '@/components/ui';
 import type { DebtView } from '../types';
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function DebtCard({ debt, onClick, onRecordPayment }: Props) {
+  const t = useTranslations('debts');
   const pct = debt.principal > 0 ? Math.min(100, (debt.paidAmount / debt.principal) * 100) : 0;
   const isLent = debt.direction === 'lent';
 
@@ -34,10 +36,10 @@ export function DebtCard({ debt, onClick, onRecordPayment }: Props) {
                 {debt.counterpartyName}
               </span>
               <Badge tone={isLent ? 'emerald' : 'amber'}>
-                {isLent ? 'Cho vay' : 'Đang nợ'}
+                {isLent ? t('direction_lent') : t('direction_borrowed')}
               </Badge>
               {debt.status === 'settled' && (
-                <Badge tone="neutral">Đã tất toán</Badge>
+                <Badge tone="neutral">{t('status_settled')}</Badge>
               )}
             </div>
             <div className="mt-0.5 text-xs text-muted-foreground">
@@ -61,7 +63,7 @@ export function DebtCard({ debt, onClick, onRecordPayment }: Props) {
             tone={isLent ? 'emerald' : 'amber'}
           />
           <div className="mt-1 text-[11px] text-muted-foreground">
-            Đã trả {pct.toFixed(0)}%
+            {t('paid_pct', { pct: pct.toFixed(0) })}
           </div>
         </div>
       </button>
@@ -76,7 +78,7 @@ export function DebtCard({ debt, onClick, onRecordPayment }: Props) {
             }}
             className="w-full rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-800"
           >
-            Ghi trả
+            {t('action_record_payment')}
           </button>
         </div>
       )}

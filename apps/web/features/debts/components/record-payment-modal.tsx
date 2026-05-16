@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
 import { recordPayment } from '../api';
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function RecordPaymentModal({ open, debt, onClose, onSuccess }: Props) {
+  const t = useTranslations('debts');
   const [amountStr, setAmountStr] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -49,11 +51,11 @@ export function RecordPaymentModal({ open, debt, onClose, onSuccess }: Props) {
     setError(null);
 
     if (!Number.isFinite(amount) || amount <= 0) {
-      setError('Số tiền phải lớn hơn 0');
+      setError(t('err_amount_positive'));
       return;
     }
     if (amount > remaining) {
-      setError(`Số tiền vượt quá số dư còn lại (${formatVND(remaining)})`);
+      setError(t('err_amount_exceeds', { remaining: formatVND(remaining) }));
       return;
     }
 
@@ -90,10 +92,10 @@ export function RecordPaymentModal({ open, debt, onClose, onSuccess }: Props) {
         <div className="mb-4 flex items-start justify-between">
           <div>
             <h3 className="text-base font-semibold text-foreground">
-              Ghi trả — {debt.counterpartyName}
+              {t('modal_record_title', { name: debt.counterpartyName })}
             </h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Còn lại: {formatVND(remaining)}
+              {t('modal_record_remaining', { amount: formatVND(remaining) })}
             </p>
           </div>
           <button
@@ -109,9 +111,19 @@ export function RecordPaymentModal({ open, debt, onClose, onSuccess }: Props) {
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-foreground">
-              Số tiền (VND)
-            </label>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="block text-xs font-medium text-foreground">
+                {t('modal_record_amount')}
+              </label>
+              <button
+                type="button"
+                onClick={() => setAmountStr(String(remaining))}
+                disabled={submitting}
+                className="rounded-md border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-[11px] font-medium text-emerald-800 dark:text-emerald-300 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/50 disabled:opacity-50"
+              >
+                {t('modal_record_pay_all', { amount: formatVND(remaining) })}
+              </button>
+            </div>
             <input
               type="number"
               step="1"
@@ -125,24 +137,25 @@ export function RecordPaymentModal({ open, debt, onClose, onSuccess }: Props) {
             />
             {amount > 0 && (
               <p className="mt-1 text-[11px] text-muted-foreground">
-                Sau khi trả: còn{' '}
-                <span className={willSettle ? 'font-medium text-emerald-700 dark:text-emerald-400' : ''}>
-                  {formatVND(Math.max(0, afterPayment))}
-                </span>
-                {willSettle && ' · Khoản nợ sẽ được đóng ✓'}
+                {t('modal_record_after_pay', { amount: formatVND(Math.max(0, afterPayment)) })}
+                {willSettle && (
+                  <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                    {' · '}{t('modal_record_will_settle')}
+                  </span>
+                )}
               </p>
             )}
           </div>
 
           <div>
             <label className="mb-1.5 block text-xs font-medium text-foreground">
-              Ghi chú (tuỳ chọn)
+              {t('modal_record_note')}
             </label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="vd: trả qua chuyển khoản"
+              placeholder={t('modal_record_note_placeholder')}
               className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
               disabled={submitting}
               maxLength={200}
@@ -162,14 +175,14 @@ export function RecordPaymentModal({ open, debt, onClose, onSuccess }: Props) {
               disabled={submitting}
               className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted sm:w-auto"
             >
-              Huỷ
+              {t('btn_cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting || amount <= 0}
               className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-muted disabled:text-muted-foreground sm:w-auto"
             >
-              {submitting ? 'Đang lưu…' : 'Xác nhận'}
+              {submitting ? t('btn_saving') : t('btn_confirm')}
             </button>
           </div>
         </form>

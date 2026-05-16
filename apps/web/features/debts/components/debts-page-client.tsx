@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { PageHeader } from '@/components/ui';
 import type { FundView } from '@/features/funds/types';
@@ -14,10 +15,10 @@ import { DebtDetailDrawer } from './debt-detail-drawer';
 
 type TabKey = 'lent' | 'borrowed' | 'settled';
 
-const TABS: Array<{ key: TabKey; label: string }> = [
-  { key: 'lent', label: '🤝 Cho vay' },
-  { key: 'borrowed', label: '💸 Đang nợ' },
-  { key: 'settled', label: '✅ Đã tất toán' },
+const TABS: Array<{ key: TabKey; emoji: string; labelKey: 'tab_lent' | 'tab_borrowed' | 'tab_settled' }> = [
+  { key: 'lent', emoji: '📤', labelKey: 'tab_lent' },
+  { key: 'borrowed', emoji: '🏦', labelKey: 'tab_borrowed' },
+  { key: 'settled', emoji: '🔒', labelKey: 'tab_settled' },
 ];
 
 interface Props {
@@ -28,6 +29,7 @@ interface Props {
 }
 
 export function DebtsPageClient({ funds, initialDebts, initialSummary, onMutated }: Props) {
+  const t = useTranslations('debts');
   const [tab, setTab] = useState<TabKey>('lent');
   const [debts, setDebts] = useState<DebtView[]>(initialDebts);
   const [summary, setSummary] = useState<DebtSummary>(initialSummary);
@@ -69,15 +71,15 @@ export function DebtsPageClient({ funds, initialDebts, initialSummary, onMutated
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
-        title="Nợ & Cho vay"
-        subtitle="Theo dõi các khoản cho vay và đi vay."
+        title={t('title')}
+        subtitle={t('subtitle')}
         actions={
           <button
             type="button"
             onClick={() => setCreateOpen(true)}
             className="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-emerald-800"
           >
-            + Thêm khoản
+            {t('add_debt')}
           </button>
         }
       />
@@ -87,18 +89,18 @@ export function DebtsPageClient({ funds, initialDebts, initialSummary, onMutated
           <DebtsSummaryCards summary={summary} />
 
           <div className="flex gap-1 rounded-xl border border-border bg-muted p-1">
-            {TABS.map((t) => (
+            {TABS.map((tab_item) => (
               <button
-                key={t.key}
+                key={tab_item.key}
                 type="button"
-                onClick={() => setTab(t.key)}
+                onClick={() => setTab(tab_item.key)}
                 className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                  tab === t.key
+                  tab === tab_item.key
                     ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {t.label}
+                {tab_item.emoji} {t(tab_item.labelKey)}
               </button>
             ))}
           </div>

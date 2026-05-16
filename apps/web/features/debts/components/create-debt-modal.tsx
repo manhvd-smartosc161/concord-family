@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
 import type { FundView } from '@/features/funds/types';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
+  const t = useTranslations('debts');
   const [direction, setDirection] = useState<DebtDirection>('lent');
   const [counterpartyName, setCounterpartyName] = useState('');
   const [principalStr, setPrincipalStr] = useState('');
@@ -57,15 +59,15 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
     setError(null);
 
     if (!counterpartyName.trim()) {
-      setError('Tên đối tác không được rỗng');
+      setError(t('err_counterparty_empty'));
       return;
     }
     if (!principal || principal <= 0) {
-      setError('Số tiền phải lớn hơn 0');
+      setError(t('err_amount_positive'));
       return;
     }
     if (!fundId) {
-      setError('Chọn quỹ');
+      setError(t('err_fund_required'));
       return;
     }
 
@@ -104,7 +106,7 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
       <div className="relative w-full max-w-md rounded-2xl bg-card p-4 shadow-2xl sm:p-6">
         <div className="mb-4 flex items-start justify-between">
           <h3 className="text-base font-semibold text-foreground">
-            Thêm khoản nợ / cho vay
+            {t('modal_create_title')}
           </h3>
           <button
             type="button"
@@ -128,7 +130,7 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
                   : 'border-border bg-card text-muted-foreground hover:bg-muted'
               }`}
             >
-              🤝 Cho vay
+              📤 {t('tab_lent')}
             </button>
             <button
               type="button"
@@ -139,19 +141,19 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
                   : 'border-border bg-card text-muted-foreground hover:bg-muted'
               }`}
             >
-              💸 Đi vay
+              💸 {t('tab_borrowed')}
             </button>
           </div>
 
           <div>
             <label className="mb-1.5 block text-xs font-medium text-foreground">
-              {direction === 'lent' ? 'Người được vay' : 'Người cho vay'}
+              {direction === 'lent' ? t('direction_lent_label') : t('direction_borrowed_label')}
             </label>
             <input
               type="text"
               value={counterpartyName}
               onChange={(e) => setCounterpartyName(e.target.value)}
-              placeholder="vd: Anh Nam"
+              placeholder={t('modal_create_counterparty_placeholder')}
               className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
               disabled={submitting}
               maxLength={100}
@@ -161,7 +163,7 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
           <div className="grid grid-cols-[1fr_1fr] gap-3">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-foreground">
-                Số tiền (VND)
+                {t('modal_create_principal')}
               </label>
               <input
                 type="number"
@@ -180,7 +182,7 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
 
             <div>
               <label className="mb-1.5 block text-xs font-medium text-foreground">
-                Quỹ
+                {t('modal_create_fund')}
               </label>
               <select
                 value={fundId}
@@ -199,13 +201,13 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
 
           <div>
             <label className="mb-1.5 block text-xs font-medium text-foreground">
-              Ghi chú (tuỳ chọn)
+              {t('modal_create_note')}
             </label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="vd: vay mua xe, trả sau Tết"
+              placeholder={t('modal_create_note_placeholder')}
               className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
               disabled={submitting}
               maxLength={200}
@@ -225,14 +227,14 @@ export function CreateDebtModal({ open, funds, onClose, onSuccess }: Props) {
               disabled={submitting}
               className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted sm:w-auto"
             >
-              Huỷ
+              {t('btn_cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting || !counterpartyName.trim() || !principal}
               className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-muted disabled:text-muted-foreground sm:w-auto"
             >
-              {submitting ? 'Đang lưu…' : 'Tạo khoản'}
+              {submitting ? t('btn_saving') : t('btn_create')}
             </button>
           </div>
         </form>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { EmptyState } from '@/components/ui';
 import { DebtCard } from './debt-card';
 import type { DebtView } from '../types';
@@ -11,12 +12,13 @@ interface Props {
 }
 
 export function DebtsList({ debts, onCardClick, onRecordPayment }: Props) {
+  const t = useTranslations('debts');
   if (debts.length === 0) {
     return (
       <EmptyState
-        icon="🤝"
-        title="Chưa có khoản nào"
-        description="Thêm khoản cho vay hoặc đi vay để bắt đầu theo dõi."
+        icon="🧾"
+        title={t('empty_title')}
+        description={t('empty_desc')}
       />
     );
   }
