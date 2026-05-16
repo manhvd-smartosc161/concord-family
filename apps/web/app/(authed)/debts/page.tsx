@@ -216,14 +216,18 @@ export default function DebtsPage() {
           ) : (
             <>
               <DebtSection
-                title={t('section_i_owe')}
+                title={t(
+                  scope === 'personal' ? 'section_i_owe_personal' : 'section_i_owe_family',
+                )}
                 emptyIcon="💳"
                 emptyTitle={emptyTitle}
                 items={groups.iOwe}
                 onClick={setDetailId}
               />
               <DebtSection
-                title={t('section_they_owe_me')}
+                title={t(
+                  scope === 'personal' ? 'section_they_owe_me_personal' : 'section_they_owe_me_family',
+                )}
                 emptyIcon="🤝"
                 emptyTitle={emptyTitle}
                 items={groups.theyOwe}
