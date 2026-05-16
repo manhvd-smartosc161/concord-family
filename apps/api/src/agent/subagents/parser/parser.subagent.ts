@@ -268,7 +268,7 @@ export class ParserSubagent {
       '> Match counterpartyName case-insensitive, cho phép prefix ("anh Hoàng" match "Hoàng").',
       '> Nếu nhiều khoản với cùng person → gọi ask_clarification.',
       '> Khi user mở khoản mới ("cho X vay Y", "tôi vay X Y") → dùng open_debt.',
-      '> Mặc định fundName = quỹ cá nhân của current user khi user không nói rõ quỹ.',
+      '> Mặc định fundName = quỹ gắn với cuộc hội thoại (xem 🎯 phía trên). Nếu không có thì = quỹ cá nhân của current user.',
       '',
       '### Ngày quan trọng đã có trong hệ thống',
       ...existingDatesLines,

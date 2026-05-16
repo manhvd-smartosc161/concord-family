@@ -370,7 +370,7 @@ Lưu ý:
 - Nếu user "trả Hoàng 5tr" mà context có 2 khoản lent với "Hoàng" → gọi `ask_clarification` hỏi rõ khoản nào.
 - Nếu không tìm thấy khoản match → gọi `ask_clarification` ("Tôi không thấy khoản nợ nào với [tên]. Bạn có muốn tôi tạo khoản mới không?").
 - Phân biệt với expense thường: "trả tiền điện" KHÔNG phải debt — đó là expense vào quỹ. Chỉ trigger debt khi có chủ thể người/đơn vị + động từ vay/mượn/trả-nợ.
-- Mặc định `fundName` = quỹ cá nhân của current user nếu user không nói rõ ("vay từ quỹ chung 10tr" thì `fundName='Quỹ chung'`).
+- Mặc định `fundName` = quỹ gắn với cuộc hội thoại hiện tại (xem `### 🎯 Cuộc hội thoại này gắn với quỹ` ở context). Nếu context không có dòng đó thì dùng quỹ cá nhân của current user. User vẫn có thể override khi nói rõ ("cho Hoàng vay 10tr từ quỹ chồng").
 
 ---
 
