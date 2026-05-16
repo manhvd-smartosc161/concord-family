@@ -8,6 +8,7 @@ import { AgentModule } from './agent/agent.module';
 import { AuthModule } from './shared/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { DebtsModule } from './modules/debts/debts.module';
 import { DatabaseModule } from './infra/database/database.module';
 import { FundsModule } from './modules/funds/funds.module';
 import { GoalsModule } from './modules/goals/goals.module';
@@ -36,6 +37,7 @@ import { UsersModule } from './modules/users/users.module';
     SalaryRulesModule,
     FundsModule,
     CategoriesModule,
+    DebtsModule,
     TransactionsModule,
     ReportsModule,
     GoalsModule,

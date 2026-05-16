@@ -6,6 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { Category } from '../../../modules/categories/entities/category.entity';
 import { CategoriesService } from '../../../modules/categories/categories.service';
+import { Debt } from '../../../modules/debts/entities/debt.entity';
+import { DebtsService } from '../../../modules/debts/debts.service';
 import { Fund } from '../../../modules/funds/entities/fund.entity';
 import { ImportantDate } from '../../../modules/important-dates/entities/important-date.entity';
 import { TransactionsService } from '../../../modules/transactions/transactions.service';
@@ -16,7 +18,9 @@ import {
   CreateCategoryInput,
   DeleteTransactionInput,
   LogTransactionInput,
+  OpenDebtInput,
   ProposeImportantDateInput,
+  RecordDebtPaymentInput,
   UpdateTransactionInput,
   parserTools,
 } from './parser.tools';
@@ -54,6 +58,24 @@ export type ParseAction =
       isLunar: boolean;
       remindDaysBefore: number[];
       notes: string | null;
+    }
+  | {
+      kind: 'debt_opened';
+      id: string;
+      direction: 'lent' | 'borrowed';
+      counterpartyName: string;
+      amount: number;
+      fundName: string;
+      isLegacy: boolean;
+    }
+  | {
+      kind: 'debt_payment_recorded';
+      debtId: string;
+      amount: number;
+      remainingAmount: number;
+      settled: boolean;
+      counterpartyName: string;
+      direction: 'lent' | 'borrowed';
     };
 
 export interface ParseResult {
@@ -72,12 +94,15 @@ export class ParserSubagent {
     private readonly anthropic: AnthropicService,
     private readonly transactionsService: TransactionsService,
     private readonly categoriesService: CategoriesService,
+    private readonly debtsService: DebtsService,
     @InjectRepository(Fund)
     private readonly fundRepo: Repository<Fund>,
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
     @InjectRepository(ImportantDate)
     private readonly importantDateRepo: Repository<ImportantDate>,
+    @InjectRepository(Debt)
+    private readonly debtRepo: Repository<Debt>,
   ) {
     const skillPath = path.join(__dirname, 'skill.md');
     this.skill = fs.readFileSync(skillPath, 'utf8');
@@ -174,6 +199,31 @@ export class ParserSubagent {
         ]
       : [];
 
+    const visibleFundIdSet = new Set(
+      allFamilyFunds
+        .filter((f) => f.type === 'joint' || f.ownerId === user.id)
+        .map((f) => f.id),
+    );
+    const openDebts = await this.debtRepo.find({
+      where: { familyId: user.familyId!, status: 'open' },
+      relations: ['fund'],
+      order: { openedAt: 'DESC' },
+      take: 10,
+    });
+    const visibleDebts = openDebts.filter((d) => visibleFundIdSet.has(d.fundId));
+    const debtLines = visibleDebts.length
+      ? visibleDebts.map((d) => {
+          const direction =
+            d.direction === 'lent'
+              ? `CHO ${d.counterpartyName} VAY`
+              : `BẠN VAY ${d.counterpartyName}`;
+          const remain = d.remainingAmount.toLocaleString('vi-VN');
+          const principal = d.principal.toLocaleString('vi-VN');
+          const opened = d.openedAt.toLocaleDateString('vi-VN');
+          return `  - id=\`${d.id}\` · ${direction} · còn lại ${remain}đ / gốc ${principal}đ · quỹ ${d.fund.name} · mở ${opened}`;
+        })
+      : ['  (chưa có khoản nợ nào đang mở)'];
+
     const existingDates = await this.importantDateRepo.find({
       where: { familyId: user.familyId! },
       order: { date: 'ASC' },
@@ -211,6 +261,15 @@ export class ParserSubagent {
       '',
       '### Giao dịch user vừa log (để update_transaction / delete_transaction)',
       ...recentLines,
+      '',
+      '### Khoản nợ đang mở',
+      ...debtLines,
+      '',
+      '> Khi user nói "X trả Y" hoặc "trả X Y" → dùng record_debt_payment với debt_id từ list trên.',
+      '> Match counterpartyName case-insensitive, cho phép prefix ("anh Hoàng" match "Hoàng").',
+      '> Nếu nhiều khoản với cùng person → gọi ask_clarification.',
+      '> Khi user mở khoản mới ("cho X vay Y", "tôi vay X Y") → dùng open_debt.',
+      '> Mặc định fundName = quỹ gắn với cuộc hội thoại (xem 🎯 phía trên). Nếu không có thì = quỹ cá nhân của current user.',
       '',
       '### Ngày quan trọng đã có trong hệ thống',
       ...existingDatesLines,
@@ -349,6 +408,65 @@ export class ParserSubagent {
               toolName: 'create_category',
               message: msg,
             });
+          }
+        } else if (block.name === 'open_debt') {
+          const input = block.input as OpenDebtInput;
+          try {
+            const fund = await this.fundRepo.findOneBy({
+              familyId: user.familyId!,
+              name: input.fundName,
+            });
+            if (!fund) throw new Error(`Fund "${input.fundName}" không tồn tại.`);
+            const view = await this.debtsService.createDebt(
+              user,
+              {
+                direction: input.direction,
+                counterpartyName: input.counterpartyName,
+                principal: input.amount,
+                fundId: fund.id,
+                note: input.note,
+                openedAt: input.openedAt,
+                isLegacy: input.isLegacy ?? false,
+              },
+              'chat',
+              rawText,
+            );
+            actions.push({
+              kind: 'debt_opened',
+              id: view.id,
+              direction: view.direction,
+              counterpartyName: view.counterpartyName,
+              amount: view.principal,
+              fundName: view.fundName,
+              isLegacy: view.isLegacy,
+            });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`open_debt failed: ${msg}`);
+            actions.push({ kind: 'tool_error', toolName: 'open_debt', message: msg });
+          }
+        } else if (block.name === 'record_debt_payment') {
+          const input = block.input as RecordDebtPaymentInput;
+          try {
+            const { debt, payment } = await this.debtsService.recordPayment(
+              user,
+              input.debt_id,
+              { amount: input.amount, note: input.note, paidAt: input.paidAt },
+              'chat',
+            );
+            actions.push({
+              kind: 'debt_payment_recorded',
+              debtId: debt.id,
+              amount: payment.amount,
+              remainingAmount: debt.remainingAmount,
+              settled: debt.status === 'settled',
+              counterpartyName: debt.counterpartyName,
+              direction: debt.direction,
+            });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`record_debt_payment failed: ${msg}`);
+            actions.push({ kind: 'tool_error', toolName: 'record_debt_payment', message: msg });
           }
         } else if (block.name === 'propose_important_date') {
           try {
@@ -500,6 +618,51 @@ function synthesizeReply(actions: ParseAction[]): string {
         : ' (danh mục cha)';
       parts.push(
         `✨ Đã tạo category: **${c.name}**${parentPart} — ${essentialLabel}`,
+      );
+    }
+  }
+  const debtOpened = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'debt_opened' }> =>
+      a.kind === 'debt_opened',
+  );
+  const debtPaid = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'debt_payment_recorded' }> =>
+      a.kind === 'debt_payment_recorded',
+  );
+  for (const d of debtOpened) {
+    const verb =
+      d.direction === 'lent'
+        ? `${d.counterpartyName} đang nợ`
+        : `Đang nợ ${d.counterpartyName}`;
+    const newVerb =
+      d.direction === 'lent'
+        ? `Cho ${d.counterpartyName} vay`
+        : `Vay ${d.counterpartyName}`;
+    const icon = d.isLegacy ? '🗂️' : d.direction === 'lent' ? '💸' : '📥';
+    if (d.isLegacy) {
+      parts.push(
+        `${icon} Đã ghi nhận ${verb} ${formatVND(d.amount)} (khoản có sẵn, không trừ quỹ)`,
+      );
+    } else {
+      parts.push(
+        `${icon} Đã ghi ${newVerb} ${formatVND(d.amount)} • ${d.fundName}`,
+      );
+    }
+  }
+  for (const p of debtPaid) {
+    if (p.settled) {
+      const what =
+        p.direction === 'lent'
+          ? `${p.counterpartyName} trả xong`
+          : `Trả xong cho ${p.counterpartyName}`;
+      parts.push(`🎉 ${what}! Khoản nợ đã đóng.`);
+    } else {
+      const what =
+        p.direction === 'lent'
+          ? `${p.counterpartyName} trả`
+          : `Trả ${p.counterpartyName}`;
+      parts.push(
+        `✅ ${what} ${formatVND(p.amount)} • còn ${formatVND(p.remainingAmount)}`,
       );
     }
   }

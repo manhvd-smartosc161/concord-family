@@ -9,6 +9,8 @@ import { Budget } from './modules/budgets/entities/budget.entity';
 import { Category } from './modules/categories/entities/category.entity';
 import { ChatMessage } from './modules/chat/entities/chat-message.entity';
 import { ChatSession } from './modules/chat/entities/chat-session.entity';
+import { Debt } from './modules/debts/entities/debt.entity';
+import { DebtPayment } from './modules/debts/entities/debt-payment.entity';
 import { Family } from './modules/families/entities/family.entity';
 import { FamilyInvitation } from './modules/families/entities/family-invitation.entity';
 import { Fund } from './modules/funds/entities/fund.entity';
@@ -41,6 +43,8 @@ export const entities = [
   Anomaly,
   ChatSession,
   ChatMessage,
+  Debt,
+  DebtPayment,
   ImportantDate,
   YearlyAiCache,
   Task,

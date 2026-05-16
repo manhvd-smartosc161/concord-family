@@ -39,7 +39,25 @@ export type ParseAction =
       date: string;
       type: 'birthday' | 'death_anniversary' | 'anniversary' | 'other';
     }
-  | { kind: 'important_date_dismissed' };
+  | { kind: 'important_date_dismissed' }
+  | {
+      kind: 'debt_opened';
+      id: string;
+      direction: 'lent' | 'borrowed';
+      counterpartyName: string;
+      amount: number;
+      fundName: string;
+      isLegacy: boolean;
+    }
+  | {
+      kind: 'debt_payment_recorded';
+      debtId: string;
+      amount: number;
+      remainingAmount: number;
+      settled: boolean;
+      counterpartyName: string;
+      direction: 'lent' | 'borrowed';
+    };
 
 export interface ChatResponse {
   reply: string;

@@ -193,6 +193,48 @@ export const proposeImportantDateTool: Anthropic.Tool = {
   },
 };
 
+export const openDebtTool: Anthropic.Tool = {
+  name: 'open_debt',
+  description:
+    'Mở khoản cho vay (lent: bạn cho người khác mượn tiền) hoặc đi vay (borrowed: bạn mượn tiền). Mặc định tự tạo transaction cash flow: lent → trừ quỹ; borrowed → cộng quỹ. Đặt isLegacy=true khi user ghi nhận khoản đã có TỪ TRƯỚC khi dùng app (không trừ quỹ).',
+  input_schema: {
+    type: 'object',
+    properties: {
+      direction: { type: 'string', enum: ['lent', 'borrowed'] },
+      counterpartyName: {
+        type: 'string',
+        description: 'Tên người hoặc đơn vị: "Hoàng", "VCB", "Mẹ"',
+      },
+      amount: { type: 'integer', description: 'Số tiền nguyên VND, luôn dương' },
+      fundName: { type: 'string', description: 'Exact tên quỹ từ context. Vẫn cần khi isLegacy=true (dùng cho các lần trả sau).' },
+      note: { type: 'string' },
+      openedAt: { type: 'string', description: 'ISO date, mặc định now' },
+      isLegacy: {
+        type: 'boolean',
+        description:
+          'true = khoản đã có TỪ TRƯỚC khi dùng app, KHÔNG đổi balance quỹ khi tạo. Pattern: "X đang nợ Y", "X nợ tôi Y", "tôi đang nợ X Y", "ghi nhận X đang nợ". Mặc định false (khoản mới, đổi balance).',
+      },
+    },
+    required: ['direction', 'counterpartyName', 'amount', 'fundName'],
+  },
+};
+
+export const recordDebtPaymentTool: Anthropic.Tool = {
+  name: 'record_debt_payment',
+  description:
+    'Ghi nhận một lần trả nợ (partial hoặc full) cho khoản đang mở. debt_id phải lấy từ context "Khoản nợ đang mở".',
+  input_schema: {
+    type: 'object',
+    properties: {
+      debt_id: { type: 'string', description: 'UUID của khoản nợ từ context' },
+      amount: { type: 'integer', description: 'Số tiền trả lần này, dương' },
+      note: { type: 'string' },
+      paidAt: { type: 'string' },
+    },
+    required: ['debt_id', 'amount'],
+  },
+};
+
 export const parserTools: Anthropic.Tool[] = [
   logTransactionTool,
   askClarificationTool,
@@ -200,6 +242,8 @@ export const parserTools: Anthropic.Tool[] = [
   deleteTransactionTool,
   createCategoryTool,
   proposeImportantDateTool,
+  openDebtTool,
+  recordDebtPaymentTool,
 ];
 
 // ─── Input types (mirror of input_schema for type safety in executor) ─────
@@ -242,4 +286,21 @@ export interface ProposeImportantDateInput {
   isLunar: boolean;
   remindDaysBefore: number[];
   notes?: string;
+}
+
+export interface OpenDebtInput {
+  direction: 'lent' | 'borrowed';
+  counterpartyName: string;
+  amount: number;
+  fundName: string;
+  note?: string;
+  openedAt?: string;
+  isLegacy?: boolean;
+}
+
+export interface RecordDebtPaymentInput {
+  debt_id: string;
+  amount: number;
+  note?: string;
+  paidAt?: string;
 }
