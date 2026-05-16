@@ -30,6 +30,7 @@
     "transactions": "Giao dịch",
     "reports": "Báo cáo",
     "savings_investment": "Tiết kiệm & Đầu tư",
+    "debts": "Nợ & Cho vay",
     "settings": "Cài đặt",
     "family_group": "Gia đình",
     "tasks": "Công việc",
@@ -432,5 +433,23 @@
     "invalid_link": "Link không hợp lệ",
     "already_in_family": "Bạn đã ở trong một gia đình rồi. Hãy thoát trước nếu muốn join family khác.",
     "accept_failed": "Accept thất bại"
+  },
+  "debts": {
+    "title": "Nợ & Cho vay",
+    "subtitle_template": "{owe} đang nợ · {lent} đang cho vay",
+    "kpi_i_owe": "Tôi đang nợ",
+    "kpi_they_owe": "Người ta nợ tôi",
+    "kpi_net": "Net",
+    "filter_status_all": "Tất cả trạng thái",
+    "filter_status_open": "Đang mở",
+    "filter_status_closed": "Đã đóng",
+    "filter_direction_all": "Tất cả hướng",
+    "filter_direction_i_owe": "💳 Tôi nợ",
+    "filter_direction_they_owe": "🤝 Cho vay",
+    "section_i_owe": "💳 Tôi đang nợ",
+    "section_they_owe_me": "🤝 Đang cho vay",
+    "empty_open": "Chưa có khoản nào đang mở",
+    "empty_closed": "Chưa có khoản nào đã đóng",
+    "add_button": "+ Thêm khoản nợ/cho vay"
   }
 }

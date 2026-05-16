@@ -30,6 +30,7 @@
     "transactions": "Transactions",
     "reports": "Reports",
     "savings_investment": "Savings & Investment",
+    "debts": "Debts & Loans",
     "settings": "Settings",
     "family_group": "Family",
     "tasks": "Tasks",
@@ -432,5 +433,23 @@
     "invalid_link": "Invalid link",
     "already_in_family": "You are already in a family. Leave it first if you want to join another.",
     "accept_failed": "Failed to accept invitation"
+  },
+  "debts": {
+    "title": "Debts & Loans",
+    "subtitle_template": "{owe} owed · {lent} lent",
+    "kpi_i_owe": "I owe",
+    "kpi_they_owe": "Owed to me",
+    "kpi_net": "Net",
+    "filter_status_all": "All statuses",
+    "filter_status_open": "Open",
+    "filter_status_closed": "Closed",
+    "filter_direction_all": "All directions",
+    "filter_direction_i_owe": "💳 I owe",
+    "filter_direction_they_owe": "🤝 Lent out",
+    "section_i_owe": "💳 I owe",
+    "section_they_owe_me": "🤝 Lent out",
+    "empty_open": "No open debts",
+    "empty_closed": "No closed debts",
+    "add_button": "+ Add debt/loan"
   }
 }
