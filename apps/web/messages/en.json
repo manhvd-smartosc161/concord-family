@@ -447,7 +447,9 @@
     "filter_direction_i_owe": "💳 I owe",
     "filter_direction_they_owe": "🤝 Lent out",
     "section_i_owe": "💳 I owe",
-    "section_they_owe_me": "🤝 Lent out",
+    "section_they_owe_me": "🤝 I lent",
+    "section_family_owe": "🏠💳 Family owes",
+    "section_family_lent": "🏠🤝 Family lent",
     "empty_open": "No open debts",
     "empty_closed": "No closed debts",
     "add_button": "+ Add debt/loan"

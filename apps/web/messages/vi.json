@@ -446,8 +446,10 @@
     "filter_direction_all": "Cả hai chiều",
     "filter_direction_i_owe": "💳 Tôi nợ",
     "filter_direction_they_owe": "🤝 Cho vay",
-    "section_i_owe": "💳 Tôi đang nợ",
-    "section_they_owe_me": "🤝 Đang cho vay",
+    "section_i_owe": "💳 Tôi đang nợ ai",
+    "section_they_owe_me": "🤝 Tôi đang cho ai vay",
+    "section_family_owe": "🏠💳 Gia đình đang nợ ai",
+    "section_family_lent": "🏠🤝 Gia đình đang cho ai vay",
     "empty_open": "Chưa có khoản nào đang mở",
     "empty_closed": "Chưa có khoản nào đã đóng",
     "add_button": "+ Thêm khoản nợ/cho vay"
