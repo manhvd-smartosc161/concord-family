@@ -408,6 +408,70 @@ export class TransactionsService {
       .getMany();
   }
 
+  async createInternal(
+    params: {
+      fundId: string;
+      userId: string;
+      familyId: string;
+      amount: number;
+      categoryId: string | null;
+      note: string | null;
+      date: Date;
+      source: 'chat' | 'form';
+      rawText?: string | null;
+    },
+    user: User,
+    manager?: import('typeorm').EntityManager,
+  ): Promise<Transaction> {
+    if (!Number.isFinite(params.amount) || params.amount === 0) {
+      throw new BadRequestException(`Số tiền không hợp lệ: ${params.amount}.`);
+    }
+
+    const run = async (m: import('typeorm').EntityManager): Promise<Transaction> => {
+      const fund = await m.findOneBy(Fund, { id: params.fundId });
+      if (!fund || fund.familyId !== user.familyId) {
+        throw new BadRequestException(`Fund không tồn tại.`);
+      }
+      if (fund.type === 'personal' && fund.ownerId !== user.id) {
+        throw new ForbiddenException(`Không thể ghi vào quỹ riêng của người khác.`);
+      }
+      const created = m.create(Transaction, {
+        familyId: params.familyId,
+        userId: params.userId,
+        fundId: fund.id,
+        categoryId: params.categoryId,
+        amount: params.amount,
+        note: params.note,
+        rawText: params.rawText ?? null,
+        source: params.source,
+        date: params.date,
+      });
+      const saved = await m.save(created);
+      await m.increment(Fund, { id: fund.id }, 'balance', params.amount);
+      return saved;
+    };
+
+    return manager ? run(manager) : this.dataSource.transaction(run);
+  }
+
+  async deleteByIdInternal(
+    txnId: string,
+    user: User,
+    manager?: import('typeorm').EntityManager,
+  ): Promise<void> {
+    const run = async (m: import('typeorm').EntityManager): Promise<void> => {
+      const txn = await m.findOne(Transaction, { where: { id: txnId }, relations: ['fund'] });
+      if (!txn) throw new NotFoundException('Transaction không tồn tại.');
+      if (txn.familyId !== user.familyId) throw new ForbiddenException();
+      if (txn.fund.type === 'personal' && txn.fund.ownerId !== user.id) {
+        throw new ForbiddenException();
+      }
+      await m.decrement(Fund, { id: txn.fundId }, 'balance', txn.amount);
+      await m.remove(txn);
+    };
+    return manager ? run(manager) : this.dataSource.transaction(run);
+  }
+
   /** Best-effort fuzzy match — exact (case-insensitive), then ILIKE %name%. */
   private async resolveCategory(name?: string): Promise<Category | null> {
     if (!name) return null;
