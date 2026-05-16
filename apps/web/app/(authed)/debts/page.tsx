@@ -10,6 +10,38 @@ import { DebtFormModal } from '@/features/debts/components/debt-form-modal';
 import type { DebtDirection, DebtStatus, DebtView } from '@/features/debts/types';
 import { formatVND } from '@/lib/format';
 
+function FilterGroup<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string }[];
+}) {
+  return (
+    <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
+      {options.map((opt) => {
+        const active = opt.value === value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              active
+                ? 'bg-emerald-600 text-white shadow-sm dark:bg-emerald-700'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function DebtsPage() {
   const t = useTranslations('debts');
   const [debts, setDebts] = useState<DebtView[]>([]);
@@ -83,25 +115,26 @@ export default function DebtsPage() {
           </div>
 
           <Card>
-            <div className="flex flex-wrap gap-2">
-              <select
+            <div className="flex flex-wrap items-center gap-4">
+              <FilterGroup
                 value={status}
-                onChange={(e) => setStatus(e.target.value as DebtStatus | '')}
-                className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm"
-              >
-                <option value="open">{t('filter_status_open')}</option>
-                <option value="closed">{t('filter_status_closed')}</option>
-                <option value="">{t('filter_status_all')}</option>
-              </select>
-              <select
+                onChange={(v) => setStatus(v)}
+                options={[
+                  { value: 'open', label: t('filter_status_open') },
+                  { value: 'closed', label: t('filter_status_closed') },
+                  { value: '', label: t('filter_status_all') },
+                ]}
+              />
+              <span className="hidden h-5 w-px bg-border sm:inline-block" />
+              <FilterGroup
                 value={direction}
-                onChange={(e) => setDirection(e.target.value as DebtDirection | '')}
-                className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm"
-              >
-                <option value="">{t('filter_direction_all')}</option>
-                <option value="i_owe">{t('filter_direction_i_owe')}</option>
-                <option value="they_owe_me">{t('filter_direction_they_owe')}</option>
-              </select>
+                onChange={(v) => setDirection(v)}
+                options={[
+                  { value: '', label: t('filter_direction_all') },
+                  { value: 'i_owe', label: t('filter_direction_i_owe') },
+                  { value: 'they_owe_me', label: t('filter_direction_they_owe') },
+                ]}
+              />
             </div>
           </Card>
 
