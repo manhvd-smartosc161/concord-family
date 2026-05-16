@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TransactionsService } from '../transactions/transactions.service';
@@ -27,6 +27,8 @@ export type DebtView = {
 
 @Injectable()
 export class DebtsService {
+  private readonly logger = new Logger(DebtsService.name);
+
   constructor(
     @InjectRepository(Debt) private readonly debts: Repository<Debt>,
     @InjectRepository(DebtPayment) private readonly payments: Repository<DebtPayment>,
@@ -179,8 +181,9 @@ export class DebtsService {
     for (const txnId of linkedTxnIds) {
       try {
         await this.transactionsService.deleteForUser(txnId, user);
-      } catch {
-        // already deleted — ignore
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(`cascade delete txn ${txnId} failed: ${msg}`);
       }
     }
   }
