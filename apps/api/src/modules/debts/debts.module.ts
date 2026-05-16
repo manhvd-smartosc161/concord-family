@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { TransactionsModule } from '../transactions/transactions.module';
 import { DebtPaymentsService } from './debt-payments.service';
 import { DebtsController } from './debts.controller';
 import { DebtsMatchService } from './debts-match.service';
@@ -8,7 +9,7 @@ import { Debt } from './entities/debt.entity';
 import { DebtPayment } from './entities/debt-payment.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Debt, DebtPayment])],
+  imports: [TypeOrmModule.forFeature([Debt, DebtPayment]), TransactionsModule],
   controllers: [DebtsController],
   providers: [DebtsService, DebtPaymentsService, DebtsMatchService],
   exports: [DebtsService, DebtPaymentsService, DebtsMatchService],

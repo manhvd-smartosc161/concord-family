@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Card, EmptyState, PageHeader, StatCard } from '@/components/ui';
+import { useAuthedLayout } from '../layout';
 import { listDebts } from '@/features/debts/api';
 import { DebtCard } from '@/features/debts/components/debt-card';
 import { DebtDetailModal } from '@/features/debts/components/debt-detail-modal';
@@ -112,6 +113,7 @@ function DebtSection({
 
 export default function DebtsPage() {
   const t = useTranslations('debts');
+  const { reloadFunds } = useAuthedLayout();
   const [debts, setDebts] = useState<DebtView[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<DebtStatus | ''>('open');
@@ -129,6 +131,10 @@ export default function DebtsPage() {
       setLoading(false);
     }
   }, [status]);
+
+  const reloadAll = useCallback(async () => {
+    await Promise.all([reload(), reloadFunds()]);
+  }, [reload, reloadFunds]);
 
   useEffect(() => {
     void reload();
@@ -252,7 +258,7 @@ export default function DebtsPage() {
         onClose={() => setFormOpen(false)}
         onSaved={async () => {
           setFormOpen(false);
-          await reload();
+          await reloadAll();
         }}
       />
 
@@ -265,7 +271,7 @@ export default function DebtsPage() {
           setEditTarget(d);
           setFormOpen(true);
         }}
-        onChanged={() => void reload()}
+        onChanged={() => void reloadAll()}
       />
     </div>
   );

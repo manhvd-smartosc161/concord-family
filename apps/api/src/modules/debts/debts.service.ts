@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { TransactionsService } from '../transactions/transactions.service';
 import { User } from '../users/entities/user.entity';
 import { CreateDebtDto } from './dto/create-debt.dto';
 import { ListDebtsQueryDto } from './dto/list-debts-query.dto';
@@ -29,6 +30,7 @@ export class DebtsService {
   constructor(
     @InjectRepository(Debt) private readonly debts: Repository<Debt>,
     @InjectRepository(DebtPayment) private readonly payments: Repository<DebtPayment>,
+    private readonly transactionsService: TransactionsService,
   ) {}
 
   async listForUser(user: User, query: ListDebtsQueryDto): Promise<DebtView[]> {
@@ -164,10 +166,23 @@ export class DebtsService {
 
   async delete(user: User, id: string): Promise<void> {
     if (!user.familyId) throw new NotFoundException('Debt not found');
-    const debt = await this.debts.findOne({ where: { id, familyId: user.familyId } });
+    const debt = await this.debts.findOne({
+      where: { id, familyId: user.familyId },
+      relations: ['payments'],
+    });
     if (!debt) throw new NotFoundException('Debt not found');
     this.assertCanEdit(debt, user);
+    const linkedTxnIds = (debt.payments ?? [])
+      .map((p) => p.transactionId)
+      .filter((t): t is string => Boolean(t));
     await this.debts.remove(debt);
+    for (const txnId of linkedTxnIds) {
+      try {
+        await this.transactionsService.deleteForUser(txnId, user);
+      } catch {
+        // already deleted — ignore
+      }
+    }
   }
 
   async close(user: User, id: string): Promise<DebtView> {

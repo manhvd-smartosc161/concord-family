@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { TransactionsService } from '../transactions/transactions.service';
 import { User } from '../users/entities/user.entity';
 import { DebtsService } from './debts.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -13,6 +14,7 @@ export class DebtPaymentsService {
     @InjectRepository(Debt) private readonly debts: Repository<Debt>,
     @InjectRepository(DebtPayment) private readonly payments: Repository<DebtPayment>,
     private readonly debtsService: DebtsService,
+    private readonly transactionsService: TransactionsService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -75,7 +77,15 @@ export class DebtPaymentsService {
         .getRepository(DebtPayment)
         .findOne({ where: { id: paymentId, debtId: debt.id } });
       if (!payment) throw new NotFoundException('Payment not found');
+      const linkedTxnId = payment.transactionId;
       await manager.getRepository(DebtPayment).remove(payment);
+      if (linkedTxnId) {
+        try {
+          await this.transactionsService.deleteForUser(linkedTxnId, user);
+        } catch {
+          // transaction may already be deleted manually — ignore
+        }
+      }
 
       const sumRow = await manager
         .getRepository(DebtPayment)
