@@ -349,9 +349,12 @@ Nếu bạn không chắc, gọi `ask_clarification` thay vì bịa.
 Khi user nhắc "nợ", "vay", "cho vay", "trả nợ", "trả thẻ", "thẻ tín dụng", hoặc tên một người + động từ "vay/trả":
 
 ### Phát sinh khoản MỚI → `propose_new_debt`
-- "Vừa vay anh Tuấn 5 triệu" → `propose_new_debt({ direction: 'i_owe', counterparty: 'Anh Tuấn', principal: 5000000 })`
-- "Cho em Hằng vay 3tr" → `propose_new_debt({ direction: 'they_owe_me', counterparty: 'Em Hằng', principal: 3000000 })`
-- "Nợ thẻ Sacombank 8 triệu" → `propose_new_debt({ direction: 'i_owe', counterparty: 'Thẻ Sacombank', principal: 8000000 })`
+- "Vừa vay anh Tuấn 5 triệu vào quỹ riêng" → `propose_new_debt({ direction: 'i_owe', counterparty: 'Anh Tuấn', principal: 5000000, fundName: 'Quỹ Mạnh' })` (vay = tiền vào quỹ → AUTO log +5tr)
+- "Cho em Hằng vay 3tr từ quỹ chung" → `propose_new_debt({ direction: 'they_owe_me', counterparty: 'Em Hằng', principal: 3000000, fundName: 'Quỹ Chung' })` (cho vay = tiền ra → AUTO log −3tr)
+- "Cho Dũng vay 10 triệu" (KHÔNG nói quỹ) → `propose_new_debt({ direction: 'they_owe_me', counterparty: 'Dũng', principal: 10000000 })` + `ask_clarification({ question: 'Tiền cho vay rút từ quỹ nào?' })`
+- "Nợ thẻ Sacombank 8 triệu" → `propose_new_debt({ direction: 'i_owe', counterparty: 'Thẻ Sacombank', principal: 8000000 })` (thẻ tín dụng — chỉ ghi nhận khoản nợ, không có tiền vào quỹ)
+
+> **Rule quan trọng**: Cho vay / vay người thật (anh A, em B, "cho ai vay") liên quan đến tiền mặt thực sự → CẦN `fundName` để cập nhật số dư quỹ. Chỉ thẻ tín dụng / nợ ngân hàng / khoản nợ ghi nhận → KHÔNG cần fundName.
 
 `visibility`:
 - Mặc định `private` (khoản cá nhân).

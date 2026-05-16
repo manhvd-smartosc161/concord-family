@@ -236,7 +236,9 @@ export const proposeNewDebtTool: Anthropic.Tool = {
   description:
     'Tạo MỚI 1 khoản nợ/cho vay khi user vừa phát sinh nợ/cho vay mới (chưa có trong list). ' +
     'Vd: "vay anh Tuấn 5tr", "cho em Hằng vay 3 triệu", "nợ thẻ Sacombank 8tr". ' +
-    'Tự động tạo debt entity với outstanding = principal. KHÔNG tự log transaction kèm — nếu user muốn ghi tiền vào quỹ, gọi thêm log_transaction.',
+    'Tự động tạo debt entity với outstanding = principal. ' +
+    'NẾU user nói rõ quỹ (vd "vay từ quỹ chung", "cho vay bằng quỹ riêng") → truyền thêm fundName để tự tạo transaction tương ứng (vay = thu vào quỹ, cho vay = chi ra). ' +
+    'NẾU user KHÔNG nói rõ quỹ → bỏ trống fundName + gọi thêm ask_clarification hỏi quỹ.',
   input_schema: {
     type: 'object',
     properties: {
@@ -268,6 +270,11 @@ export const proposeNewDebtTool: Anthropic.Tool = {
       note: {
         type: 'string',
         description: 'Ghi chú (tuỳ chọn, ≤500 chars).',
+      },
+      fundName: {
+        type: 'string',
+        description:
+          'Tên quỹ EXACT từ list "Quỹ user CÓ THỂ ghi vào" — nếu user nói rõ tiền vay vào quỹ này (i_owe) hoặc tiền cho vay ra từ quỹ này (they_owe_me). Bỏ trống nếu user không nói.',
       },
     },
     required: ['direction', 'counterparty', 'principal'],
@@ -342,4 +349,5 @@ export interface ProposeNewDebtInput {
   visibility?: 'private' | 'shared';
   dueDate?: string;
   note?: string;
+  fundName?: string;
 }

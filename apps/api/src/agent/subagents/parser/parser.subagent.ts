@@ -506,6 +506,45 @@ export class ParserSubagent {
               direction: view.direction,
               visibility: view.visibility,
             });
+            if (input.fundName) {
+              const txnAmount =
+                input.direction === 'i_owe' ? input.principal : -input.principal;
+              const txnCategoryName =
+                input.direction === 'i_owe' ? 'Nhận tiền vay' : 'Cho vay';
+              const noteText =
+                input.direction === 'i_owe'
+                  ? `Vay từ ${input.counterparty}`
+                  : `Cho ${input.counterparty} vay`;
+              try {
+                const { txn, fund } =
+                  await this.transactionsService.createFromAgent(
+                    {
+                      fundName: input.fundName,
+                      amount: txnAmount,
+                      categoryName: txnCategoryName,
+                      note: noteText,
+                    },
+                    user,
+                    rawText,
+                  );
+                actions.push({
+                  kind: 'logged',
+                  id: txn.id,
+                  fundName: fund.name,
+                  amount: txnAmount,
+                  categoryName: txnCategoryName,
+                  balance: fund.balance,
+                });
+              } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : String(err);
+                this.logger.warn(`propose_new_debt txn side-effect failed: ${msg}`);
+                actions.push({
+                  kind: 'tool_error',
+                  toolName: 'propose_new_debt',
+                  message: `Đã tạo khoản nhưng không ghi được giao dịch: ${msg}`,
+                });
+              }
+            }
           } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : String(err);
             this.logger.warn(`propose_new_debt failed: ${msg}`);
