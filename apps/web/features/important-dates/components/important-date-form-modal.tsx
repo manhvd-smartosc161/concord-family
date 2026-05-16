@@ -101,7 +101,7 @@ export function ImportantDateFormModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm dark:bg-black/70"
       onClick={onClose}
     >
       <form

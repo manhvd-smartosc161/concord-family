@@ -86,7 +86,7 @@ export function ChangePasswordModal({ open, onClose }: Props) {
         type="button"
         aria-label={tCommon('close')}
         onClick={onClose}
-        className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm dark:bg-black/70"
       />
 
       {/* Panel */}

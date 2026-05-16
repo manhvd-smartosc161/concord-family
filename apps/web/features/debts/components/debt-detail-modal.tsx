@@ -92,7 +92,7 @@ export function DebtDetailModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm dark:bg-black/70">
       <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-2xl border border-border bg-card shadow-lg">
         {loading && <div className="p-8 text-center text-sm text-muted-foreground">Đang tải…</div>}
         {error && <div className="m-4 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</div>}

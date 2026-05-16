@@ -116,7 +116,7 @@ export function EditTransactionModal({
         type="button"
         aria-label={tCommon('close')}
         onClick={onClose}
-        className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm dark:bg-black/70"
       />
       <div className="relative w-full max-w-md rounded-2xl bg-card p-4 shadow-2xl sm:p-6">
         <div className="mb-1 flex items-start justify-between">
