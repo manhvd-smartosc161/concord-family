@@ -112,4 +112,92 @@ export class DebtsService {
   async findByIdRaw(id: string): Promise<Debt | null> {
     return this.debts.findOne({ where: { id } });
   }
+
+  async create(user: User, dto: CreateDebtDto): Promise<DebtView> {
+    if (!user.familyId) throw new ForbiddenException('User has no family');
+    const debt = this.debts.create({
+      ownerId: user.id,
+      familyId: user.familyId,
+      direction: dto.direction,
+      counterparty: dto.counterparty.trim(),
+      principal: dto.principal,
+      outstanding: dto.principal,
+      visibility: dto.visibility ?? 'private',
+      dueDate: dto.dueDate ?? null,
+      note: dto.note ?? null,
+      status: 'open',
+      closedAt: null,
+    });
+    const saved = await this.debts.save(debt);
+    return this.toView(saved, user);
+  }
+
+  async update(user: User, id: string, dto: UpdateDebtDto): Promise<DebtView> {
+    if (!user.familyId) throw new NotFoundException('Debt not found');
+    const debt = await this.debts.findOne({ where: { id, familyId: user.familyId } });
+    if (!debt) throw new NotFoundException('Debt not found');
+    this.assertCanEdit(debt, user);
+
+    if (dto.principal != null) {
+      const paid = await this.sumPayments(debt.id);
+      if (dto.principal < paid) {
+        throw new ForbiddenException('New principal smaller than total paid');
+      }
+      debt.principal = dto.principal;
+      debt.outstanding = dto.principal - paid;
+      if (debt.outstanding === 0 && debt.status !== 'closed') {
+        debt.status = 'closed';
+        debt.closedAt = new Date();
+      } else if (debt.outstanding > 0 && debt.status === 'closed') {
+        debt.status = 'open';
+        debt.closedAt = null;
+      }
+    }
+    if (dto.counterparty !== undefined) debt.counterparty = dto.counterparty.trim();
+    if (dto.visibility !== undefined) debt.visibility = dto.visibility;
+    if (dto.dueDate !== undefined) debt.dueDate = dto.dueDate;
+    if (dto.note !== undefined) debt.note = dto.note;
+
+    const saved = await this.debts.save(debt);
+    return this.toView(saved, user);
+  }
+
+  async delete(user: User, id: string): Promise<void> {
+    if (!user.familyId) throw new NotFoundException('Debt not found');
+    const debt = await this.debts.findOne({ where: { id, familyId: user.familyId } });
+    if (!debt) throw new NotFoundException('Debt not found');
+    this.assertCanEdit(debt, user);
+    await this.debts.remove(debt);
+  }
+
+  async close(user: User, id: string): Promise<DebtView> {
+    if (!user.familyId) throw new NotFoundException('Debt not found');
+    const debt = await this.debts.findOne({ where: { id, familyId: user.familyId } });
+    if (!debt) throw new NotFoundException('Debt not found');
+    this.assertCanEdit(debt, user);
+    debt.status = 'closed';
+    debt.closedAt = new Date();
+    const saved = await this.debts.save(debt);
+    return this.toView(saved, user);
+  }
+
+  async reopen(user: User, id: string): Promise<DebtView> {
+    if (!user.familyId) throw new NotFoundException('Debt not found');
+    const debt = await this.debts.findOne({ where: { id, familyId: user.familyId } });
+    if (!debt) throw new NotFoundException('Debt not found');
+    this.assertCanEdit(debt, user);
+    debt.status = 'open';
+    debt.closedAt = null;
+    const saved = await this.debts.save(debt);
+    return this.toView(saved, user);
+  }
+
+  async sumPayments(debtId: string): Promise<number> {
+    const row = await this.payments
+      .createQueryBuilder('p')
+      .select('COALESCE(SUM(p.amount), 0)', 'total')
+      .where('p.debt_id = :debtId', { debtId })
+      .getRawOne<{ total: string }>();
+    return row ? parseInt(row.total, 10) : 0;
+  }
 }
