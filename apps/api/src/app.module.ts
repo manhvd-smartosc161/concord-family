@@ -9,6 +9,7 @@ import { AuthModule } from './shared/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { DatabaseModule } from './infra/database/database.module';
+import { DebtsModule } from './modules/debts/debts.module';
 import { FundsModule } from './modules/funds/funds.module';
 import { GoalsModule } from './modules/goals/goals.module';
 import { FamiliesModule } from './modules/families/families.module';
@@ -45,6 +46,7 @@ import { UsersModule } from './modules/users/users.module';
     FamiliesModule,
     ImportantDatesModule,
     TasksModule,
+    DebtsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

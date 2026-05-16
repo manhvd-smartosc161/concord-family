@@ -7,6 +7,8 @@ import { PasswordResetToken } from './shared/auth/entities/password-reset-token.
 import { Anomaly } from './modules/insights/entities/anomaly.entity';
 import { Budget } from './modules/budgets/entities/budget.entity';
 import { Category } from './modules/categories/entities/category.entity';
+import { Debt } from './modules/debts/entities/debt.entity';
+import { DebtPayment } from './modules/debts/entities/debt-payment.entity';
 import { ChatMessage } from './modules/chat/entities/chat-message.entity';
 import { ChatSession } from './modules/chat/entities/chat-session.entity';
 import { Family } from './modules/families/entities/family.entity';
@@ -45,6 +47,8 @@ export const entities = [
   YearlyAiCache,
   Task,
   PasswordResetToken,
+  Debt,
+  DebtPayment,
 ];
 
 const databaseUrl = process.env.DATABASE_URL;
