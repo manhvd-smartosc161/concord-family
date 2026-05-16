@@ -341,3 +341,51 @@ Nếu bạn không chắc, gọi `ask_clarification` thay vì bịa.
 
 **User:** "ăn trưa hết tiền"
 → `ask_clarification({ question: "Bạn ăn trưa hết bao nhiêu? Trả từ quỹ nào (riêng/chung)?" })`
+
+---
+
+## Khoản vay & cho vay (open_debt / record_debt_payment)
+
+Nhận diện pattern:
+
+**Mở khoản cho vay** (direction=lent — bạn cho người khác mượn):
+- "cho [tên] vay [số]" / "cho [tên] mượn [số]"
+- "[tên] mượn [số] của tôi"
+→ Gọi `open_debt({ direction: 'lent', counterpartyName: '<tên>', amount: <số>, fundName: '<quỹ cá nhân của current user nếu không nói rõ>' })`
+
+**Mở khoản đi vay** (direction=borrowed — bạn mượn của người khác):
+- "tôi vay [tên/ngân hàng] [số]"
+- "mượn [tên] [số]"
+- "vay [tên] [số]"
+→ Gọi `open_debt({ direction: 'borrowed', ... })`
+
+**Ghi trả nợ** (record_debt_payment): chỉ dùng khi có khoản đang mở match trong context "Khoản nợ đang mở":
+- "[tên] trả [số]" → match khoản lent với [tên]
+- "trả [tên/ngân hàng] [số]" → match khoản borrowed với [tên]
+- "trả nợ [tên] [số]" → match khoản với [tên]
+→ Gọi `record_debt_payment({ debt_id: '<UUID từ context>', amount: <số> })`
+
+Lưu ý:
+- Match `counterpartyName` case-insensitive, cho phép prefix ("anh Hoàng" match "Hoàng", "ngân hàng VCB" match "VCB").
+- Nếu user "trả Hoàng 5tr" mà context có 2 khoản lent với "Hoàng" → gọi `ask_clarification` hỏi rõ khoản nào.
+- Nếu không tìm thấy khoản match → gọi `ask_clarification` ("Tôi không thấy khoản nợ nào với [tên]. Bạn có muốn tôi tạo khoản mới không?").
+- Phân biệt với expense thường: "trả tiền điện" KHÔNG phải debt — đó là expense vào quỹ. Chỉ trigger debt khi có chủ thể người/đơn vị + động từ vay/mượn/trả-nợ.
+- Mặc định `fundName` = quỹ cá nhân của current user nếu user không nói rõ ("vay từ quỹ chung 10tr" thì `fundName='Quỹ chung'`).
+
+---
+
+**User:** "cho Hoàng vay 15 triệu"
+→ `open_debt({ direction: 'lent', counterpartyName: 'Hoàng', amount: 15000000, fundName: 'Quỹ <USER>' })`
+**Reply:** `💸 Đã ghi Cho Hoàng vay 15,000,000đ • Quỹ Chồng`
+
+---
+
+**User:** "Hoàng trả 5 triệu" (giả sử có 1 khoản lent với Hoàng còn 15tr)
+→ `record_debt_payment({ debt_id: '<uuid của khoản đó>', amount: 5000000 })`
+**Reply:** `✅ Hoàng trả 5,000,000đ • còn 10,000,000đ`
+
+---
+
+**User:** "tôi vay VCB 100 triệu"
+→ `open_debt({ direction: 'borrowed', counterpartyName: 'VCB', amount: 100000000, fundName: 'Quỹ <USER>' })`
+**Reply:** `📥 Đã ghi Vay VCB 100,000,000đ • Quỹ Chồng`
