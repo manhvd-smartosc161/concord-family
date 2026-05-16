@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, IsNull, Repository } from 'typeorm';
+import { FamilyEventsNotifier } from '../../shared/notifications/family-events.service';
 import { Category } from '../categories/entities/category.entity';
 import { Fund } from '../funds/entities/fund.entity';
 import { TransactionsService } from '../transactions/transactions.service';
@@ -70,6 +71,7 @@ export class DebtsService {
     @InjectRepository(Fund) private readonly fundRepo: Repository<Fund>,
     @InjectRepository(Category) private readonly categoryRepo: Repository<Category>,
     private readonly transactionsService: TransactionsService,
+    private readonly familyEvents: FamilyEventsNotifier,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -190,7 +192,18 @@ export class DebtsService {
       }
 
       savedDebt.fund = fund;
-      return toDebtView(savedDebt);
+      const result = toDebtView(savedDebt);
+
+      void this.familyEvents.onJointDebtOpened({
+        fundId: fund.id,
+        direction: input.direction,
+        counterpartyName: input.counterpartyName,
+        principal: input.principal,
+        isLegacy,
+        actor: user,
+      });
+
+      return result;
     });
   }
   async recordPayment(
