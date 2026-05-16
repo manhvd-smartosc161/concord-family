@@ -437,8 +437,10 @@
   "debts": {
     "title": "Debts & Loans",
     "subtitle_template": "{owe} owed · {lent} lent",
-    "kpi_i_owe": "I owe",
-    "kpi_they_owe": "Owed to me",
+    "kpi_i_owe_personal": "I owe",
+    "kpi_they_owe_personal": "I lent",
+    "kpi_i_owe_family": "We owe",
+    "kpi_they_owe_family": "We lent",
     "kpi_net": "Net",
     "filter_status_all": "All statuses",
     "filter_status_open": "Open",

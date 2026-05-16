@@ -180,8 +180,16 @@ export default function DebtsPage() {
       <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto max-w-5xl space-y-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <StatCard label={t('kpi_i_owe')} value={formatVND(kpi.owe)} tone="negative" />
-            <StatCard label={t('kpi_they_owe')} value={formatVND(kpi.lent)} tone="positive" />
+            <StatCard
+              label={t(scope === 'personal' ? 'kpi_i_owe_personal' : 'kpi_i_owe_family')}
+              value={formatVND(kpi.owe)}
+              tone="negative"
+            />
+            <StatCard
+              label={t(scope === 'personal' ? 'kpi_they_owe_personal' : 'kpi_they_owe_family')}
+              value={formatVND(kpi.lent)}
+              tone="positive"
+            />
             <StatCard
               label={t('kpi_net')}
               value={formatVND(kpi.net, true)}
