@@ -618,6 +618,39 @@ function synthesizeReply(actions: ParseAction[]): string {
       );
     }
   }
+  const debtOpened = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'debt_opened' }> =>
+      a.kind === 'debt_opened',
+  );
+  const debtPaid = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'debt_payment_recorded' }> =>
+      a.kind === 'debt_payment_recorded',
+  );
+  for (const d of debtOpened) {
+    const verb =
+      d.direction === 'lent'
+        ? `Cho ${d.counterpartyName} vay`
+        : `Vay ${d.counterpartyName}`;
+    const icon = d.direction === 'lent' ? '💸' : '📥';
+    parts.push(`${icon} Đã ghi ${verb} ${formatVND(d.amount)} • ${d.fundName}`);
+  }
+  for (const p of debtPaid) {
+    if (p.settled) {
+      const what =
+        p.direction === 'lent'
+          ? `${p.counterpartyName} trả xong`
+          : `Trả xong cho ${p.counterpartyName}`;
+      parts.push(`🎉 ${what}! Khoản nợ đã đóng.`);
+    } else {
+      const what =
+        p.direction === 'lent'
+          ? `${p.counterpartyName} trả`
+          : `Trả ${p.counterpartyName}`;
+      parts.push(
+        `✅ ${what} ${formatVND(p.amount)} • còn ${formatVND(p.remainingAmount)}`,
+      );
+    }
+  }
   if (errors.length > 0) {
     parts.push(...errors.map((e) => `⚠️ ${e.message}`));
   }
