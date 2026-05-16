@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
+import { FamilyEventsNotifier } from '../../shared/notifications/family-events.service';
 import { Category } from '../categories/entities/category.entity';
 import { Fund } from '../funds/entities/fund.entity';
 import { OPENING_BALANCE_NOTE } from '../funds/opening-balance.constants';
@@ -59,6 +60,7 @@ export class TransactionsService {
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
     private readonly dataSource: DataSource,
+    private readonly familyEvents: FamilyEventsNotifier,
   ) {}
 
   /**
@@ -93,7 +95,7 @@ export class TransactionsService {
 
     const category = await this.resolveCategory(input.categoryName);
 
-    return this.dataSource.transaction(async (manager) => {
+    const result = await this.dataSource.transaction(async (manager) => {
       const created = manager.create(Transaction, {
         familyId: user.familyId!,
         userId: user.id,
@@ -116,6 +118,16 @@ export class TransactionsService {
 
       return { txn: saved, fund: updatedFund, category };
     });
+
+    void this.familyEvents.onJointTransaction({
+      fundId: result.fund.id,
+      amount: result.txn.amount,
+      note: result.txn.note,
+      categoryName: result.category?.name ?? null,
+      actor: user,
+    });
+
+    return result;
   }
 
   /**
