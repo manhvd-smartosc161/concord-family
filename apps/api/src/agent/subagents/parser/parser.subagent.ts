@@ -490,11 +490,21 @@ export class ParserSubagent {
         } else if (block.name === 'propose_new_debt') {
           const input = block.input as ProposeNewDebtInput;
           try {
+            let resolvedVisibility = input.visibility ?? 'private';
+            if (input.fundName) {
+              const fundForVisibility = await this.fundRepo.findOne({
+                where: { name: input.fundName, familyId: user.familyId! },
+              });
+              if (fundForVisibility) {
+                resolvedVisibility =
+                  fundForVisibility.type === 'joint' ? 'shared' : 'private';
+              }
+            }
             const view = await this.debtsService.create(user, {
               direction: input.direction,
               counterparty: input.counterparty,
               principal: input.principal,
-              visibility: input.visibility ?? 'private',
+              visibility: resolvedVisibility,
               dueDate: input.dueDate,
               note: input.note,
             });
