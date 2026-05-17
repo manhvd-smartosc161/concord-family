@@ -1,4 +1,4 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:1601';
 const TOKEN_KEY = 'concord_access_token';
 
 export function getToken(): string | null {
