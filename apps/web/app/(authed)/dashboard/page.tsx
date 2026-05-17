@@ -10,6 +10,8 @@ import { getMonthlyReport } from '@/features/reports/api';
 import type { MonthlyReport } from '@/features/reports/types';
 import { listGoals } from '@/features/goals/api';
 import type { GoalView } from '@/features/goals/types';
+import { getDebtsSummary } from '@/features/debts/api';
+import type { DebtSummary } from '@/features/debts/types';
 import { listTasks } from '@/features/tasks/api';
 import type { Task } from '@/features/tasks/types';
 import { useAuthedLayout } from '../layout';
@@ -45,6 +47,7 @@ export default function DashboardPage() {
   const [report, setReport] = useState<MonthlyReport | null>(null);
   const [yearGoal, setYearGoal] = useState<GoalView | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [debtSummary, setDebtSummary] = useState<DebtSummary | null>(null);
 
   useEffect(() => {
     const now = new Date();
@@ -53,12 +56,14 @@ export default function DashboardPage() {
       getMonthlyReport(now.getFullYear(), now.getMonth() + 1, 'all'),
       listGoals(),
       listTasks(getISOWeek(now)),
+      getDebtsSummary(),
     ])
-      .then(([upcomingView, rep, goals, taskList]) => {
+      .then(([upcomingView, rep, goals, taskList, debtSum]) => {
         setUpcoming(upcomingView.items.slice(0, 3));
         setReport(rep);
         setYearGoal(goals.find((g) => g.period === 'year' && g.type === 'save') ?? null);
         setTasks(taskList);
+        setDebtSummary(debtSum);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -89,6 +94,7 @@ export default function DashboardPage() {
             <YearGoalWidget goal={yearGoal} loading={loading} t={t} />
             <TasksWidget incomplete={incompleteTasks} total={tasks.length} loading={loading} t={t} />
           </div>
+          <DebtSummaryWidget summary={debtSummary} loading={loading} t={t} />
         </div>
       </div>
     </div>
@@ -289,6 +295,59 @@ function YearGoalWidget({
       </div>
       <ProgressBar value={pct} max={100} tone={tone} />
       <div className="mt-2 text-[11px] text-muted-foreground">{t('goal_days_remaining', { days: goal.daysRemaining })}</div>
+    </Card>
+  );
+}
+
+function DebtSummaryWidget({
+  summary,
+  loading,
+  t,
+}: {
+  summary: DebtSummary | null;
+  loading: boolean;
+  t: TFn;
+}) {
+  const hasDebts = summary && (summary.openLentCount > 0 || summary.openBorrowedCount > 0);
+  return (
+    <Card>
+      <div className="mb-3 flex items-baseline justify-between">
+        <h3 className="text-sm font-semibold text-foreground">🤝 {t('debts_title')}</h3>
+        <Link href="/debts" className="text-xs text-emerald-700 hover:text-emerald-900">
+          {t('debts_view_all')}
+        </Link>
+      </div>
+      {loading && (
+        <div className="grid grid-cols-2 gap-3">
+          <Skeleton className="h-16 w-full rounded-lg" />
+          <Skeleton className="h-16 w-full rounded-lg" />
+        </div>
+      )}
+      {!loading && !hasDebts && (
+        <EmptyState icon="🤝" title={t('debts_empty')} description="" />
+      )}
+      {!loading && hasDebts && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 px-4 py-3 dark:border-emerald-900 dark:bg-emerald-950/40">
+            <div className="text-xs text-muted-foreground">{t('debts_lent')}</div>
+            <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-emerald-700">
+              {formatVND(summary.totalLent)}
+            </div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">
+              {t('debts_open_lent', { count: summary.openLentCount })}
+            </div>
+          </div>
+          <div className="rounded-lg border border-rose-100 bg-rose-50/40 px-4 py-3 dark:border-rose-900 dark:bg-rose-950/40">
+            <div className="text-xs text-muted-foreground">{t('debts_borrowed')}</div>
+            <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-rose-700">
+              {formatVND(summary.totalBorrowed)}
+            </div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">
+              {t('debts_open_borrowed', { count: summary.openBorrowedCount })}
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

@@ -388,7 +388,14 @@
     "tasks_empty": "No tasks",
     "tasks_incomplete": "incomplete / {total} tasks",
     "tasks_done": "{done} / {total} done",
-    "tasks_more": "+{count} more"
+    "tasks_more": "+{count} more",
+    "debts_title": "Debts & Loans",
+    "debts_view_all": "View all →",
+    "debts_lent": "Lent out",
+    "debts_borrowed": "Borrowed",
+    "debts_empty": "No debts",
+    "debts_open_lent": "{count} open",
+    "debts_open_borrowed": "{count} open"
   },
   "family": {
     "invite_title": "Invite member",

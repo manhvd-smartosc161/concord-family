@@ -388,7 +388,14 @@
     "tasks_empty": "Không có task nào",
     "tasks_incomplete": "chưa xong / {total} task",
     "tasks_done": "{done} / {total} hoàn thành",
-    "tasks_more": "+{count} task khác"
+    "tasks_more": "+{count} task khác",
+    "debts_title": "Nợ & Cho vay",
+    "debts_view_all": "Xem tất cả →",
+    "debts_lent": "Đã cho vay",
+    "debts_borrowed": "Đang nợ",
+    "debts_empty": "Không có khoản nợ nào",
+    "debts_open_lent": "{count} khoản",
+    "debts_open_borrowed": "{count} khoản"
   },
   "family": {
     "invite_title": "Mời thành viên",
