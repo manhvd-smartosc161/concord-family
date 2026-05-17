@@ -101,8 +101,9 @@ export default function TransactionsPage() {
   }, [year, month, fundFilter, debouncedSearch, page]);
 
   useEffect(() => {
+    if (!fundFilter) return;
     void fetchData();
-  }, [fetchData]);
+  }, [fetchData, fundFilter]);
 
   const stats = useMemo(() => {
     let income = 0;
