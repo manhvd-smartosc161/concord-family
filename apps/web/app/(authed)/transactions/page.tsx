@@ -46,11 +46,12 @@ export default function TransactionsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
-    if (!fundFilter && funds.length > 0) {
-      const joint = funds.find((f) => f.type === 'joint');
-      setFundFilter(joint?.id ?? funds[0].id);
-    }
-  }, [funds, fundFilter]);
+    if (funds.length === 0) return;
+    const fundIds = funds.map((f) => f.id);
+    if (fundFilter && fundIds.includes(fundFilter)) return;
+    const joint = funds.find((f) => f.type === 'joint');
+    setFundFilter(joint?.id ?? funds[0].id);
+  }, [funds]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -87,7 +88,6 @@ export default function TransactionsPage() {
         q: debouncedSearch.trim() || undefined,
         offset: page * PAGE_SIZE,
         limit: PAGE_SIZE,
-        scope: 'all',
       });
       setItems(res.items);
       setTotal(res.total);
