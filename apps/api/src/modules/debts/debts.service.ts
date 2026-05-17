@@ -87,11 +87,13 @@ export class DebtsService {
 
   async listForUser(
     user: User,
-    opts: { status?: 'open' | 'settled' | 'all'; direction?: 'lent' | 'borrowed' | 'all' },
+    opts: { status?: 'open' | 'settled' | 'all'; direction?: 'lent' | 'borrowed' | 'all'; fundId?: string },
   ): Promise<DebtView[]> {
     const fundIds = await this.visibleFundIds(user);
     if (fundIds.length === 0) return [];
-    const where: any = { fundId: In(fundIds), familyId: user.familyId! };
+    const allowedIds = opts.fundId ? fundIds.filter((id) => id === opts.fundId) : fundIds;
+    if (allowedIds.length === 0) return [];
+    const where: any = { fundId: In(allowedIds), familyId: user.familyId! };
     const status = opts.status ?? 'open';
     if (status !== 'all') where.status = status;
     const direction = opts.direction ?? 'all';
@@ -104,8 +106,9 @@ export class DebtsService {
     });
     return debts.map(toDebtView);
   }
-  async summaryForUser(user: User): Promise<DebtSummary> {
-    const list = await this.listForUser(user, { status: 'open', direction: 'all' });
+  async summaryForUser(user: User, fundId?: string): Promise<DebtSummary> {
+    let list = await this.listForUser(user, { status: 'open', direction: 'all' });
+    if (fundId) list = list.filter((d) => d.fundId === fundId);
     let totalLent = 0, totalBorrowed = 0, openLentCount = 0, openBorrowedCount = 0;
     for (const d of list) {
       if (d.direction === 'lent') { totalLent += d.remainingAmount; openLentCount++; }

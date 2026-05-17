@@ -16,13 +16,14 @@ export class DebtsController {
     @CurrentUser() user: User,
     @Query('status') status?: 'open' | 'settled' | 'all',
     @Query('direction') direction?: 'lent' | 'borrowed' | 'all',
+    @Query('fundId') fundId?: string,
   ) {
-    return this.debtsService.listForUser(user, { status, direction });
+    return this.debtsService.listForUser(user, { status, direction, fundId });
   }
 
   @Get('summary')
-  summary(@CurrentUser() user: User) {
-    return this.debtsService.summaryForUser(user);
+  summary(@CurrentUser() user: User, @Query('fundId') fundId?: string) {
+    return this.debtsService.summaryForUser(user, fundId);
   }
 
   @Get(':id')
