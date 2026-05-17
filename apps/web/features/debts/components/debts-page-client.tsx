@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { PageHeader } from '@/components/ui';
 import type { FundView } from '@/features/funds/types';
+import { FundFilterTabs } from '@/features/funds/components/fund-filter-tabs';
 import { listDebts, getDebtsSummary } from '../api';
 import type { DebtSummary, DebtView } from '../types';
 import { DebtsSummaryCards } from './debts-summary-cards';
@@ -31,6 +32,7 @@ interface Props {
 export function DebtsPageClient({ funds, initialDebts, initialSummary, onMutated }: Props) {
   const t = useTranslations('debts');
   const [tab, setTab] = useState<TabKey>('lent');
+  const [fundFilter, setFundFilter] = useState<string>('');
   const [debts, setDebts] = useState<DebtView[]>(initialDebts);
   const [summary, setSummary] = useState<DebtSummary>(initialSummary);
   const [loading, setLoading] = useState(false);
@@ -39,16 +41,23 @@ export function DebtsPageClient({ funds, initialDebts, initialSummary, onMutated
   const [paymentDebt, setPaymentDebt] = useState<DebtView | null>(null);
   const [detailDebtId, setDetailDebtId] = useState<string | null>(null);
 
-  const load = useCallback(async (activeTab: TabKey) => {
+  useEffect(() => {
+    if (funds.length === 0) return;
+    const joint = funds.find((f) => f.type === 'joint' && f.purpose === 'spending');
+    setFundFilter(joint?.id ?? funds[0].id);
+  }, [funds]);
+
+  const load = useCallback(async (activeTab: TabKey, activeFundId: string) => {
+    if (!activeFundId) return;
     setLoading(true);
     try {
       const [list, s] = await Promise.all([
         listDebts(
           activeTab === 'settled'
-            ? { status: 'settled' }
-            : { status: 'open', direction: activeTab },
+            ? { status: 'settled', fundId: activeFundId }
+            : { status: 'open', direction: activeTab, fundId: activeFundId },
         ),
-        getDebtsSummary(),
+        getDebtsSummary(activeFundId),
       ]);
       setDebts(list);
       setSummary(s);
@@ -60,12 +69,13 @@ export function DebtsPageClient({ funds, initialDebts, initialSummary, onMutated
   }, []);
 
   useEffect(() => {
-    void load(tab);
-  }, [tab, load]);
+    if (!fundFilter) return;
+    void load(tab, fundFilter);
+  }, [tab, fundFilter, load]);
 
   async function handleMutated() {
     onMutated();
-    await load(tab);
+    await load(tab, fundFilter);
   }
 
   return (
@@ -87,6 +97,12 @@ export function DebtsPageClient({ funds, initialDebts, initialSummary, onMutated
       <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto max-w-5xl space-y-5">
           <DebtsSummaryCards summary={summary} />
+
+          <FundFilterTabs
+            funds={funds.filter((f) => f.purpose === 'spending')}
+            value={fundFilter}
+            onChange={(id) => { setFundFilter(id); }}
+          />
 
           <div className="flex gap-1 rounded-xl border border-border bg-muted p-1">
             {TABS.map((tab_item) => (

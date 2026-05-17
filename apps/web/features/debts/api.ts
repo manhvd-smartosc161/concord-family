@@ -10,16 +10,19 @@ import type {
 export function listDebts(params?: {
   status?: 'open' | 'settled' | 'all';
   direction?: 'lent' | 'borrowed' | 'all';
+  fundId?: string;
 }): Promise<DebtView[]> {
   const qs = new URLSearchParams();
   if (params?.status) qs.set('status', params.status);
   if (params?.direction) qs.set('direction', params.direction);
+  if (params?.fundId) qs.set('fundId', params.fundId);
   const suffix = qs.toString() ? `?${qs.toString()}` : '';
   return apiFetch<DebtView[]>(`/api/debts${suffix}`);
 }
 
-export function getDebtsSummary(): Promise<DebtSummary> {
-  return apiFetch<DebtSummary>('/api/debts/summary');
+export function getDebtsSummary(fundId?: string): Promise<DebtSummary> {
+  const qs = fundId ? `?fundId=${encodeURIComponent(fundId)}` : '';
+  return apiFetch<DebtSummary>(`/api/debts/summary${qs}`);
 }
 
 export function getDebt(id: string): Promise<DebtDetail> {

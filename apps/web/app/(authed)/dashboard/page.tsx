@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { formatVND } from '@/lib/format';
 import { listUpcoming } from '@/features/important-dates/api';
@@ -45,18 +45,24 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [upcoming, setUpcoming] = useState<AgendaItem[]>([]);
   const [report, setReport] = useState<MonthlyReport | null>(null);
+  const [reportFundId, setReportFundId] = useState<string>('');
+  const [reportLoading, setReportLoading] = useState(false);
   const [yearGoal, setYearGoal] = useState<GoalView | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [debtSummary, setDebtSummary] = useState<DebtSummary | null>(null);
+  const [debtLoading, setDebtLoading] = useState(false);
+  const reportInitialized = useRef(false);
+
+  const jointFundId = funds.find((f) => f.type === 'joint' && f.purpose === 'spending')?.id;
 
   useEffect(() => {
     const now = new Date();
     Promise.all([
       listUpcoming(3),
-      getMonthlyReport(now.getFullYear(), now.getMonth() + 1, 'all'),
+      getMonthlyReport(now.getFullYear(), now.getMonth() + 1, 'joint'),
       listGoals(),
       listTasks(getISOWeek(now)),
-      getDebtsSummary(),
+      getDebtsSummary(jointFundId),
     ])
       .then(([upcomingView, rep, goals, taskList, debtSum]) => {
         setUpcoming(upcomingView.items.slice(0, 3));
@@ -66,7 +72,34 @@ export default function DashboardPage() {
         setDebtSummary(debtSum);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [jointFundId]);
+
+  useEffect(() => {
+    if (!reportInitialized.current) {
+      reportInitialized.current = true;
+      return;
+    }
+    const now = new Date();
+    setReportLoading(true);
+    setDebtLoading(true);
+    Promise.all([
+      getMonthlyReport(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        reportFundId ? 'all' : 'joint',
+        reportFundId || undefined,
+      ),
+      getDebtsSummary(reportFundId || jointFundId),
+    ])
+      .then(([rep, debtSum]) => {
+        setReport(rep);
+        setDebtSummary(debtSum);
+      })
+      .finally(() => {
+        setReportLoading(false);
+        setDebtLoading(false);
+      });
+  }, [reportFundId]);
 
   const now = new Date();
   const spendingFunds = funds.filter((f) => f.purpose === 'spending');
@@ -89,12 +122,20 @@ export default function DashboardPage() {
             <UpcomingWidget items={upcoming} loading={loading} locale={locale} t={t} />
             <FundsWidget funds={spendingFunds} loading={loading} t={t} />
           </div>
-          <MonthStatsWidget report={report} loading={loading} t={t} tReports={tReports} />
+          <MonthStatsWidget
+            report={report}
+            loading={loading || reportLoading}
+            funds={spendingFunds}
+            selectedFundId={reportFundId}
+            onFundChange={setReportFundId}
+            t={t}
+            tReports={tReports}
+          />
+          <DebtSummaryWidget summary={debtSummary} loading={loading || debtLoading} t={t} />
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             <YearGoalWidget goal={yearGoal} loading={loading} t={t} />
             <TasksWidget incomplete={incompleteTasks} total={tasks.length} loading={loading} t={t} />
           </div>
-          <DebtSummaryWidget summary={debtSummary} loading={loading} t={t} />
         </div>
       </div>
     </div>
@@ -209,11 +250,17 @@ function FundsWidget({ funds, loading, t }: { funds: FundView[]; loading: boolea
 function MonthStatsWidget({
   report,
   loading,
+  funds,
+  selectedFundId,
+  onFundChange,
   t,
   tReports,
 }: {
   report: MonthlyReport | null;
   loading: boolean;
+  funds: FundView[];
+  selectedFundId: string;
+  onFundChange: (id: string) => void;
   t: TFn;
   tReports: TFn;
 }) {
@@ -224,6 +271,33 @@ function MonthStatsWidget({
         <Link href="/reports" className="text-xs text-emerald-700 hover:text-emerald-900">
           {t('month_detail')}
         </Link>
+      </div>
+      <div className="mb-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => onFundChange('')}
+          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+            !selectedFundId
+              ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          💛 Quỹ Chung
+        </button>
+        {funds.filter((f) => f.type === 'personal').map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            onClick={() => onFundChange(f.id)}
+            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              selectedFundId === f.id
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            💰 {f.name}
+          </button>
+        ))}
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatCard
