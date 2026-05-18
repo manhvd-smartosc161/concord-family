@@ -33,6 +33,17 @@ function currentWeekYear(): string {
   );
 }
 
+function addWeeks(weekYear: string, delta: number): string {
+  const [year, wPart] = weekYear.split('-W');
+  const week = parseInt(wPart, 10);
+  const jan4 = new Date(parseInt(year, 10), 0, 4);
+  const startOfWeek1 = new Date(jan4);
+  startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() || 7) - 1));
+  const result = new Date(startOfWeek1);
+  result.setDate(startOfWeek1.getDate() + (week - 1 + delta) * 7);
+  return isoWeekYear(result);
+}
+
 const VALID_CATEGORIES: TaskCategory[] = [
   'shopping',
   'chores',
@@ -87,8 +98,25 @@ Task: "${title}"`,
     }
   }
 
-  list(user: User, week?: string): Promise<Task[]> {
+  async list(user: User, week?: string): Promise<Task[]> {
     const weekYear = week ?? currentWeekYear();
+    const thisWeek = currentWeekYear();
+
+    if (weekYear === thisWeek) {
+      const prevWeek = addWeeks(thisWeek, -1);
+      const incomplete = await this.taskRepo.find({
+        where: [
+          { familyId: user.familyId!, weekYear: prevWeek, status: 'todo' as const },
+          { familyId: user.familyId!, weekYear: prevWeek, status: 'in_progress' as const },
+        ],
+      });
+      if (incomplete.length > 0) {
+        await this.taskRepo.save(
+          incomplete.map((t) => ({ ...t, weekYear: thisWeek })),
+        );
+      }
+    }
+
     return this.taskRepo.find({
       where: { familyId: user.familyId!, weekYear },
       order: { createdAt: 'ASC' },
