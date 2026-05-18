@@ -1,10 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { UserAvatar } from '@/features/auth/components/user-avatar';
 import type { AuthUser } from '@/features/auth/types';
-import type { Task, TaskAssignee, TaskCategory, TaskStatus, UpdateTaskInput } from '../types';
+import type { Task, TaskCategory, TaskStatus, UpdateTaskInput } from '../types';
 
 const CATEGORY_CONFIG: Record<TaskCategory, { bar: string; chip: string }> = {
   shopping:  { bar: 'bg-sky-400',     chip: 'bg-sky-50/80 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400' },
@@ -27,12 +27,11 @@ interface Props {
   task: Task;
   members: AuthUser[];
   onUpdate: (id: string, input: UpdateTaskInput) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  onOpenDetail: (task: Task) => void;
 }
 
-export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
+export function TaskCard({ task, members, onUpdate, onOpenDetail }: Props) {
   const t = useTranslations('tasks');
-  const tCommon = useTranslations('common');
 
   const CATEGORIES: { value: TaskCategory; icon: string; label: string }[] = [
     { value: 'shopping',  icon: '🛒', label: t('category_shopping') },
@@ -44,19 +43,8 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
     { value: 'kids',      icon: '👶', label: t('category_kids') },
     { value: 'transport', icon: '🚗', label: t('category_transport') },
   ];
-  const ASSIGNEES: { value: TaskAssignee; label: string }[] = [
-    { value: 'both',    label: `👫 ${t('assignee_both')}` },
-    { value: 'husband', label: `👨 ${t('assignee_husband')}` },
-    { value: 'wife',    label: `👩 ${t('assignee_wife')}` },
-  ];
 
-  const [editing, setEditing] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [draftTitle, setDraftTitle] = useState(task.title);
-  const [draftAssignee, setDraftAssignee] = useState<TaskAssignee>(task.assignee);
-  const [draftNote, setDraftNote] = useState(task.note ?? '');
   const [saving, setSaving] = useState(false);
-  const titleRef = useRef<HTMLInputElement>(null);
 
   const cat = CATEGORY_CONFIG[task.category];
   const nextStatus = NEXT_STATUS[task.status];
@@ -66,25 +54,8 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
     ? members
     : members.filter((m) => m.role === task.assignee);
 
-  function openEdit() {
-    setDraftTitle(task.title);
-    setDraftAssignee(task.assignee);
-    setDraftNote(task.note ?? '');
-    setConfirmDelete(false);
-    setEditing(true);
-    setTimeout(() => titleRef.current?.focus(), 30);
-  }
-
-  async function saveEdit() {
-    const trimmed = draftTitle.trim();
-    if (!trimmed) return;
-    setSaving(true);
-    await onUpdate(task.id, { title: trimmed, assignee: draftAssignee, note: draftNote || null });
-    setSaving(false);
-    setEditing(false);
-  }
-
-  async function handleStatusAdvance() {
+  async function handleStatusAdvance(e: React.MouseEvent) {
+    e.stopPropagation();
     if (!nextStatus) return;
     setSaving(true);
     await onUpdate(task.id, { status: nextStatus });
@@ -92,177 +63,68 @@ export function TaskCard({ task, members, onUpdate, onDelete }: Props) {
   }
 
   return (
-    <div className={`overflow-hidden rounded-2xl bg-card shadow-sm ring-1 ring-border/80 transition-shadow hover:shadow-md ${isDone ? 'opacity-55' : ''}`}>
+    <div
+      className={`overflow-hidden rounded-2xl bg-card shadow-sm ring-1 ring-border/80 transition-shadow hover:shadow-md cursor-pointer ${isDone ? 'opacity-55' : ''}`}
+      onClick={() => onOpenDetail(task)}
+    >
+      <div className="flex gap-0">
+        <div className={`w-1 shrink-0 rounded-l-2xl ${cat.bar}`} />
 
-      {editing ? (
-        /* ── Edit mode ── */
-        <div className="p-3 space-y-2.5">
-          <input
-            ref={titleRef}
-            type="text"
-            value={draftTitle}
-            onChange={(e) => setDraftTitle(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') void saveEdit(); if (e.key === 'Escape') setEditing(false); }}
-            className="w-full rounded-xl border border-input bg-muted px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:border-emerald-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
-            placeholder={t('title_placeholder')}
-            disabled={saving}
-          />
-
-          <div className="flex flex-wrap gap-1.5">
-            {ASSIGNEES.map((a) => (
-              <button
-                key={a.value}
-                type="button"
-                onClick={() => setDraftAssignee(a.value)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
-                  draftAssignee === a.value
-                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 shadow-sm ring-1 ring-emerald-200 dark:ring-emerald-900'
-                    : 'bg-muted text-muted-foreground hover:bg-muted'
-                }`}
-              >
-                {a.label}
-              </button>
-            ))}
+        <div className="min-w-0 flex-1 px-3.5 py-3">
+          <div className="flex items-start gap-1.5">
+            <p className={`flex-1 min-w-0 text-sm font-medium leading-snug text-foreground ${isDone ? 'line-through decoration-muted-foreground decoration-[1.5px]' : ''}`}>
+              {task.title}
+            </p>
           </div>
 
-          <textarea
-            className="w-full resize-none rounded-xl border border-input bg-muted px-3 py-2 text-xs text-muted-foreground placeholder:text-muted-foreground focus:border-emerald-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
-            rows={2}
-            placeholder={t('note_placeholder')}
-            value={draftNote}
-            onChange={(e) => setDraftNote(e.target.value)}
-          />
 
-          <div className="flex justify-end gap-2 pt-0.5">
-            <button
-              type="button"
-              onClick={() => setEditing(false)}
-              className="rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              {tCommon('cancel')}
-            </button>
-            <button
-              type="button"
-              disabled={saving || !draftTitle.trim()}
-              onClick={saveEdit}
-              className="rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-40"
-            >
-              {saving ? tCommon('saving') : tCommon('save')}
-            </button>
-          </div>
-        </div>
-      ) : confirmDelete ? (
-        /* ── Delete confirm ── */
-        <div className="flex items-center gap-3 px-4 py-3.5">
-          <svg className="shrink-0 text-red-400" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 2a6 6 0 100 12A6 6 0 008 2zm0 3.5v3m0 2h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
-          <p className="flex-1 text-xs font-medium text-muted-foreground leading-snug">
-            {tCommon('delete')} &ldquo;<span className="text-foreground">{task.title}</span>&rdquo;?
-          </p>
-          <button
-            type="button"
-            onClick={() => setConfirmDelete(false)}
-            className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            {tCommon('cancel')}
-          </button>
-          <button
-            type="button"
-            onClick={() => { setConfirmDelete(false); void onDelete(task.id); }}
-            className="shrink-0 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-600"
-          >
-            {tCommon('delete')}
-          </button>
-        </div>
-      ) : (
-        /* ── View mode ── */
-        <div className="flex gap-0">
-          {/* Color bar */}
-          <div className={`w-1 shrink-0 rounded-l-2xl ${cat.bar}`} />
 
-          <div className="min-w-0 flex-1 px-3.5 py-3">
-            {/* Title + actions */}
-            <div className="flex items-start gap-1.5">
-              <p
-                className={`flex-1 min-w-0 text-sm font-medium leading-snug text-foreground ${isDone ? 'line-through decoration-muted-foreground decoration-[1.5px]' : ''}`}
-              >
-                {task.title}
-              </p>
-              <button
-                type="button"
-                onClick={openEdit}
-                className="shrink-0 mt-px flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:bg-muted hover:text-muted-foreground"
-                aria-label={tCommon('edit')}
-              >
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                  <path d="M8.5 1.5l2 2-6 6H2.5v-2l6-6z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="shrink-0 mt-px flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground/40 transition-colors hover:bg-red-50 dark:hover:bg-red-900/60 hover:text-red-400"
-                aria-label={tCommon('delete')}
-              >
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                  <path d="M9 3L3 9M3 3l6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </button>
-            </div>
-
-            {task.note && (
-              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{task.note}</p>
+          <div className="mt-2.5 flex items-center gap-2">
+            {catEntry && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${cat.chip}`}>
+                <span className="text-[11px] leading-none">{catEntry.icon}</span>
+                {catEntry.label}
+              </span>
             )}
 
-            {/* Footer: chip + avatars + action */}
-            <div className="mt-2.5 flex items-center gap-2">
-              {catEntry && (
-                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${cat.chip}`}>
-                  <span className="text-[11px] leading-none">{catEntry.icon}</span>
-                  {catEntry.label}
-                </span>
-              )}
+            {assigneeAvatars.length > 0 && (
+              <div className="flex -space-x-1.5">
+                {assigneeAvatars.map((m) => (
+                  <div key={m.id} className="rounded-full ring-[1.5px] ring-card">
+                    <UserAvatar user={m} size={20} />
+                  </div>
+                ))}
+              </div>
+            )}
 
-              {assigneeAvatars.length > 0 && (
-                <div className="flex -space-x-1.5">
-                  {assigneeAvatars.map((m) => (
-                    <div key={m.id} className="rounded-full ring-[1.5px] ring-card">
-                      <UserAvatar user={m} size={20} />
-                    </div>
-                  ))}
-                </div>
-              )}
+            {nextStatus && (
+              <button
+                type="button"
+                disabled={saving}
+                onClick={handleStatusAdvance}
+                className={`ml-auto flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all disabled:opacity-40 ${
+                  task.status === 'todo'
+                    ? 'bg-muted text-muted-foreground hover:bg-amber-50 dark:hover:bg-amber-900/60 hover:text-amber-600'
+                    : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
+                }`}
+              >
+                {task.status === 'todo' ? (
+                  <><svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><polygon points="2,1 7,4 2,7"/></svg>{t('start')}</>
+                ) : (
+                  <><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>{t('done')}</>
+                )}
+              </button>
+            )}
 
-              {nextStatus && (
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={handleStatusAdvance}
-                  className={`ml-auto flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all disabled:opacity-40 ${
-                    task.status === 'todo'
-                      ? 'bg-muted text-muted-foreground hover:bg-amber-50 dark:hover:bg-amber-900/60 hover:text-amber-600'
-                      : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
-                  }`}
-                >
-                  {task.status === 'todo' ? (
-                    <><svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><polygon points="2,1 7,4 2,7"/></svg>{t('start')}</>
-                  ) : (
-                    <><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>{t('done')}</>
-                  )}
-                </button>
-              )}
-
-              {isDone && (
-                <span className="ml-auto flex items-center gap-1 text-[11px] font-medium text-emerald-500">
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  {t('completed')}
-                </span>
-              )}
-            </div>
+            {isDone && (
+              <span className="ml-auto flex items-center gap-1 text-[11px] font-medium text-emerald-500">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                {t('completed')}
+              </span>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

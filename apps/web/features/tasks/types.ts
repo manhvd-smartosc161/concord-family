@@ -12,6 +12,7 @@ export interface Task {
   status: TaskStatus;
   weekYear: string;
   note: string | null;
+  description: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,6 +23,7 @@ export interface CreateTaskInput {
   assignee: TaskAssignee;
   weekYear?: string;
   note?: string;
+  description?: string;
 }
 
 export interface UpdateTaskInput {
@@ -30,4 +32,5 @@ export interface UpdateTaskInput {
   assignee?: TaskAssignee;
   status?: TaskStatus;
   note?: string | null;
+  description?: string | null;
 }

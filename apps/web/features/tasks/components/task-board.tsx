@@ -5,8 +5,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import { familyMembers } from '@/features/auth/api';
 import type { AuthUser } from '@/features/auth/types';
 import { createTask, deleteTask, listTasks, updateTask } from '../api';
-import type { CreateTaskInput, Task, TaskAssignee, TaskStatus, UpdateTaskInput } from '../types';
+import type { CreateTaskInput, Task, TaskStatus, UpdateTaskInput } from '../types';
 import { TaskCard } from './task-card';
+import { TaskDetailModal } from './task-detail-modal';
 import { TaskQuickAdd } from './task-quick-add';
 
 function getISOWeek(date: Date): string {
@@ -56,6 +57,7 @@ export function TaskBoard() {
   const [loading, setLoading] = useState(true);
   const [mobileStatus, setMobileStatus] = useState<TaskStatus>('todo');
   const [members, setMembers] = useState<AuthUser[]>([]);
+  const [detailTask, setDetailTask] = useState<Task | null>(null);
   const isCurrentWeek = currentWeek === getISOWeek(new Date());
 
   const reload = useCallback(async (week: string) => {
@@ -204,7 +206,7 @@ export function TaskBoard() {
                 {tasks
                   .filter((t) => t.status === mobileStatus)
                   .map((task) => (
-                    <TaskCard key={task.id} task={task} members={members} onUpdate={handleUpdate} onDelete={handleDelete} />
+                    <TaskCard key={task.id} task={task} members={members} onUpdate={handleUpdate} onOpenDetail={setDetailTask} />
                   ))}
                 {tasks.filter((t) => t.status === mobileStatus).length === 0 && (
                   <div className="rounded-xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground/50">
@@ -241,7 +243,7 @@ export function TaskBoard() {
                   <div className="flex-1 overflow-y-auto p-3">
                     <div className="flex flex-col gap-2">
                       {col.map((task) => (
-                        <TaskCard key={task.id} task={task} members={members} onUpdate={handleUpdate} onDelete={handleDelete} />
+                        <TaskCard key={task.id} task={task} members={members} onUpdate={handleUpdate} onOpenDetail={setDetailTask} />
                       ))}
                       {col.length === 0 && (
                         <div className="mt-4 rounded-xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground/50">
@@ -256,6 +258,15 @@ export function TaskBoard() {
           </div>
         </>
       )}
+
+      <TaskDetailModal
+        open={detailTask !== null}
+        task={detailTask}
+        members={members}
+        onClose={() => setDetailTask(null)}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }

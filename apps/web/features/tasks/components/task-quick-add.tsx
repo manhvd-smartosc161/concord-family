@@ -20,6 +20,7 @@ export function TaskQuickAdd({ onAdd }: Props) {
 
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [assignee, setAssignee] = useState<TaskAssignee>('both');
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -29,18 +30,19 @@ export function TaskQuickAdd({ onAdd }: Props) {
     setTimeout(() => inputRef.current?.focus(), 50);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!title.trim()) return;
     setLoading(true);
-    await onAdd({ title: title.trim(), assignee });
+    await onAdd({ title: title.trim(), assignee, description: description.trim() || undefined });
     setTitle('');
+    setDescription('');
     setLoading(false);
     setOpen(false);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Escape') { setOpen(false); setTitle(''); }
+    if (e.key === 'Escape') { setOpen(false); setTitle(''); setDescription(''); }
   }
 
   if (!open) {
@@ -71,6 +73,14 @@ export function TaskQuickAdd({ onAdd }: Props) {
         onChange={(e) => setTitle(e.target.value)}
         placeholder={t('title_placeholder')}
         className="w-full bg-transparent text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none"
+        disabled={loading}
+      />
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder={t('description_placeholder')}
+        rows={2}
+        className="mt-1.5 w-full resize-none bg-transparent text-xs text-muted-foreground placeholder:text-muted-foreground/60 focus:outline-none"
         disabled={loading}
       />
       <div className="mt-2 flex items-center gap-2">
