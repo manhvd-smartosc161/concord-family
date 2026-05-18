@@ -64,8 +64,9 @@ export class TasksService {
     private readonly familyEvents: FamilyEventsNotifier,
   ) {}
 
-  private async classifyCategory(title: string): Promise<TaskCategory> {
+  private async classifyCategory(title: string, description?: string | null): Promise<TaskCategory> {
     try {
+      const taskText = description ? `${title}\n${description}` : title;
       const msg = await this.anthropic.client.messages.create({
         model: this.anthropic.fastModel,
         max_tokens: 10,
@@ -84,7 +85,7 @@ Categories:
 - kids: đón con, học bài cùng con, đồ dùng trẻ em, trường học
 - transport: sửa xe, đổ xăng, bảo dưỡng xe, di chuyển
 
-Task: "${title}"`,
+Task: "${taskText}"`,
           },
         ],
       });
@@ -119,12 +120,12 @@ Task: "${title}"`,
 
     return this.taskRepo.find({
       where: { familyId: user.familyId!, weekYear },
-      order: { createdAt: 'ASC' },
+      order: { createdAt: 'DESC' },
     });
   }
 
   async create(user: User, dto: CreateTaskDto): Promise<Task> {
-    const category = dto.category ?? (await this.classifyCategory(dto.title));
+    const category = dto.category ?? (await this.classifyCategory(dto.title, dto.description));
     const task = this.taskRepo.create({
       familyId: user.familyId!,
       createdBy: user.id,
@@ -132,6 +133,7 @@ Task: "${title}"`,
       category,
       assignee: dto.assignee,
       note: dto.note ?? null,
+      description: dto.description ?? null,
       weekYear: dto.weekYear ?? currentWeekYear(),
       status: 'todo',
     });
@@ -148,8 +150,12 @@ Task: "${title}"`,
     const patch: Partial<Task> = Object.fromEntries(
       Object.entries(dto).filter(([, v]) => v !== undefined),
     );
-    if (dto.title && dto.title !== task.title && !dto.category) {
-      patch.category = await this.classifyCategory(dto.title);
+    const newTitle = dto.title ?? task.title;
+    const newDesc = dto.description !== undefined ? dto.description : task.description;
+    const titleChanged = dto.title && dto.title !== task.title;
+    const descChanged = dto.description !== undefined && dto.description !== task.description;
+    if ((titleChanged || descChanged) && !dto.category) {
+      patch.category = await this.classifyCategory(newTitle, newDesc);
     }
     Object.assign(task, patch);
     const saved = await this.taskRepo.save(task);
@@ -215,6 +221,13 @@ function diffTask(
       field: 'Ghi chú',
       from: before.note ?? '(trống)',
       to: after.note ?? '(trống)',
+    });
+  }
+  if ((before.description ?? '') !== (after.description ?? '')) {
+    changes.push({
+      field: 'Mô tả',
+      from: before.description ?? '(trống)',
+      to: after.description ?? '(trống)',
     });
   }
   return changes;

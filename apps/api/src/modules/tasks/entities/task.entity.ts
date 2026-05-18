@@ -56,4 +56,7 @@ export class Task extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   note!: string | null;
+
+  @Column({ type: 'text', name: 'description', nullable: true })
+  description!: string | null;
 }

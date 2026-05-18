@@ -150,9 +150,10 @@ export class FamilyEventsNotifier {
           <div style="padding:12px 16px;background:#fafaf9;border-left:3px solid #047857;border-radius:6px;font-size:14px;line-height:1.5">
             <div style="font-weight:600;margin-bottom:4px">${escapeHtml(task.title)}</div>
             <div style="font-size:12px;color:#57534e">Danh mục: ${escapeHtml(category)} · Tuần ${escapeHtml(task.weekYear)}</div>
-            ${task.note ? `<div style="margin-top:8px;font-size:13px;color:#44403c">${escapeHtml(task.note)}</div>` : ''}
+            ${task.description ? `<div style="margin-top:8px;font-size:13px;color:#44403c;font-style:italic">${escapeHtml(task.description)}</div>` : ''}
+            ${task.note ? `<div style="margin-top:6px;font-size:12px;color:#78716c">Ghi chú: ${escapeHtml(task.note)}</div>` : ''}
           </div>`,
-        bodyText: `${actor.name} vừa giao task "${task.title}" cho ${assigneeText.toLowerCase()} (${category}, tuần ${task.weekYear}).${task.note ? ` Ghi chú: ${task.note}` : ''}`,
+        bodyText: `${actor.name} vừa giao task "${task.title}" cho ${assigneeText.toLowerCase()} (${category}, tuần ${task.weekYear}).${task.description ? ` Mô tả: ${task.description}` : ''}${task.note ? ` Ghi chú: ${task.note}` : ''}`,
         ctaLabel: 'Mở danh sách task',
         ctaUrl: url,
       });
