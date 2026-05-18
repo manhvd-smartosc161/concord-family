@@ -18,7 +18,6 @@ const ICONS: Record<AgendaItemKind, string> = {
 };
 
 
-const WEEKDAY_VI = ["CN", "Th 2", "Th 3", "Th 4", "Th 5", "Th 6", "Th 7"];
 
 interface KindStyle {
   rail: string;
@@ -125,7 +124,7 @@ export function AgendaItemCard({
   const date = new Date(`${item.occursOn}T00:00:00Z`);
   const day = date.getUTCDate();
   const monthShort = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const weekday = WEEKDAY_VI[date.getUTCDay()];
+  const weekday = t(`weekday_${date.getUTCDay()}` as 'weekday_0');
   const days = item.daysUntil;
   const imminent = days >= 0 && days <= 2;
 
@@ -166,16 +165,16 @@ export function AgendaItemCard({
         />
         <div className="flex h-full items-stretch pl-1">
           <div
-            className={`flex w-[64px] shrink-0 flex-col items-center justify-center border-r sm:w-[88px] ${stampBg} ${stampText}`}
+            className={`flex w-[72px] shrink-0 flex-col items-center justify-center border-r py-4 sm:w-[88px] ${stampBg} ${stampText}`}
           >
-            <div className="font-mono text-[22px] font-semibold leading-none tabular-nums sm:text-[28px]">
+            <div className="font-mono text-[30px] font-bold leading-none tabular-nums sm:text-[36px]">
               {String(day).padStart(2, "0")}
             </div>
-            <div className="mt-1 font-mono text-[9px] font-medium uppercase tracking-[0.16em] opacity-75 sm:mt-1.5 sm:text-[10px] sm:tracking-[0.18em]">
+            <div className="mt-1.5 text-[10px] font-semibold leading-snug opacity-80 sm:text-[11px]">
               {weekday}
             </div>
-            <div className="font-mono text-[8px] uppercase tracking-[0.18em] opacity-60 sm:text-[9px] sm:tracking-[0.22em]">
-              th {monthShort}
+            <div className="text-[9px] leading-snug opacity-50 sm:text-[10px]">
+              {t(`month_${Number(monthShort)}` as 'month_1')}
             </div>
           </div>
 
