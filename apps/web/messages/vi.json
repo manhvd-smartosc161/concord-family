@@ -130,7 +130,8 @@
     "financial_month_title": "Tháng tài chính",
     "financial_month_desc": "Ngày bắt đầu của tháng tài chính. Mặc định 1 = tháng dương lịch. Đặt 25 nếu bạn nhận lương ngày 25 và muốn lương đó tính cho tháng kế tiếp.",
     "financial_month_label": "Ngày bắt đầu",
-    "financial_month_hint": "Cutoff=25 nghĩa là \"Tháng 5\" tính từ 25/04 đến 24/05.",
+    "financial_month_hint_calendar": "Cutoff=1 nghĩa là tháng tài chính trùng tháng dương lịch (vd Tháng 5 = {start} đến {end}).",
+    "financial_month_hint_custom": "Cutoff={cutoff} nghĩa là Tháng tài chính tính từ {start} đến {end}.",
     "financial_month_saved": "Đã lưu cutoff"
   },
   "transactions": {

@@ -130,7 +130,8 @@
     "financial_month_title": "Financial month",
     "financial_month_desc": "Start day of the financial month. Default 1 = calendar month. Set 25 if you receive salary on day 25 and want it to count toward the next month.",
     "financial_month_label": "Start day",
-    "financial_month_hint": "Cutoff=25 means \"Month 5\" spans 25/04 to 24/05.",
+    "financial_month_hint_calendar": "Cutoff=1 means the financial month matches the calendar month (e.g. Month 5 = {start} to {end}).",
+    "financial_month_hint_custom": "Cutoff={cutoff} means the financial month spans {start} to {end}.",
     "financial_month_saved": "Cutoff saved"
   },
   "transactions": {

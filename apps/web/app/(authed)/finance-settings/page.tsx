@@ -10,6 +10,11 @@ import { listGoals, updateYearlySavingsGoal } from '@/features/goals/api';
 import type { GoalView } from '@/features/goals/types';
 import { pickFundIcon } from '@/features/funds/components/fund-card';
 import { updateFamily } from '@/features/families/api';
+import {
+  formatFinancialMonthRange,
+  getCurrentFinancialMonth,
+  getFinancialMonthRange,
+} from '@/lib/financial-month';
 import { useAuthedLayout } from '../layout';
 import { Card, PageHeader, Skeleton } from '@/components/ui';
 
@@ -186,6 +191,23 @@ function FinancialMonthSection() {
     Number(value) <= 28 &&
     Number(value) !== (family?.financialMonthCutoffDay ?? 1);
 
+  const previewCutoff =
+    value !== '' && Number(value) >= 1 && Number(value) <= 28 ? Number(value) : 25;
+  const previewFM = getCurrentFinancialMonth(new Date(), previewCutoff);
+  const previewRange = getFinancialMonthRange(
+    previewFM.year,
+    previewFM.month,
+    previewCutoff,
+  );
+  const previewLabel = formatFinancialMonthRange(
+    previewRange.start,
+    previewRange.end,
+    'vi',
+  );
+  const [previewStart, previewEnd] = previewLabel.split(' — ');
+  const hintKey =
+    previewCutoff === 1 ? 'financial_month_hint_calendar' : 'financial_month_hint_custom';
+
   async function onSave() {
     if (value === '' || Number(value) < 1 || Number(value) > 28) return;
     setSaving(true);
@@ -217,7 +239,9 @@ function FinancialMonthSection() {
         onChange={(e) => setValue(e.target.value === '' ? '' : Number(e.target.value))}
         className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900 sm:w-32"
       />
-      <p className="mt-1 text-[11px] text-muted-foreground">{t('financial_month_hint')}</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        {t(hintKey, { cutoff: previewCutoff, start: previewStart, end: previewEnd })}
+      </p>
 
       <div className="mt-5 flex flex-col items-start justify-between border-t border-border pt-4 sm:flex-row sm:items-center">
         {feedback && (
