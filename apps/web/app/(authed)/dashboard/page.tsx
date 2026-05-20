@@ -70,7 +70,6 @@ export default function DashboardPage() {
     const fm = getCurrentFinancialMonth(new Date(), family.financialMonthCutoffDay);
     setYear(fm.year);
     setMonth(fm.month);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [family?.id]);
 
   useEffect(() => {
