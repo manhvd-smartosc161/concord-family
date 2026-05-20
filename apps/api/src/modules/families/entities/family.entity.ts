@@ -14,4 +14,11 @@ export class Family extends BaseEntity {
 
   @Column({ type: 'timestamptz', nullable: true, name: 'completed_at' })
   completedAt!: Date | null;
+
+  @Column({
+    type: 'smallint',
+    default: 1,
+    name: 'financial_month_cutoff_day',
+  })
+  financialMonthCutoffDay!: number;
 }
