@@ -1,7 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { AnswererSubagent } from '../../agent/subagents/answerer/answerer.subagent';
 import { ParserSubagent } from '../../agent/subagents/parser/parser.subagent';
+import { RouterSubagent } from '../../agent/subagents/router/router.subagent';
 import { Fund } from '../funds/entities/fund.entity';
 import { User } from '../users/entities/user.entity';
 import { ChatSessionsService } from './chat-sessions.service';
@@ -9,8 +11,12 @@ import type { ChatRequestDto, ChatResponseDto } from './chat.dto';
 
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
+
   constructor(
+    private readonly router: RouterSubagent,
     private readonly parser: ParserSubagent,
+    private readonly answerer: AnswererSubagent,
     private readonly sessions: ChatSessionsService,
     @InjectRepository(Fund)
     private readonly fundRepo: Repository<Fund>,
@@ -48,7 +54,6 @@ export class ChatService {
       session.visibility,
       user,
     );
-
     const history = await this.sessions.recentMessages(sessionId, 20);
 
     const userMsg = await this.sessions.appendMessage(
@@ -59,26 +64,57 @@ export class ChatService {
     );
     await this.sessions.maybeSetTitle(sessionId, dto.message);
 
-    const result = await this.parser.parse(dto.message, user, {
-      defaultFundName,
-      history,
-    });
+    const route = await this.router.classify(dto.message, history);
+    this.logger.debug(
+      `router → ${route.intent} (${route.reason ?? 'no reason'}) [session ${sessionId}]`,
+    );
 
-    // Persist agent reply
+    let reply: string;
+    let actions: ChatResponseDto['actions'] = [];
+    let stopReason: string | null = null;
+    let usage = { inputTokens: 0, outputTokens: 0 };
+
+    if (route.intent === 'action') {
+      const result = await this.parser.parse(dto.message, user, {
+        defaultFundName,
+        history,
+      });
+      reply = result.reply;
+      actions = result.actions;
+      stopReason = result.stopReason;
+      usage = result.usage;
+    } else {
+      const scope = session.visibility === 'private' ? 'personal' : 'joint';
+      const result = await this.answerer.answer(
+        dto.message,
+        user,
+        scope,
+        history,
+      );
+      reply = result.reply;
+      stopReason = result.stopReason;
+      usage = result.usage;
+    }
+
+    const totalUsage = {
+      inputTokens: usage.inputTokens + route.usage.inputTokens,
+      outputTokens: usage.outputTokens + route.usage.outputTokens,
+    };
+
     const agentMsg = await this.sessions.appendMessage(
       sessionId,
       user.id,
       'agent',
-      result.reply,
-      result.actions,
-      result.usage,
+      reply,
+      actions,
+      totalUsage,
     );
 
     return {
-      reply: result.reply,
-      actions: result.actions,
-      stopReason: result.stopReason,
-      usage: result.usage,
+      reply,
+      actions,
+      stopReason,
+      usage: totalUsage,
       sessionId,
       userMessageId: userMsg.id,
       agentMessageId: agentMsg.id,
