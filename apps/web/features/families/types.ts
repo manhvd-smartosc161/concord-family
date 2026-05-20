@@ -6,6 +6,7 @@ export interface FamilyView {
   weddingDate: string | null;
   createdById: string;
   completedAt: string | null;
+  financialMonthCutoffDay: number;
 }
 
 export interface FamilyMember {
