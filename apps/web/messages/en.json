@@ -195,7 +195,6 @@
     "no_data": "No data",
     "no_data_desc": "No transactions this month.",
     "expense_by_category": "Expense by category",
-    "current_month": "Current month",
     "previous_month": "Previous month",
     "next_month": "Next month"
   },
