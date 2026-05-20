@@ -7,7 +7,7 @@ import { formatVND } from '@/lib/format';
 import { listUpcoming } from '@/features/important-dates/api';
 import type { AgendaItem } from '@/features/important-dates/types';
 import { getMonthlyReport } from '@/features/reports/api';
-import type { MonthlyReport } from '@/features/reports/types';
+import type { MonthlyReport, CategoryAggregate } from '@/features/reports/types';
 import { listGoals } from '@/features/goals/api';
 import type { GoalView } from '@/features/goals/types';
 import { getDebtsSummary } from '@/features/debts/api';
@@ -148,6 +148,11 @@ export default function DashboardPage() {
             month={month}
             onShift={shiftMonth}
             t={t}
+            tReports={tReports}
+          />
+          <CategoryBreakdownWidget
+            report={report}
+            loading={loading || reportLoading}
             tReports={tReports}
           />
           <DebtSummaryWidget summary={debtSummary} loading={loading || debtLoading} t={t} />
@@ -566,5 +571,82 @@ function ChevronIcon({ dir }: { dir: 'left' | 'right' }) {
         d={dir === 'left' ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}
       />
     </svg>
+  );
+}
+
+function CategoryBreakdownWidget({
+  report,
+  loading,
+  tReports,
+}: {
+  report: MonthlyReport | null;
+  loading: boolean;
+  tReports: TFn;
+}) {
+  return (
+    <Card>
+      <h3 className="mb-4 text-sm font-semibold text-foreground">
+        📊 {tReports('expense_by_category')}
+      </h3>
+      {loading && (
+        <div className="space-y-2">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-10 w-full" />
+          ))}
+        </div>
+      )}
+      {!loading && report && report.byCategory.length === 0 && (
+        <EmptyState
+          icon="📭"
+          title={tReports('no_data')}
+          description={tReports('no_data_desc')}
+        />
+      )}
+      {!loading && report && report.byCategory.length > 0 && (
+        <CategoryList items={report.byCategory} total={report.expense} />
+      )}
+    </Card>
+  );
+}
+
+function CategoryList({
+  items,
+  total,
+}: {
+  items: CategoryAggregate[];
+  total: number;
+}) {
+  return (
+    <div className="space-y-3">
+      {items.map((c) => {
+        const pct = total > 0 ? (c.amount / total) * 100 : 0;
+        return (
+          <div key={c.categoryId ?? c.categoryName}>
+            <div className="mb-1 flex items-baseline justify-between">
+              <span className="flex items-center gap-2 text-sm text-foreground">
+                <span>{c.icon ?? '·'}</span> {c.categoryName}
+                <span className="text-[11px] text-muted-foreground">
+                  ({c.count} giao dịch)
+                </span>
+              </span>
+              <span className="flex items-baseline gap-2">
+                <span className="font-mono text-sm font-semibold tabular-nums text-foreground">
+                  −{formatVND(c.amount)}
+                </span>
+                <span className="text-[11px] tabular-nums text-muted-foreground">
+                  {pct.toFixed(1)}%
+                </span>
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full bg-rose-400 transition-all duration-500"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
