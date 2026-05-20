@@ -171,7 +171,7 @@ function OpeningBalanceSection() {
 function FinancialMonthSection() {
   const t = useTranslations('finance');
   const tCommon = useTranslations('common');
-  const { family } = useAuthedLayout();
+  const { family, reloadFamily } = useAuthedLayout();
   const [value, setValue] = useState<number | ''>(family?.financialMonthCutoffDay ?? 1);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
@@ -192,11 +192,9 @@ function FinancialMonthSection() {
     setFeedback(null);
     try {
       await updateFamily({ financialMonthCutoffDay: Number(value) });
+      await reloadFamily();
       setFeedback({ kind: 'ok', msg: t('financial_month_saved') });
-      setTimeout(() => {
-        setFeedback(null);
-        window.location.reload();
-      }, 1200);
+      setTimeout(() => setFeedback(null), 2500);
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : err instanceof Error ? err.message : 'Lỗi không xác định';
       setFeedback({ kind: 'err', msg });

@@ -18,6 +18,7 @@ interface LayoutCtx {
   funds: FundView[];
   family: FamilyView | null;
   reloadFunds: () => Promise<void>;
+  reloadFamily: () => Promise<void>;
   reloadUser: () => Promise<void>;
 }
 
@@ -51,17 +52,22 @@ export default function AuthedLayout({
     }
   }, []);
 
+  const reloadFamily = useCallback(async () => {
+    try {
+      const res = await getMyFamily();
+      setFamily(res.family);
+    } catch {
+      /* useAuth will redirect on 401 */
+    }
+  }, []);
+
   useEffect(() => {
     if (auth.status === 'authed' && auth.user.familyId) void reloadFunds();
   }, [auth.status, auth, reloadFunds]);
 
   useEffect(() => {
-    if (auth.status === 'authed' && auth.user.familyId) {
-      void getMyFamily()
-        .then((res) => setFamily(res.family))
-        .catch(() => {});
-    }
-  }, [auth.status, auth]);
+    if (auth.status === 'authed' && auth.user.familyId) void reloadFamily();
+  }, [auth.status, auth, reloadFamily]);
 
   useEffect(() => {
     if (
@@ -88,7 +94,7 @@ export default function AuthedLayout({
 
   if (!auth.user.familyId) {
     return (
-      <LayoutContext.Provider value={{ user: auth.user, funds, family, reloadFunds, reloadUser }}>
+      <LayoutContext.Provider value={{ user: auth.user, funds, family, reloadFunds, reloadFamily, reloadUser }}>
         <div className="flex min-h-screen flex-col bg-background">
           <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2.5 sm:px-6">
             <div className="flex items-center gap-2">
