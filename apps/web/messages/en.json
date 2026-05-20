@@ -186,8 +186,6 @@
     "prev_years": "Previous years ({count})"
   },
   "reports": {
-    "title": "Reports",
-    "subtitle": "Monthly income and expense analysis.",
     "income": "This month — income",
     "expense": "This month — expense",
     "net": "This month — net",
@@ -199,9 +197,7 @@
     "expense_by_category": "Expense by category",
     "current_month": "Current month",
     "previous_month": "Previous month",
-    "next_month": "Next month",
-    "chart_income": "Income",
-    "chart_expense": "Expense"
+    "next_month": "Next month"
   },
   "tasks": {
     "title": "Weekly Tasks",
@@ -394,7 +390,6 @@
     "funds_transactions": "Transactions →",
     "funds_empty": "No funds",
     "month_title": "This month",
-    "month_detail": "Details →",
     "goal_title": "Annual savings goal",
     "goal_manage": "Manage →",
     "goal_detail": "Details →",

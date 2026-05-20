@@ -186,8 +186,6 @@
     "prev_years": "Các năm trước ({count} năm)"
   },
   "reports": {
-    "title": "Báo cáo",
-    "subtitle": "Phân tích thu chi theo tháng.",
     "income": "Tháng này — thu",
     "expense": "Tháng này — chi",
     "net": "Tháng này — net",
@@ -199,9 +197,7 @@
     "expense_by_category": "Chi tiêu theo danh mục",
     "current_month": "Tháng hiện tại",
     "previous_month": "Tháng trước",
-    "next_month": "Tháng sau",
-    "chart_income": "Thu",
-    "chart_expense": "Chi"
+    "next_month": "Tháng sau"
   },
   "tasks": {
     "title": "Công việc tuần",
@@ -394,7 +390,6 @@
     "funds_transactions": "Giao dịch →",
     "funds_empty": "Không có quỹ nào",
     "month_title": "Tháng này",
-    "month_detail": "Chi tiết →",
     "goal_title": "Mục tiêu tiết kiệm năm",
     "goal_manage": "Quản lý →",
     "goal_detail": "Chi tiết →",
