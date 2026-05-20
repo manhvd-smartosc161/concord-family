@@ -10,6 +10,11 @@ import { Transaction } from '../transactions/entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
 import type { CreateEnvelopeDto } from './dto/create-envelope.dto';
 import type { UpdateEnvelopeDto } from './dto/update-envelope.dto';
+import { Family } from '../families/entities/family.entity';
+import {
+  getCurrentFinancialMonth,
+  getFinancialMonthRange,
+} from '../../shared/common/date-helpers';
 import { Fund } from './entities/fund.entity';
 import { OPENING_BALANCE_NOTE } from './opening-balance.constants';
 
@@ -54,6 +59,8 @@ export class FundsService {
     private readonly fundRepo: Repository<Fund>,
     @InjectRepository(Transaction)
     private readonly txnRepo: Repository<Transaction>,
+    @InjectRepository(Family)
+    private readonly familyRepo: Repository<Family>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -131,9 +138,10 @@ export class FundsService {
     for (const t of openings) openingByFundId.set(t.fundId, t.amount);
 
     // Tính monthContribution cho các envelope có monthlyContributionTarget.
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
+    const family = await this.familyRepo.findOneByOrFail({ id: user.familyId! });
+    const cutoffDay = family.financialMonthCutoffDay;
+    const { year: fy, month: fm } = getCurrentFinancialMonth(new Date(), cutoffDay);
+    const { start: monthStart, end: monthEnd } = getFinancialMonthRange(fy, fm, cutoffDay);
 
     const envIdsNeedMonth = funds
       .filter((f) => f.monthlyContributionTarget != null)
@@ -147,6 +155,7 @@ export class FundsService {
         .where('t.family_id = :familyId', { familyId: user.familyId! })
         .andWhere('t.fund_id IN (:...ids)', { ids: envIdsNeedMonth })
         .andWhere('t.date >= :start', { start: monthStart })
+        .andWhere('t.date < :end', { end: monthEnd })
         .andWhere('t.amount > 0')
         .andWhere('(t.note IS NULL OR t.note <> :marker)', {
           marker: OPENING_BALANCE_NOTE,
