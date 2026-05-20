@@ -5,6 +5,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { useLocale, useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
+import { renderBold } from '@/features/chat/lib/render-bold';
 import {
   createChatSession,
   deleteChatSession,
@@ -936,7 +937,11 @@ function MessageBubble({
                 : theme.bubbleAgent + ' text-foreground shadow-sm'
           }`}
         >
-          {msg.text && <div className="whitespace-pre-wrap">{msg.text}</div>}
+          {msg.text && (
+            <div className="whitespace-pre-wrap">
+              {msg.role === 'agent' ? renderBold(msg.text) : msg.text}
+            </div>
+          )}
           {msg.actions && msg.actions.length > 0 && (
             <div className={`space-y-1.5 ${msg.text ? 'mt-2' : ''}`}>
               {groupActionsForRender(msg.actions).map((g, gi) =>
