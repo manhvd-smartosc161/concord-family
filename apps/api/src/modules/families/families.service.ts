@@ -109,6 +109,9 @@ export class FamiliesService {
         ? dto.weddingDate.slice(0, 10)
         : null;
     }
+    if (dto.financialMonthCutoffDay !== undefined) {
+      family.financialMonthCutoffDay = dto.financialMonthCutoffDay;
+    }
     return this.familyRepo.save(family);
   }
 
