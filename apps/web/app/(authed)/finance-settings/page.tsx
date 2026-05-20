@@ -9,6 +9,7 @@ import type { FundView } from '@/features/funds/types';
 import { listGoals, updateYearlySavingsGoal } from '@/features/goals/api';
 import type { GoalView } from '@/features/goals/types';
 import { pickFundIcon } from '@/features/funds/components/fund-card';
+import { updateFamily } from '@/features/families/api';
 import { useAuthedLayout } from '../layout';
 import { Card, PageHeader, Skeleton } from '@/components/ui';
 
@@ -22,6 +23,7 @@ export default function FinanceSettingsPage() {
       />
       <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto max-w-3xl space-y-6">
+          <FinancialMonthSection />
           <YearlyGoalSection />
           <OpeningBalanceSection />
         </div>
@@ -161,6 +163,86 @@ function OpeningBalanceSection() {
           .map((fund) => (
             <OpeningBalanceRow key={fund.id} fund={fund} onSaved={() => void reloadFunds()} />
           ))}
+      </div>
+    </Card>
+  );
+}
+
+function FinancialMonthSection() {
+  const t = useTranslations('finance');
+  const tCommon = useTranslations('common');
+  const { family } = useAuthedLayout();
+  const [value, setValue] = useState<number | ''>(family?.financialMonthCutoffDay ?? 1);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
+
+  useEffect(() => {
+    if (family) setValue(family.financialMonthCutoffDay);
+  }, [family?.financialMonthCutoffDay]);
+
+  const isDirty =
+    value !== '' &&
+    Number(value) >= 1 &&
+    Number(value) <= 28 &&
+    Number(value) !== (family?.financialMonthCutoffDay ?? 1);
+
+  async function onSave() {
+    if (value === '' || Number(value) < 1 || Number(value) > 28) return;
+    setSaving(true);
+    setFeedback(null);
+    try {
+      await updateFamily({ financialMonthCutoffDay: Number(value) });
+      setFeedback({ kind: 'ok', msg: t('financial_month_saved') });
+      setTimeout(() => {
+        setFeedback(null);
+        window.location.reload();
+      }, 1200);
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : err instanceof Error ? err.message : 'Lỗi không xác định';
+      setFeedback({ kind: 'err', msg });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Card padding="p-6">
+      <h3 className="mb-1 text-sm font-semibold text-foreground">{t('financial_month_title')}</h3>
+      <p className="mb-5 text-xs text-muted-foreground">{t('financial_month_desc')}</p>
+
+      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">{t('financial_month_label')}</label>
+      <input
+        type="number"
+        min={1}
+        max={28}
+        value={value}
+        onChange={(e) => setValue(e.target.value === '' ? '' : Number(e.target.value))}
+        className="w-full rounded-lg border border-input bg-muted px-3.5 py-2.5 text-sm transition-colors focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900 sm:w-32"
+      />
+      <p className="mt-1 text-[11px] text-muted-foreground">{t('financial_month_hint')}</p>
+
+      <div className="mt-5 flex flex-col items-start justify-between border-t border-border pt-4 sm:flex-row sm:items-center">
+        {feedback && (
+          <span className={`text-xs ${feedback.kind === 'ok' ? 'text-emerald-700' : 'text-rose-700'}`}>
+            {feedback.kind === 'ok' ? '✅' : '⚠️'} {feedback.msg}
+          </span>
+        )}
+        <div className="mt-3 flex w-full gap-2 sm:ml-auto sm:mt-0 sm:w-auto sm:gap-3">
+          <button
+            onClick={() => { setValue(family?.financialMonthCutoffDay ?? 1); setFeedback(null); }}
+            disabled={saving}
+            className="flex-1 rounded-lg border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50 sm:flex-none"
+          >
+            {tCommon('reset')}
+          </button>
+          <button
+            onClick={onSave}
+            disabled={saving || !isDirty}
+            className="flex-1 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-emerald-800 active:scale-[0.99] disabled:bg-muted sm:flex-none"
+          >
+            {saving ? tCommon('saving') : tCommon('save')}
+          </button>
+        </div>
       </div>
     </Card>
   );

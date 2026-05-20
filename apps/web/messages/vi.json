@@ -126,7 +126,12 @@
     "opening_balance_title": "Số dư khởi đầu",
     "opening_balance_desc": "Tiền đã có sẵn trong mỗi quỹ tại thời điểm bạn bắt đầu xài Concord (vd: số dư app ngân hàng, ví Shopee, tiền mặt). Khoản này được ghi như 1 entry cấu trúc — không hiện trong \"Giao dịch gần đây\" và không tính vào báo cáo thu/chi tháng. Số dư khởi đầu của quỹ tiết kiệm & đầu tư không tính vào tiến độ tiết kiệm năm.",
     "current_balance": "Số dư hiện tại",
-    "balance_saved": "Đã lưu"
+    "balance_saved": "Đã lưu",
+    "financial_month_title": "Tháng tài chính",
+    "financial_month_desc": "Ngày bắt đầu của tháng tài chính. Mặc định 1 = tháng dương lịch. Đặt 25 nếu bạn nhận lương ngày 25 và muốn lương đó tính cho tháng kế tiếp.",
+    "financial_month_label": "Ngày bắt đầu",
+    "financial_month_hint": "Cutoff=25 nghĩa là \"Tháng 5\" tính từ 25/04 đến 24/05.",
+    "financial_month_saved": "Đã lưu cutoff"
   },
   "transactions": {
     "title": "Giao dịch",

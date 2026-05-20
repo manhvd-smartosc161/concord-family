@@ -53,12 +53,14 @@ export function leaveFamily(): Promise<FamilyMutationResponse> {
 export function updateFamily(payload: {
   name?: string;
   weddingDate?: string | null;
+  financialMonthCutoffDay?: number;
 }): Promise<{
   id: string;
   name: string;
   weddingDate: string | null;
   createdById: string;
   completedAt: string | null;
+  financialMonthCutoffDay: number;
 }> {
   return apiFetch('/api/families/me', {
     method: 'PATCH',
