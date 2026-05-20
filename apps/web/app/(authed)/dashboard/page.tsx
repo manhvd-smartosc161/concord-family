@@ -532,7 +532,7 @@ function MonthSwitcher({
       <button
         onClick={() => onShift(-1)}
         className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted"
-        aria-label={tReports('current_month')}
+        aria-label={tReports('previous_month')}
       >
         <ChevronIcon dir="left" />
       </button>
@@ -543,7 +543,7 @@ function MonthSwitcher({
         onClick={() => onShift(1)}
         disabled={isCurrent}
         className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"
-        aria-label={tReports('current_month')}
+        aria-label={tReports('next_month')}
       >
         <ChevronIcon dir="right" />
       </button>
