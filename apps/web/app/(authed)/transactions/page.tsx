@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
@@ -14,6 +15,8 @@ import {
   listTransactions,
 } from '@/features/transactions/api';
 import type { TransactionView } from '@/features/transactions/types';
+import { listCategories } from '@/features/categories/api';
+import type { CategoryView } from '@/features/categories/types';
 import { groupByDay } from '@/features/transactions/lib/group-by-day';
 import { DayGroup } from '@/features/transactions/components/day-group';
 import { MonthSwitcher } from '@/features/transactions/components/month-switcher';
@@ -35,12 +38,22 @@ export default function TransactionsPage() {
   const tCommon = useTranslations('common');
   const { funds, reloadFunds, family } = useAuthedLayout();
   const cutoffDay = family?.financialMonthCutoffDay ?? 1;
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const now = new Date();
   const initialFM = getCurrentFinancialMonth(now, 1);
-  const [year, setYear] = useState(initialFM.year);
-  const [month, setMonth] = useState(initialFM.month);
-  const [fundFilter, setFundFilter] = useState<string>('');
+  const initialYear = Number(searchParams.get('year')) || initialFM.year;
+  const initialMonth = Number(searchParams.get('month')) || initialFM.month;
+  const initialFundId = searchParams.get('fundId') ?? '';
+  const initialCategoryId = searchParams.get('categoryId') ?? '';
+
+  const [year, setYear] = useState(initialYear);
+  const [month, setMonth] = useState(initialMonth);
+  const [fundFilter, setFundFilter] = useState<string>(initialFundId);
+  const [categoryFilter, setCategoryFilter] = useState<string>(initialCategoryId);
+  const [categories, setCategories] = useState<CategoryView[]>([]);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -52,6 +65,19 @@ export default function TransactionsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
+    void listCategories().then(setCategories).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const qs = new URLSearchParams();
+    qs.set('year', String(year));
+    qs.set('month', String(month));
+    if (fundFilter) qs.set('fundId', fundFilter);
+    if (categoryFilter) qs.set('categoryId', categoryFilter);
+    router.replace(`${pathname}?${qs.toString()}`, { scroll: false });
+  }, [year, month, fundFilter, categoryFilter, pathname, router]);
+
+  useEffect(() => {
     if (funds.length === 0) return;
     const fundIds = funds.map((f) => f.id);
     if (fundFilter && fundIds.includes(fundFilter)) return;
@@ -61,6 +87,7 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     if (!family) return;
+    if (searchParams.get('year') || searchParams.get('month')) return;
     const fm = getCurrentFinancialMonth(new Date(), family.financialMonthCutoffDay);
     setYear(fm.year);
     setMonth(fm.month);
@@ -77,6 +104,11 @@ export default function TransactionsPage() {
 
   function changeFundFilter(v: string) {
     setFundFilter(v);
+    setPage(0);
+  }
+
+  function changeCategoryFilter(v: string) {
+    setCategoryFilter(v);
     setPage(0);
   }
 
@@ -97,6 +129,7 @@ export default function TransactionsPage() {
     try {
       const res = await listTransactions({
         fundId: fundFilter || undefined,
+        categoryId: categoryFilter || undefined,
         from: start.toISOString(),
         to: apiEnd.toISOString(),
         q: debouncedSearch.trim() || undefined,
@@ -112,7 +145,7 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [year, month, fundFilter, debouncedSearch, page, cutoffDay]);
+  }, [year, month, fundFilter, categoryFilter, debouncedSearch, page, cutoffDay]);
 
   useEffect(() => {
     if (!fundFilter) return;
@@ -199,13 +232,28 @@ export default function TransactionsPage() {
                   value={fundFilter}
                   onChange={changeFundFilter}
                 />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={`${t('note')}, ${t('category')}…`}
-                  className="w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
-                />
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => changeCategoryFilter(e.target.value)}
+                    className="rounded-lg border border-input bg-muted px-3 py-2 text-sm text-foreground transition-colors focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900 sm:w-56"
+                  >
+                    <option value="">{t('all_categories')}</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.icon ? `${c.icon} ` : ''}
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder={`${t('note')}, ${t('category')}…`}
+                    className="flex-1 rounded-lg border border-input bg-muted px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-emerald-500 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900"
+                  />
+                </div>
               </div>
             </div>
           </Card>

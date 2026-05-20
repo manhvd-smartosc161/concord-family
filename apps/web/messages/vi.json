@@ -151,6 +151,7 @@
     "edit_title": "Sửa giao dịch",
     "delete_confirm": "Xoá giao dịch này? Số dư quỹ sẽ được hoàn lại.",
     "all_funds": "Tất cả quỹ",
+    "all_categories": "Tất cả danh mục",
     "prev_month": "Tháng trước",
     "next_month": "Tháng sau",
     "page": "Trang {page}",

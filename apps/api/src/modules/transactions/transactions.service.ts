@@ -352,6 +352,7 @@ export class TransactionsService {
     user: User,
     filters: {
       fundId?: string;
+      categoryId?: string;
       from?: Date;
       to?: Date;
       q?: string;
@@ -388,6 +389,11 @@ export class TransactionsService {
 
     if (filters.from) qb.andWhere('t.date >= :from', { from: filters.from });
     if (filters.to) qb.andWhere('t.date <= :to', { to: filters.to });
+    if (filters.categoryId) {
+      qb.andWhere('t.category_id = :categoryId', {
+        categoryId: filters.categoryId,
+      });
+    }
     if (filters.q && filters.q.trim()) {
       qb.andWhere(
         '(t.note ILIKE :q OR t.raw_text ILIKE :q OR category.name ILIKE :q)',

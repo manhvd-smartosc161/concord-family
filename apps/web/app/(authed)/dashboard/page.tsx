@@ -168,6 +168,9 @@ export default function DashboardPage() {
           <CategoryBreakdownWidget
             report={report}
             loading={loading || reportLoading}
+            year={year}
+            month={month}
+            fundId={reportFundId || jointFundId}
             tReports={tReports}
           />
           <DebtSummaryWidget summary={debtSummary} loading={loading || debtLoading} t={t} />
@@ -595,10 +598,16 @@ function ChevronIcon({ dir }: { dir: 'left' | 'right' }) {
 function CategoryBreakdownWidget({
   report,
   loading,
+  year,
+  month,
+  fundId,
   tReports,
 }: {
   report: MonthlyReport | null;
   loading: boolean;
+  year: number;
+  month: number;
+  fundId: string | undefined;
   tReports: TFn;
 }) {
   return (
@@ -621,7 +630,13 @@ function CategoryBreakdownWidget({
         />
       )}
       {!loading && report && report.byCategory.length > 0 && (
-        <CategoryList items={report.byCategory} total={report.expense} />
+        <CategoryList
+          items={report.byCategory}
+          total={report.expense}
+          year={year}
+          month={month}
+          fundId={fundId}
+        />
       )}
     </Card>
   );
@@ -630,16 +645,30 @@ function CategoryBreakdownWidget({
 function CategoryList({
   items,
   total,
+  year,
+  month,
+  fundId,
 }: {
   items: CategoryAggregate[];
   total: number;
+  year: number;
+  month: number;
+  fundId: string | undefined;
 }) {
+  function buildHref(categoryId: string | null): string {
+    const qs = new URLSearchParams();
+    qs.set('year', String(year));
+    qs.set('month', String(month));
+    if (fundId) qs.set('fundId', fundId);
+    if (categoryId) qs.set('categoryId', categoryId);
+    return `/transactions?${qs.toString()}`;
+  }
   return (
     <div className="space-y-3">
       {items.map((c) => {
         const pct = total > 0 ? (c.amount / total) * 100 : 0;
-        return (
-          <div key={c.categoryId ?? c.categoryName}>
+        const row = (
+          <>
             <div className="mb-1 flex items-baseline justify-between">
               <span className="flex items-center gap-2 text-sm text-foreground">
                 <span>{c.icon ?? '·'}</span> {c.categoryName}
@@ -662,7 +691,18 @@ function CategoryList({
                 style={{ width: `${pct}%` }}
               />
             </div>
-          </div>
+          </>
+        );
+        return c.categoryId ? (
+          <Link
+            key={c.categoryId}
+            href={buildHref(c.categoryId)}
+            className="block rounded-md transition-colors hover:bg-muted/40 -mx-2 px-2 py-1"
+          >
+            {row}
+          </Link>
+        ) : (
+          <div key={c.categoryName}>{row}</div>
         );
       })}
     </div>

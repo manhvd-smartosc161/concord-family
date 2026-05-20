@@ -46,6 +46,7 @@ export class TransactionsController {
   list(
     @CurrentUser() user: User,
     @Query('fundId') fundId?: string,
+    @Query('categoryId') categoryId?: string,
     @Query('from') from?: string,
     @Query('to') to?: string,
     @Query('q') q?: string,
@@ -55,6 +56,7 @@ export class TransactionsController {
   ): Promise<{ items: TransactionView[]; total: number }> {
     return this.txnService.listForUser(user, {
       fundId,
+      categoryId,
       from: from ? new Date(from) : undefined,
       to: to ? new Date(to) : undefined,
       q,

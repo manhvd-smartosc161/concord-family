@@ -11,6 +11,7 @@ export interface TransactionView {
 
 export interface TransactionFilters {
   fundId?: string;
+  categoryId?: string;
   from?: string;
   to?: string;
   q?: string;

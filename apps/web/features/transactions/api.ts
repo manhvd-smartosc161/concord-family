@@ -15,6 +15,7 @@ export function listTransactions(
 ): Promise<TransactionPage> {
   const qs = new URLSearchParams();
   if (filters.fundId) qs.set('fundId', filters.fundId);
+  if (filters.categoryId) qs.set('categoryId', filters.categoryId);
   if (filters.from) qs.set('from', filters.from);
   if (filters.to) qs.set('to', filters.to);
   if (filters.q) qs.set('q', filters.q);

@@ -151,6 +151,7 @@
     "edit_title": "Edit transaction",
     "delete_confirm": "Delete this transaction? The fund balance will be restored.",
     "all_funds": "All funds",
+    "all_categories": "All categories",
     "prev_month": "Previous month",
     "next_month": "Next month",
     "page": "Page {page}",
