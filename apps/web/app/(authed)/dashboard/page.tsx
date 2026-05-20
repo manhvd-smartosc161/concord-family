@@ -552,11 +552,8 @@ function MonthSwitcher({
     locale === 'en' ? 'en-US' : 'vi-VN',
     { month: 'long', year: 'numeric' },
   );
-  let subtitle: string | null = null;
-  if (cutoffDay > 1) {
-    const { start, end } = getFinancialMonthRange(year, month, cutoffDay);
-    subtitle = formatFinancialMonthRange(start, end, locale === 'en' ? 'en' : 'vi');
-  }
+  const { start, end } = getFinancialMonthRange(year, month, cutoffDay);
+  const subtitle = formatFinancialMonthRange(start, end, locale === 'en' ? 'en' : 'vi');
   return (
     <div className="flex items-center gap-1 rounded-lg border border-border bg-background p-0.5">
       <button
@@ -568,9 +565,7 @@ function MonthSwitcher({
       </button>
       <div className="min-w-[140px] px-3 py-1 text-center text-sm font-medium text-foreground">
         <div>{monthLabel}</div>
-        {subtitle && (
-          <div className="text-[10px] font-normal text-muted-foreground">{subtitle}</div>
-        )}
+        <div className="text-[10px] font-normal text-muted-foreground">{subtitle}</div>
       </div>
       <button
         onClick={() => onShift(1)}

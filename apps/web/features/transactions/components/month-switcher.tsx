@@ -26,11 +26,8 @@ export function MonthSwitcher({
     { month: 'long', year: 'numeric' },
   );
 
-  let subtitle: string | null = null;
-  if (cutoffDay > 1) {
-    const { start, end } = getFinancialMonthRange(year, month, cutoffDay);
-    subtitle = formatFinancialMonthRange(start, end, locale === 'en' ? 'en' : 'vi');
-  }
+  const { start, end } = getFinancialMonthRange(year, month, cutoffDay);
+  const subtitle = formatFinancialMonthRange(start, end, locale === 'en' ? 'en' : 'vi');
 
   return (
     <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1 sm:p-0.5">
@@ -43,14 +40,12 @@ export function MonthSwitcher({
       </button>
       <div className="min-w-[100px] px-2 py-1 text-center text-xs font-medium text-foreground sm:min-w-[120px] sm:px-3 sm:py-1 sm:text-sm">
         <div>{label}</div>
-        {subtitle && (
-          <div
-            className="text-[10px] font-normal text-muted-foreground"
-            aria-label={t('fiscal_range_aria')}
-          >
-            {subtitle}
-          </div>
-        )}
+        <div
+          className="text-[10px] font-normal text-muted-foreground"
+          aria-label={t('fiscal_range_aria')}
+        >
+          {subtitle}
+        </div>
       </div>
       <button
         onClick={() => onShift(1)}
