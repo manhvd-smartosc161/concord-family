@@ -242,16 +242,27 @@ export class AnswererSubagent {
       categoryId = cat.id;
     }
 
-    const result = await this.transactionsService.listForUser(user, {
-      from: start,
-      to: new Date(end.getTime() - 1),
-      categoryId,
-      q: input.query,
-      limit: Math.min(input.limit ?? 50, 200),
-    });
-    const inScope = result.items.filter((t) =>
-      visibleFundIds.includes(t.fund.id),
+    const limit = Math.min(input.limit ?? 50, 200);
+    const perFundLimit = Math.max(
+      10,
+      Math.ceil(limit / Math.max(visibleFundIds.length, 1)),
     );
+    const perFundResults = await Promise.all(
+      visibleFundIds.map((fundId) =>
+        this.transactionsService.listForUser(user, {
+          from: start,
+          to: new Date(end.getTime() - 1),
+          fundId,
+          categoryId,
+          q: input.query,
+          limit: perFundLimit,
+        }),
+      ),
+    );
+    const inScope = perFundResults
+      .flatMap((r) => r.items)
+      .sort((a, b) => (a.date < b.date ? 1 : -1))
+      .slice(0, limit);
     let expenseSum = 0;
     let incomeSum = 0;
     for (const t of inScope) {
@@ -279,21 +290,72 @@ export class AnswererSubagent {
     user: User,
     scope: AnswererScope,
   ): Promise<unknown> {
-    const reportScope = scope === 'personal' ? 'all' : 'joint';
-    const report = await this.reportsService.monthly(
-      user,
-      input.year,
-      input.month,
-      reportScope,
-    );
-    if (scope === 'personal') {
-      const myFundIds = await this.scopedFundIds(user, scope);
+    if (scope === 'joint') {
+      return await this.reportsService.monthly(
+        user,
+        input.year,
+        input.month,
+        'joint',
+      );
+    }
+    const myFundIds = await this.scopedFundIds(user, 'personal');
+    if (myFundIds.length === 0) {
       return {
-        ...report,
-        scopeNote: `Filtered to your personal funds: ${myFundIds.length} fund(s).`,
+        range: null,
+        income: 0,
+        expense: 0,
+        net: 0,
+        txnCount: 0,
+        byCategory: [],
+        byDay: [],
+        note: 'Bạn chưa có quỹ cá nhân nào.',
       };
     }
-    return report;
+    if (myFundIds.length === 1) {
+      return await this.reportsService.monthly(
+        user,
+        input.year,
+        input.month,
+        'all',
+        myFundIds[0],
+      );
+    }
+    const perFund = await Promise.all(
+      myFundIds.map((id) =>
+        this.reportsService.monthly(user, input.year, input.month, 'all', id),
+      ),
+    );
+    let income = 0;
+    let expense = 0;
+    let txnCount = 0;
+    const byCategoryMap = new Map<
+      string,
+      { categoryId: string | null; categoryName: string; icon: string | null; amount: number; count: number }
+    >();
+    for (const rep of perFund) {
+      income += rep.income;
+      expense += rep.expense;
+      txnCount += rep.txnCount;
+      for (const c of rep.byCategory) {
+        const key = c.categoryId ?? `__name_${c.categoryName}`;
+        const acc = byCategoryMap.get(key);
+        if (acc) {
+          acc.amount += c.amount;
+          acc.count += c.count;
+        } else {
+          byCategoryMap.set(key, { ...c });
+        }
+      }
+    }
+    return {
+      range: perFund[0].range,
+      income,
+      expense,
+      net: income - expense,
+      txnCount,
+      byCategory: [...byCategoryMap.values()].sort((a, b) => b.amount - a.amount),
+      byDay: [],
+    };
   }
 
   private async toolListFunds(
