@@ -46,6 +46,9 @@ export default function DashboardPage() {
   const [upcoming, setUpcoming] = useState<AgendaItem[]>([]);
   const [report, setReport] = useState<MonthlyReport | null>(null);
   const [reportFundId, setReportFundId] = useState<string>('');
+  const now0 = new Date();
+  const [year, setYear] = useState(now0.getFullYear());
+  const [month, setMonth] = useState(now0.getMonth() + 1);
   const [reportLoading, setReportLoading] = useState(false);
   const [yearGoal, setYearGoal] = useState<GoalView | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -59,7 +62,7 @@ export default function DashboardPage() {
     const now = new Date();
     Promise.all([
       listUpcoming(3),
-      getMonthlyReport(now.getFullYear(), now.getMonth() + 1, 'joint'),
+      getMonthlyReport(year, month, 'joint'),
       listGoals(),
       listTasks(getISOWeek(now)),
       getDebtsSummary(jointFundId),
@@ -79,13 +82,12 @@ export default function DashboardPage() {
       reportInitialized.current = true;
       return;
     }
-    const now = new Date();
     setReportLoading(true);
     setDebtLoading(true);
     Promise.all([
       getMonthlyReport(
-        now.getFullYear(),
-        now.getMonth() + 1,
+        year,
+        month,
         reportFundId ? 'all' : 'joint',
         reportFundId || undefined,
       ),
@@ -99,7 +101,21 @@ export default function DashboardPage() {
         setReportLoading(false);
         setDebtLoading(false);
       });
-  }, [reportFundId]);
+  }, [reportFundId, year, month]);
+
+  function shiftMonth(delta: number) {
+    let m = month + delta;
+    let y = year;
+    if (m < 1) {
+      m = 12;
+      y -= 1;
+    } else if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+    setMonth(m);
+    setYear(y);
+  }
 
   const now = new Date();
   const spendingFunds = funds.filter((f) => f.purpose === 'spending');
@@ -128,6 +144,9 @@ export default function DashboardPage() {
             funds={spendingFunds}
             selectedFundId={reportFundId}
             onFundChange={setReportFundId}
+            year={year}
+            month={month}
+            onShift={shiftMonth}
             t={t}
             tReports={tReports}
           />
@@ -253,6 +272,9 @@ function MonthStatsWidget({
   funds,
   selectedFundId,
   onFundChange,
+  year,
+  month,
+  onShift,
   t,
   tReports,
 }: {
@@ -261,16 +283,25 @@ function MonthStatsWidget({
   funds: FundView[];
   selectedFundId: string;
   onFundChange: (id: string) => void;
+  year: number;
+  month: number;
+  onShift: (delta: number) => void;
   t: TFn;
   tReports: TFn;
 }) {
+  const now = new Date();
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
   return (
     <div>
-      <div className="mb-2 flex items-baseline justify-between">
+      <div className="mb-2 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground">📊 {t('month_title')}</h3>
-        <Link href="/reports" className="text-xs text-emerald-700 hover:text-emerald-900">
-          {t('month_detail')}
-        </Link>
+        <MonthSwitcher
+          year={year}
+          month={month}
+          onShift={onShift}
+          isCurrent={isCurrentMonth}
+          tReports={tReports}
+        />
       </div>
       <div className="mb-3 flex flex-wrap gap-2">
         <button
@@ -475,5 +506,65 @@ function TasksWidget({
         </>
       )}
     </Card>
+  );
+}
+
+function MonthSwitcher({
+  year,
+  month,
+  onShift,
+  isCurrent,
+  tReports,
+}: {
+  year: number;
+  month: number;
+  onShift: (delta: number) => void;
+  isCurrent: boolean;
+  tReports: TFn;
+}) {
+  const locale = useLocale();
+  const monthLabel = new Date(year, month - 1, 1).toLocaleDateString(
+    locale === 'en' ? 'en-US' : 'vi-VN',
+    { month: 'long', year: 'numeric' },
+  );
+  return (
+    <div className="flex items-center gap-1 rounded-lg border border-border bg-background p-0.5">
+      <button
+        onClick={() => onShift(-1)}
+        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted"
+        aria-label={tReports('current_month')}
+      >
+        <ChevronIcon dir="left" />
+      </button>
+      <div className="min-w-[140px] px-3 py-1 text-center text-sm font-medium text-foreground">
+        {monthLabel}
+      </div>
+      <button
+        onClick={() => onShift(1)}
+        disabled={isCurrent}
+        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"
+        aria-label={tReports('current_month')}
+      >
+        <ChevronIcon dir="right" />
+      </button>
+    </div>
+  );
+}
+
+function ChevronIcon({ dir }: { dir: 'left' | 'right' }) {
+  return (
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d={dir === 'left' ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}
+      />
+    </svg>
   );
 }
