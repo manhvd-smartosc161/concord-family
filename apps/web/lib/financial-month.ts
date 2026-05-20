@@ -25,13 +25,13 @@ export function getCurrentFinancialMonth(
 export function formatFinancialMonthRange(
   start: Date,
   end: Date,
-  locale: 'vi' | 'en',
+  _locale: 'vi' | 'en',
 ): string {
   const endInclusive = new Date(end.getTime() - 24 * 60 * 60 * 1000);
-  const fmt = (d: Date) =>
-    d.toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-    });
+  const fmt = (d: Date) => {
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}`;
+  };
   return `${fmt(start)} — ${fmt(endInclusive)}`;
 }

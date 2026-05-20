@@ -548,12 +548,8 @@ function MonthSwitcher({
   tReports: TFn;
 }) {
   const locale = useLocale();
-  const monthLabel = new Date(year, month - 1, 1).toLocaleDateString(
-    locale === 'en' ? 'en-US' : 'vi-VN',
-    { month: 'long', year: 'numeric' },
-  );
   const { start, end } = getFinancialMonthRange(year, month, cutoffDay);
-  const subtitle = formatFinancialMonthRange(start, end, locale === 'en' ? 'en' : 'vi');
+  const rangeLabel = formatFinancialMonthRange(start, end, locale === 'en' ? 'en' : 'vi');
   return (
     <div className="flex items-center gap-1 rounded-lg border border-border bg-background p-0.5">
       <button
@@ -564,8 +560,7 @@ function MonthSwitcher({
         <ChevronIcon dir="left" />
       </button>
       <div className="min-w-[140px] px-3 py-1 text-center text-sm font-medium text-foreground">
-        <div>{monthLabel}</div>
-        <div className="text-[10px] font-normal text-muted-foreground">{subtitle}</div>
+        {rangeLabel}
       </div>
       <button
         onClick={() => onShift(1)}
