@@ -4,6 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ApiError } from '@/lib/api-client';
 import { formatVND } from '@/lib/format';
+import {
+  getCurrentFinancialMonth,
+  getFinancialMonthRange,
+} from '@/lib/financial-month';
 import { FundFilterTabs } from '@/features/funds/components/fund-filter-tabs';
 import {
   deleteTransaction,
@@ -29,11 +33,13 @@ const PAGE_SIZE = 30;
 export default function TransactionsPage() {
   const t = useTranslations('transactions');
   const tCommon = useTranslations('common');
-  const { funds, reloadFunds } = useAuthedLayout();
+  const { funds, reloadFunds, family } = useAuthedLayout();
+  const cutoffDay = family?.financialMonthCutoffDay ?? 1;
 
   const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const initialFM = getCurrentFinancialMonth(now, 1);
+  const [year, setYear] = useState(initialFM.year);
+  const [month, setMonth] = useState(initialFM.month);
   const [fundFilter, setFundFilter] = useState<string>('');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -52,6 +58,15 @@ export default function TransactionsPage() {
     const joint = funds.find((f) => f.type === 'joint');
     setFundFilter(joint?.id ?? funds[0].id);
   }, [funds]);
+
+  useEffect(() => {
+    if (!family) return;
+    const fm = getCurrentFinancialMonth(new Date(), family.financialMonthCutoffDay);
+    setYear(fm.year);
+    setMonth(fm.month);
+    setPage(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [family?.id]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -78,13 +93,13 @@ export default function TransactionsPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
-    const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+    const { start, end } = getFinancialMonthRange(year, month, cutoffDay);
+    const apiEnd = new Date(end.getTime() - 1);
     try {
       const res = await listTransactions({
         fundId: fundFilter || undefined,
         from: start.toISOString(),
-        to: end.toISOString(),
+        to: apiEnd.toISOString(),
         q: debouncedSearch.trim() || undefined,
         offset: page * PAGE_SIZE,
         limit: PAGE_SIZE,
@@ -98,7 +113,7 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [year, month, fundFilter, debouncedSearch, page]);
+  }, [year, month, fundFilter, debouncedSearch, page, cutoffDay]);
 
   useEffect(() => {
     if (!fundFilter) return;
@@ -131,8 +146,8 @@ export default function TransactionsPage() {
     }
   }
 
-  const isCurrentMonth =
-    year === now.getFullYear() && month === now.getMonth() + 1;
+  const currentFM = getCurrentFinancialMonth(now, cutoffDay);
+  const isCurrentMonth = year === currentFM.year && month === currentFM.month;
   const groupedItems = useMemo(() => groupByDay(items), [items]);
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -153,6 +168,7 @@ export default function TransactionsPage() {
                   month={month}
                   onShift={shiftMonth}
                   isCurrent={isCurrentMonth}
+                  cutoffDay={cutoffDay}
                 />
                 <button
                   type="button"
