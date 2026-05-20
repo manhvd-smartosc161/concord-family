@@ -16,6 +16,11 @@ import { listTasks } from '@/features/tasks/api';
 import type { Task } from '@/features/tasks/types';
 import { useAuthedLayout } from '../layout';
 import type { FundView } from '@/features/funds/types';
+import {
+  getCurrentFinancialMonth,
+  getFinancialMonthRange,
+  formatFinancialMonthRange,
+} from '@/lib/financial-month';
 import { pickFundIcon } from '@/features/funds/components/fund-card';
 import {
   Badge,
@@ -40,15 +45,17 @@ export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const tReports = useTranslations('reports');
   const locale = useLocale();
-  const { user, funds } = useAuthedLayout();
+  const { user, funds, family } = useAuthedLayout();
+  const cutoffDay = family?.financialMonthCutoffDay ?? 1;
 
   const [loading, setLoading] = useState(true);
   const [upcoming, setUpcoming] = useState<AgendaItem[]>([]);
   const [report, setReport] = useState<MonthlyReport | null>(null);
   const [reportFundId, setReportFundId] = useState<string>('');
   const now0 = new Date();
-  const [year, setYear] = useState(now0.getFullYear());
-  const [month, setMonth] = useState(now0.getMonth() + 1);
+  const initialFM = getCurrentFinancialMonth(now0, 1);
+  const [year, setYear] = useState(initialFM.year);
+  const [month, setMonth] = useState(initialFM.month);
   const [reportLoading, setReportLoading] = useState(false);
   const [yearGoal, setYearGoal] = useState<GoalView | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -57,6 +64,14 @@ export default function DashboardPage() {
   const reportInitialized = useRef(false);
 
   const jointFundId = funds.find((f) => f.type === 'joint' && f.purpose === 'spending')?.id;
+
+  useEffect(() => {
+    if (!family) return;
+    const fm = getCurrentFinancialMonth(new Date(), family.financialMonthCutoffDay);
+    setYear(fm.year);
+    setMonth(fm.month);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [family?.id]);
 
   useEffect(() => {
     const now = new Date();
@@ -147,6 +162,7 @@ export default function DashboardPage() {
             year={year}
             month={month}
             onShift={shiftMonth}
+            cutoffDay={cutoffDay}
             t={t}
             tReports={tReports}
           />
@@ -280,6 +296,7 @@ function MonthStatsWidget({
   year,
   month,
   onShift,
+  cutoffDay,
   t,
   tReports,
 }: {
@@ -291,11 +308,12 @@ function MonthStatsWidget({
   year: number;
   month: number;
   onShift: (delta: number) => void;
+  cutoffDay: number;
   t: TFn;
   tReports: TFn;
 }) {
-  const now = new Date();
-  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
+  const currentFM = getCurrentFinancialMonth(new Date(), cutoffDay);
+  const isCurrentMonth = year === currentFM.year && month === currentFM.month;
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
@@ -305,6 +323,7 @@ function MonthStatsWidget({
           month={month}
           onShift={onShift}
           isCurrent={isCurrentMonth}
+          cutoffDay={cutoffDay}
           tReports={tReports}
         />
       </div>
@@ -519,12 +538,14 @@ function MonthSwitcher({
   month,
   onShift,
   isCurrent,
+  cutoffDay,
   tReports,
 }: {
   year: number;
   month: number;
   onShift: (delta: number) => void;
   isCurrent: boolean;
+  cutoffDay: number;
   tReports: TFn;
 }) {
   const locale = useLocale();
@@ -532,6 +553,11 @@ function MonthSwitcher({
     locale === 'en' ? 'en-US' : 'vi-VN',
     { month: 'long', year: 'numeric' },
   );
+  let subtitle: string | null = null;
+  if (cutoffDay > 1) {
+    const { start, end } = getFinancialMonthRange(year, month, cutoffDay);
+    subtitle = formatFinancialMonthRange(start, end, locale === 'en' ? 'en' : 'vi');
+  }
   return (
     <div className="flex items-center gap-1 rounded-lg border border-border bg-background p-0.5">
       <button
@@ -542,7 +568,10 @@ function MonthSwitcher({
         <ChevronIcon dir="left" />
       </button>
       <div className="min-w-[140px] px-3 py-1 text-center text-sm font-medium text-foreground">
-        {monthLabel}
+        <div>{monthLabel}</div>
+        {subtitle && (
+          <div className="text-[10px] font-normal text-muted-foreground">{subtitle}</div>
+        )}
       </div>
       <button
         onClick={() => onShift(1)}
