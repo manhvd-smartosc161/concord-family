@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, In, Repository } from 'typeorm';
+import { Family } from '../families/entities/family.entity';
 import { Fund } from '../funds/entities/fund.entity';
 import { OPENING_BALANCE_NOTE } from '../funds/opening-balance.constants';
 import { Transaction } from '../transactions/entities/transaction.entity';
 import { TransactionsService } from '../transactions/transactions.service';
 import { User } from '../users/entities/user.entity';
+import { getFinancialMonthRange } from '../../shared/common/date-helpers';
 
 export type ReportScope = 'all' | 'joint';
 
@@ -13,14 +15,14 @@ export interface CategoryAggregate {
   categoryId: string | null;
   categoryName: string;
   icon: string | null;
-  amount: number; // positive value of total expense in this category
+  amount: number;
   count: number;
 }
 
 export interface DayAggregate {
-  date: string; // YYYY-MM-DD
+  date: string;
   income: number;
-  expense: number; // positive
+  expense: number;
 }
 
 export interface MonthlyReport {
@@ -40,6 +42,8 @@ export class ReportsService {
     private readonly txnRepo: Repository<Transaction>,
     @InjectRepository(Fund)
     private readonly fundRepo: Repository<Fund>,
+    @InjectRepository(Family)
+    private readonly familyRepo: Repository<Family>,
     private readonly txnService: TransactionsService,
   ) {}
 
@@ -50,8 +54,9 @@ export class ReportsService {
     scope: ReportScope = 'all',
     fundId?: string,
   ): Promise<MonthlyReport> {
-    const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
-    const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+    const family = await this.familyRepo.findOneByOrFail({ id: user.familyId! });
+    const cutoffDay = family.financialMonthCutoffDay;
+    const { start, end } = getFinancialMonthRange(year, month, cutoffDay);
 
     let fundIds = await this.txnService.visibleFundIds(user);
     if (fundId && fundIds.includes(fundId)) {
@@ -71,7 +76,7 @@ export class ReportsService {
         net: 0,
         txnCount: 0,
         byCategory: [],
-        byDay: this.emptyDays(year, month),
+        byDay: this.emptyDays(start, end),
       };
     }
 
@@ -79,7 +84,7 @@ export class ReportsService {
       where: {
         familyId: user.familyId!,
         fundId: In(fundIds),
-        date: Between(start, end),
+        date: Between(start, new Date(end.getTime() - 1)),
       },
       relations: { category: true },
     });
@@ -102,7 +107,6 @@ export class ReportsService {
         amount: 0,
         count: 0,
       };
-      // Only count expenses in by-category breakdown
       if (t.amount < 0) cat.amount += -t.amount;
       cat.count += 1;
       byCategoryMap.set(catKey, cat);
@@ -118,13 +122,12 @@ export class ReportsService {
       byDayMap.set(dayKey, day);
     }
 
-    // Fill empty days for chart continuity
-    const filledDays = this.emptyDays(year, month).map(
+    const filledDays = this.emptyDays(start, end).map(
       (d) => byDayMap.get(d.date) ?? d,
     );
 
     const byCategory = [...byCategoryMap.values()]
-      .filter((c) => c.amount > 0) // hide income-only categories from spending breakdown
+      .filter((c) => c.amount > 0)
       .sort((a, b) => b.amount - a.amount);
 
     return {
@@ -138,15 +141,11 @@ export class ReportsService {
     };
   }
 
-  // ─── helpers ────────────────────────────────────────────────────────
-
-  private emptyDays(year: number, month: number): DayAggregate[] {
-    const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  private emptyDays(start: Date, end: Date): DayAggregate[] {
     const out: DayAggregate[] = [];
-    for (let d = 1; d <= lastDay; d++) {
-      const iso = new Date(Date.UTC(year, month - 1, d))
-        .toISOString()
-        .slice(0, 10);
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+    for (let t = start.getTime(); t < end.getTime(); t += ONE_DAY) {
+      const iso = new Date(t).toISOString().slice(0, 10);
       out.push({ date: iso, income: 0, expense: 0 });
     }
     return out;
