@@ -10,10 +10,13 @@ import { listFunds } from '@/features/funds/api';
 import type { FundView } from '@/features/funds/types';
 import type { AuthUser } from '@/features/auth/types';
 import { logout, useAuth } from '@/features/auth/hooks';
+import { getMyFamily } from '@/features/families/api';
+import type { FamilyView } from '@/features/families/types';
 
 interface LayoutCtx {
   user: AuthUser;
   funds: FundView[];
+  family: FamilyView | null;
   reloadFunds: () => Promise<void>;
   reloadUser: () => Promise<void>;
 }
@@ -36,6 +39,7 @@ export default function AuthedLayout({
   const pathname = usePathname();
   const tCommon = useTranslations('common');
   const [funds, setFunds] = useState<FundView[]>([]);
+  const [family, setFamily] = useState<FamilyView | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const reloadFunds = useCallback(async () => {
@@ -50,6 +54,14 @@ export default function AuthedLayout({
   useEffect(() => {
     if (auth.status === 'authed' && auth.user.familyId) void reloadFunds();
   }, [auth.status, auth, reloadFunds]);
+
+  useEffect(() => {
+    if (auth.status === 'authed' && auth.user.familyId) {
+      void getMyFamily()
+        .then((res) => setFamily(res.family))
+        .catch(() => {});
+    }
+  }, [auth.status, auth]);
 
   useEffect(() => {
     if (
@@ -76,7 +88,7 @@ export default function AuthedLayout({
 
   if (!auth.user.familyId) {
     return (
-      <LayoutContext.Provider value={{ user: auth.user, funds, reloadFunds, reloadUser }}>
+      <LayoutContext.Provider value={{ user: auth.user, funds, family, reloadFunds, reloadUser }}>
         <div className="flex min-h-screen flex-col bg-background">
           <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2.5 sm:px-6">
             <div className="flex items-center gap-2">
@@ -107,7 +119,7 @@ export default function AuthedLayout({
   }
 
   return (
-    <LayoutContext.Provider value={{ user: auth.user, funds, reloadFunds, reloadUser }}>
+    <LayoutContext.Provider value={{ user: auth.user, funds, family, reloadFunds, reloadUser }}>
       <div className="flex h-screen flex-col lg:hidden">
         <Header
           user={auth.user}
