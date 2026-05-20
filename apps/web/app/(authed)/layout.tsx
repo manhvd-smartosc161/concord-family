@@ -125,7 +125,7 @@ export default function AuthedLayout({
   }
 
   return (
-    <LayoutContext.Provider value={{ user: auth.user, funds, family, reloadFunds, reloadUser }}>
+    <LayoutContext.Provider value={{ user: auth.user, funds, family, reloadFunds, reloadFamily, reloadUser }}>
       <div className="flex h-screen flex-col lg:hidden">
         <Header
           user={auth.user}
