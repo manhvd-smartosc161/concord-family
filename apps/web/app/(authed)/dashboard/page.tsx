@@ -8,6 +8,7 @@ import { listUpcoming } from '@/features/important-dates/api';
 import type { AgendaItem } from '@/features/important-dates/types';
 import { getMonthlyReport } from '@/features/reports/api';
 import type { MonthlyReport, CategoryAggregate } from '@/features/reports/types';
+import { CategoryTransactionsModal } from '@/features/transactions/components/category-transactions-modal';
 import { listGoals } from '@/features/goals/api';
 import type { GoalView } from '@/features/goals/types';
 import { getDebtsSummary } from '@/features/debts/api';
@@ -45,7 +46,7 @@ export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const tReports = useTranslations('reports');
   const locale = useLocale();
-  const { user, funds, family } = useAuthedLayout();
+  const { user, funds, family, reloadFunds } = useAuthedLayout();
   const cutoffDay = family?.financialMonthCutoffDay ?? 1;
 
   const [loading, setLoading] = useState(true);
@@ -61,6 +62,12 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [debtSummary, setDebtSummary] = useState<DebtSummary | null>(null);
   const [debtLoading, setDebtLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [openCategory, setOpenCategory] = useState<{
+    id: string;
+    name: string;
+    icon: string | null;
+  } | null>(null);
   const reportInitialized = useRef(false);
 
   const jointFundId = funds.find((f) => f.type === 'joint' && f.purpose === 'spending')?.id;
@@ -115,7 +122,7 @@ export default function DashboardPage() {
         setReportLoading(false);
         setDebtLoading(false);
       });
-  }, [reportFundId, year, month]);
+  }, [reportFundId, year, month, refreshKey]);
 
   function shiftMonth(delta: number) {
     let m = month + delta;
@@ -168,9 +175,7 @@ export default function DashboardPage() {
           <CategoryBreakdownWidget
             report={report}
             loading={loading || reportLoading}
-            year={year}
-            month={month}
-            fundId={reportFundId || jointFundId}
+            onPickCategory={(c) => setOpenCategory(c)}
             tReports={tReports}
           />
           <DebtSummaryWidget summary={debtSummary} loading={loading || debtLoading} t={t} />
@@ -180,6 +185,22 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      <CategoryTransactionsModal
+        open={openCategory !== null}
+        categoryId={openCategory?.id ?? null}
+        categoryName={openCategory?.name ?? ''}
+        categoryIcon={openCategory?.icon ?? null}
+        year={year}
+        month={month}
+        cutoffDay={cutoffDay}
+        fundId={reportFundId || jointFundId}
+        funds={funds}
+        onClose={() => setOpenCategory(null)}
+        onMutated={() => {
+          setRefreshKey((k) => k + 1);
+          void reloadFunds();
+        }}
+      />
     </div>
   );
 }
@@ -595,20 +616,22 @@ function ChevronIcon({ dir }: { dir: 'left' | 'right' }) {
   );
 }
 
+interface CategoryPick {
+  id: string;
+  name: string;
+  icon: string | null;
+}
+
 function CategoryBreakdownWidget({
   report,
   loading,
-  year,
-  month,
-  fundId,
   tReports,
+  onPickCategory,
 }: {
   report: MonthlyReport | null;
   loading: boolean;
-  year: number;
-  month: number;
-  fundId: string | undefined;
   tReports: TFn;
+  onPickCategory: (c: CategoryPick) => void;
 }) {
   return (
     <Card>
@@ -633,9 +656,7 @@ function CategoryBreakdownWidget({
         <CategoryList
           items={report.byCategory}
           total={report.expense}
-          year={year}
-          month={month}
-          fundId={fundId}
+          onPickCategory={onPickCategory}
         />
       )}
     </Card>
@@ -645,24 +666,12 @@ function CategoryBreakdownWidget({
 function CategoryList({
   items,
   total,
-  year,
-  month,
-  fundId,
+  onPickCategory,
 }: {
   items: CategoryAggregate[];
   total: number;
-  year: number;
-  month: number;
-  fundId: string | undefined;
+  onPickCategory: (c: CategoryPick) => void;
 }) {
-  function buildHref(categoryId: string | null): string {
-    const qs = new URLSearchParams();
-    qs.set('year', String(year));
-    qs.set('month', String(month));
-    if (fundId) qs.set('fundId', fundId);
-    if (categoryId) qs.set('categoryId', categoryId);
-    return `/transactions?${qs.toString()}`;
-  }
   return (
     <div className="space-y-3">
       {items.map((c) => {
@@ -694,13 +703,20 @@ function CategoryList({
           </>
         );
         return c.categoryId ? (
-          <Link
+          <button
             key={c.categoryId}
-            href={buildHref(c.categoryId)}
-            className="block rounded-md transition-colors hover:bg-muted/40 -mx-2 px-2 py-1"
+            type="button"
+            onClick={() =>
+              onPickCategory({
+                id: c.categoryId!,
+                name: c.categoryName,
+                icon: c.icon,
+              })
+            }
+            className="-mx-2 block w-full rounded-md px-2 py-1 text-left transition-colors hover:bg-muted/40"
           >
             {row}
-          </Link>
+          </button>
         ) : (
           <div key={c.categoryName}>{row}</div>
         );
