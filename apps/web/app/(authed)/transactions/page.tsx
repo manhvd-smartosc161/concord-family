@@ -65,7 +65,6 @@ export default function TransactionsPage() {
     setYear(fm.year);
     setMonth(fm.month);
     setPage(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [family?.id]);
 
   useEffect(() => {
