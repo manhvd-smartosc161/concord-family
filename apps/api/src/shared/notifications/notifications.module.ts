@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AgentModule } from '../../agent/agent.module';
 import { User } from '../../modules/users/entities/user.entity';
@@ -7,7 +7,7 @@ import { LivelyMessageService } from './lively-message.service';
 import { NotificationsService } from './notifications.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), AgentModule],
+  imports: [TypeOrmModule.forFeature([User]), forwardRef(() => AgentModule)],
   providers: [EmailService, LivelyMessageService, NotificationsService],
   exports: [NotificationsService, EmailService],
 })
