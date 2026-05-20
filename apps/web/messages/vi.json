@@ -153,7 +153,8 @@
     "day_yesterday": "Hôm qua",
     "amount_required": "Số tiền phải là số dương",
     "all_funds_filter": "Tất cả",
-    "filter": "Bộ lọc"
+    "filter": "Bộ lọc",
+    "fiscal_range_aria": "Phạm vi tháng tài chính"
   },
   "goals": {
     "title": "Quỹ tiết kiệm & đầu tư",
