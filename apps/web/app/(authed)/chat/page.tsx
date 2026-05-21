@@ -176,6 +176,7 @@ function ChatInner() {
 
   const [activeMode, setActiveMode] = useState<'private' | 'public'>('private');
   const [sessionDrawerOpen, setSessionDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const theme = THEMES[activeMode];
 
@@ -384,6 +385,8 @@ function ChatInner() {
           activeId={sessionIdFromUrl}
           onDelete={handleDeleteSession}
           theme={theme}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
       </aside>
 
@@ -524,6 +527,8 @@ function ChatInner() {
             onDelete={handleDeleteSession}
             onPick={() => setSessionDrawerOpen(false)}
             theme={theme}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
           />
         </div>
       </MobileDrawer>
@@ -574,43 +579,158 @@ function SessionList({
   activeId,
   onDelete,
   theme,
+  searchQuery,
+  onSearchChange,
 }: {
   sessions: ChatSessionView[];
   activeId: string | null;
   onDelete: (id: string) => void;
   theme: Theme;
+  searchQuery: string;
+  onSearchChange: (q: string) => void;
 }) {
   const t = useTranslations('chat');
   const groupLabels = useMemo<GroupLabels>(() => ({
     today: t('group_today'), yesterday: t('group_yesterday'),
     last7: t('group_7days'), last30: t('group_30days'), older: t('group_older'),
   }), [t]);
-  const grouped = useMemo(() => groupByDate(sessions, groupLabels), [sessions, groupLabels]);
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return sessions;
+    return sessions.filter((s) => s.title.toLowerCase().includes(q));
+  }, [sessions, searchQuery]);
+  const grouped = useMemo(() => groupByDate(filtered, groupLabels), [filtered, groupLabels]);
+  const isSearching = searchQuery.trim().length > 0;
   return (
-    <div className="flex-1 overflow-y-auto px-2 py-2">
-      {sessions.length === 0 && (
-        <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-          {t('no_conversations')}
-        </div>
+    <div className="flex flex-1 min-h-0 flex-col">
+      <div className="px-3 pb-2 pt-2">
+        <SearchBox value={searchQuery} onChange={onSearchChange} placeholder={t('search_placeholder')} />
+      </div>
+      <div className="flex-1 overflow-y-auto px-2 pb-2">
+        {sessions.length === 0 && (
+          <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+            {t('no_conversations')}
+          </div>
+        )}
+        {sessions.length > 0 && filtered.length === 0 && (
+          <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+            {t('no_search_results')}
+          </div>
+        )}
+        {grouped.map(({ label, items }) => (
+          <SessionGroup
+            key={label}
+            label={label}
+            items={items}
+            activeId={activeId}
+            onDelete={onDelete}
+            theme={theme}
+            forceExpanded={isSearching}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SearchBox({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="relative">
+      <svg
+        className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="11" cy="11" r="7" />
+        <path d="M21 21l-4.3-4.3" />
+      </svg>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-lg border border-border bg-muted py-1.5 pl-8 pr-7 text-xs text-foreground placeholder:text-muted-foreground focus:border-emerald-300 focus:bg-background focus:outline-none focus:ring-1 focus:ring-emerald-200/60 dark:focus:border-emerald-900 dark:focus:ring-emerald-900"
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          aria-label="Clear search"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
       )}
-      {grouped.map(({ label, items }) => (
-        <div key={label} className="mb-3">
-          <h4 className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {label}
-          </h4>
-          <ul className="space-y-0.5">
-            {items.map((s) => (
-              <SessionItem
-                key={s.id}
-                session={s}
-                active={s.id === activeId}
-                onDelete={() => onDelete(s.id)}
-                theme={theme}
-              />
-            ))}
-          </ul>
-        </div>
-      ))}
+    </div>
+  );
+}
+
+const COLLAPSED_PER_GROUP = 3;
+
+function SessionGroup({
+  label,
+  items,
+  activeId,
+  onDelete,
+  theme,
+  forceExpanded,
+}: {
+  label: string;
+  items: ChatSessionView[];
+  activeId: string | null;
+  onDelete: (id: string) => void;
+  theme: Theme;
+  forceExpanded: boolean;
+}) {
+  const t = useTranslations('chat');
+  const [expanded, setExpanded] = useState(false);
+  const containsActive = activeId ? items.some((s) => s.id === activeId) : false;
+  const showAll = forceExpanded || expanded || containsActive;
+  const visible = showAll ? items : items.slice(0, COLLAPSED_PER_GROUP);
+  const hiddenCount = items.length - visible.length;
+  return (
+    <div className="mb-3">
+      <h4 className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </h4>
+      <ul className="space-y-0.5">
+        {visible.map((s) => (
+          <SessionItem
+            key={s.id}
+            session={s}
+            active={s.id === activeId}
+            onDelete={() => onDelete(s.id)}
+            theme={theme}
+          />
+        ))}
+      </ul>
+      {!forceExpanded && items.length > COLLAPSED_PER_GROUP && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 w-full rounded-md px-2 py-1 text-left text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          {showAll && !containsActive
+            ? t('show_less')
+            : hiddenCount > 0
+              ? t('show_more', { n: hiddenCount })
+              : null}
+        </button>
+      )}
     </div>
   );
 }
@@ -676,45 +796,115 @@ function SessionListDrawer({
   onDelete,
   onPick,
   theme,
+  searchQuery,
+  onSearchChange,
 }: {
   sessions: ChatSessionView[];
   activeId: string | null;
   onDelete: (id: string) => void;
   onPick: () => void;
   theme: Theme;
+  searchQuery: string;
+  onSearchChange: (q: string) => void;
 }) {
   const t = useTranslations('chat');
   const groupLabels = useMemo<GroupLabels>(() => ({
     today: t('group_today'), yesterday: t('group_yesterday'),
     last7: t('group_7days'), last30: t('group_30days'), older: t('group_older'),
   }), [t]);
-  const grouped = useMemo(() => groupByDate(sessions, groupLabels), [sessions, groupLabels]);
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return sessions;
+    return sessions.filter((s) => s.title.toLowerCase().includes(q));
+  }, [sessions, searchQuery]);
+  const grouped = useMemo(() => groupByDate(filtered, groupLabels), [filtered, groupLabels]);
+  const isSearching = searchQuery.trim().length > 0;
   return (
-    <div className="flex-1 overflow-y-auto px-2 py-2">
-      {sessions.length === 0 && (
-        <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-          {t('no_conversations')}
-        </div>
+    <div className="flex flex-1 min-h-0 flex-col">
+      <div className="px-3 pb-2 pt-2">
+        <SearchBox value={searchQuery} onChange={onSearchChange} placeholder={t('search_placeholder')} />
+      </div>
+      <div className="flex-1 overflow-y-auto px-2 pb-2">
+        {sessions.length === 0 && (
+          <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+            {t('no_conversations')}
+          </div>
+        )}
+        {sessions.length > 0 && filtered.length === 0 && (
+          <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+            {t('no_search_results')}
+          </div>
+        )}
+        {grouped.map(({ label, items }) => (
+          <SessionGroupDrawer
+            key={label}
+            label={label}
+            items={items}
+            activeId={activeId}
+            onDelete={onDelete}
+            onPick={onPick}
+            theme={theme}
+            forceExpanded={isSearching}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SessionGroupDrawer({
+  label,
+  items,
+  activeId,
+  onDelete,
+  onPick,
+  theme,
+  forceExpanded,
+}: {
+  label: string;
+  items: ChatSessionView[];
+  activeId: string | null;
+  onDelete: (id: string) => void;
+  onPick: () => void;
+  theme: Theme;
+  forceExpanded: boolean;
+}) {
+  const t = useTranslations('chat');
+  const [expanded, setExpanded] = useState(false);
+  const containsActive = activeId ? items.some((s) => s.id === activeId) : false;
+  const showAll = forceExpanded || expanded || containsActive;
+  const visible = showAll ? items : items.slice(0, COLLAPSED_PER_GROUP);
+  const hiddenCount = items.length - visible.length;
+  return (
+    <div className="mb-3">
+      <h4 className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </h4>
+      <ul className="space-y-0.5">
+        {visible.map((s) => (
+          <SessionItemDrawer
+            key={s.id}
+            session={s}
+            active={s.id === activeId}
+            onDelete={() => onDelete(s.id)}
+            onPick={onPick}
+            theme={theme}
+          />
+        ))}
+      </ul>
+      {!forceExpanded && items.length > COLLAPSED_PER_GROUP && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 w-full rounded-md px-2 py-1 text-left text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          {showAll && !containsActive
+            ? t('show_less')
+            : hiddenCount > 0
+              ? t('show_more', { n: hiddenCount })
+              : null}
+        </button>
       )}
-      {grouped.map(({ label, items }) => (
-        <div key={label} className="mb-3">
-          <h4 className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {label}
-          </h4>
-          <ul className="space-y-0.5">
-            {items.map((s) => (
-              <SessionItemDrawer
-                key={s.id}
-                session={s}
-                active={s.id === activeId}
-                onDelete={() => onDelete(s.id)}
-                onPick={onPick}
-                theme={theme}
-              />
-            ))}
-          </ul>
-        </div>
-      ))}
     </div>
   );
 }
