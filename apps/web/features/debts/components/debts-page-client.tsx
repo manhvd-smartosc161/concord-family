@@ -110,7 +110,7 @@ export function DebtsPageClient({ funds, initialDebts, initialSummary, onMutated
                 key={tab_item.key}
                 type="button"
                 onClick={() => setTab(tab_item.key)}
-                className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`flex-1 whitespace-nowrap rounded-lg px-2 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${
                   tab === tab_item.key
                     ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
