@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import {
   deleteImportantDate,
+  getImportantDate,
   listForYear,
   notifyAiDate,
   testNotifyImportantDate,
@@ -100,27 +101,15 @@ export default function CalendarPage() {
     setModalOpen(true);
   }
 
-  function openEdit(item: AgendaItem) {
+  async function openEdit(item: AgendaItem) {
     if (!item.sourceId) return;
-    setEditing({
-      id: item.sourceId,
-      name: item.name,
-      type:
-        item.kind === 'birthday' ||
-        item.kind === 'death_anniversary' ||
-        item.kind === 'anniversary' ||
-        item.kind === 'other'
-          ? item.kind
-          : 'other',
-      date: item.occursOn,
-      isLunar: item.isLunar,
-      remindDaysBefore: item.remindDaysBefore,
-      notes: item.notes,
-      createdById: '',
-      nextOccurrence: item.occursOn,
-      daysUntilNext: item.daysUntil,
-    });
-    setModalOpen(true);
+    try {
+      const entry = await getImportantDate(item.sourceId);
+      setEditing(entry);
+      setModalOpen(true);
+    } catch (err) {
+      alert((err as Error).message);
+    }
   }
 
   async function handleDelete(item: AgendaItem) {
@@ -249,7 +238,7 @@ export default function CalendarPage() {
                   <AgendaItemCard
                     key={`${item.sourceId ?? 'ai'}-${idx}`}
                     item={item}
-                    onEdit={() => openEdit(item)}
+                    onEdit={() => void openEdit(item)}
                     onDelete={() => handleDelete(item)}
                     onTest={() => handleTest(item)}
                   />

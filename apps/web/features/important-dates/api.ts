@@ -19,6 +19,10 @@ export function listForYear(year: number): Promise<YearAgendaView> {
   return apiFetch<YearAgendaView>(`/api/important-dates/year/${year}`);
 }
 
+export function getImportantDate(id: string): Promise<ImportantDateView> {
+  return apiFetch<ImportantDateView>(`/api/important-dates/${id}`);
+}
+
 export function createImportantDate(
   payload: CreateImportantDatePayload,
 ): Promise<ImportantDateView> {
