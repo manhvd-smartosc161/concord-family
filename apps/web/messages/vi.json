@@ -33,7 +33,7 @@
     "settings": "Cài đặt",
     "family_group": "Gia đình",
     "tasks": "Công việc",
-    "anniversaries": "Ngày kỷ niệm",
+    "anniversaries": "Ngày quan trọng",
     "members": "Thành viên",
     "your_funds": "Quỹ của bạn",
     "profile": "Hồ sơ"
@@ -239,11 +239,13 @@
     "today": "Hôm nay"
   },
   "dates": {
-    "title": "Ngày kỷ niệm",
+    "title": "Ngày quan trọng",
     "subtitle": "Lưu lại những ngày đặc biệt.",
     "add_date": "+ Thêm ngày",
-    "no_dates": "Chưa có ngày kỷ niệm nào",
+    "no_dates": "Chưa có ngày quan trọng nào",
     "no_dates_desc": "Thêm ngày đặc biệt để nhận nhắc nhở.",
+    "search_placeholder": "Tìm theo tên hoặc ghi chú…",
+    "no_search_results": "Không tìm thấy ngày nào.",
     "upcoming": "Sắp tới",
     "past": "Đã qua",
     "view_calendar": "Lịch",

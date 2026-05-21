@@ -12,6 +12,10 @@ import {
 } from '@/features/important-dates/api';
 import { AgendaItemCard } from '@/features/important-dates/components/agenda-item-card';
 import { ImportantDateFormModal } from '@/features/important-dates/components/important-date-form-modal';
+import {
+  SearchBox,
+  matchSearchQuery,
+} from '@/features/important-dates/components/search-box';
 import { ViewTabs } from '@/features/important-dates/components/view-tabs';
 import type {
   AgendaItem,
@@ -72,6 +76,7 @@ export default function YearAgendaPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ImportantDateView | null>(null);
   const [kindFilter, setKindFilter] = useState<KindFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   async function reload() {
     setView(null);
@@ -90,8 +95,13 @@ export default function YearAgendaPage() {
 
   const filteredItems = useMemo(() => {
     if (!view) return [] as AgendaItem[];
-    return view.items.filter((i) => matchesFilter(i, kindFilter));
-  }, [view, kindFilter]);
+    return view.items.filter(
+      (i) =>
+        matchesFilter(i, kindFilter) &&
+        matchSearchQuery(searchQuery, [i.name, i.notes]),
+    );
+  }, [view, kindFilter, searchQuery]);
+  const isSearching = searchQuery.trim().length > 0;
 
   const grouped = useMemo(() => {
     const map = new Map<number, AgendaItem[]>();
@@ -191,6 +201,13 @@ export default function YearAgendaPage() {
           <div className="mb-4">
             <ViewTabs current="year" />
           </div>
+          <div className="mb-3">
+            <SearchBox
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('search_placeholder')}
+            />
+          </div>
           <div className="-mx-3 mb-5 overflow-x-auto px-3 sm:mx-0 sm:px-0">
             <div className="flex gap-2 whitespace-nowrap">
               {FILTER_OPTIONS.map((opt) => {
@@ -236,11 +253,9 @@ export default function YearAgendaPage() {
             view.items.length > 0 &&
             filteredItems.length === 0 && (
               <Card>
-                <EmptyState
-                  icon="🔍"
-                  title={t('no_dates')}
-                  description={t('no_dates_desc')}
-                />
+                <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  {isSearching ? t('no_search_results') : t('no_dates')}
+                </div>
               </Card>
             )}
 

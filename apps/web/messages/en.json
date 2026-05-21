@@ -33,7 +33,7 @@
     "settings": "Settings",
     "family_group": "Family",
     "tasks": "Tasks",
-    "anniversaries": "Anniversaries",
+    "anniversaries": "Important dates",
     "members": "Members",
     "your_funds": "Your Funds",
     "profile": "Profile"
@@ -239,11 +239,13 @@
     "today": "Today"
   },
   "dates": {
-    "title": "Anniversaries",
+    "title": "Important dates",
     "subtitle": "Save your special days.",
     "add_date": "+ Add date",
-    "no_dates": "No anniversaries yet",
+    "no_dates": "No important dates yet",
     "no_dates_desc": "Add special dates to receive reminders.",
+    "search_placeholder": "Search by name or notes…",
+    "no_search_results": "No dates match.",
     "upcoming": "Upcoming",
     "past": "Past",
     "view_calendar": "Calendar",

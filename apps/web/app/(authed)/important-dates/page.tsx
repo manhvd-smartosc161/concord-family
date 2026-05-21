@@ -13,6 +13,10 @@ import {
 } from '@/features/important-dates/api';
 import { AgendaItemCard } from '@/features/important-dates/components/agenda-item-card';
 import { ImportantDateFormModal } from '@/features/important-dates/components/important-date-form-modal';
+import {
+  SearchBox,
+  matchSearchQuery,
+} from '@/features/important-dates/components/search-box';
 import { ViewTabs } from '@/features/important-dates/components/view-tabs';
 import type {
   AgendaItem,
@@ -27,6 +31,12 @@ export default function ImportantDatesPage() {
   const [view, setView] = useState<UpcomingView | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ImportantDateView | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredItems = view
+    ? view.items.filter((it) => matchSearchQuery(searchQuery, [it.name, it.notes]))
+    : [];
+  const isSearching = searchQuery.trim().length > 0;
 
   async function reload() {
     try {
@@ -113,6 +123,14 @@ export default function ImportantDatesPage() {
             </>
           )}
 
+          {view !== null && view.items.length > 0 && (
+            <SearchBox
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('search_placeholder')}
+            />
+          )}
+
           {view !== null && view.items.length === 0 && (
             <Card>
               <EmptyState
@@ -125,7 +143,18 @@ export default function ImportantDatesPage() {
 
           {view !== null &&
             view.items.length > 0 &&
-            view.items.map((item) => (
+            filteredItems.length === 0 &&
+            isSearching && (
+              <Card>
+                <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  {t('no_search_results')}
+                </div>
+              </Card>
+            )}
+
+          {view !== null &&
+            filteredItems.length > 0 &&
+            filteredItems.map((item) => (
               <AgendaItemCard
                 key={`${item.source}-${item.sourceId ?? item.name}-${item.occursOn}`}
                 item={item}

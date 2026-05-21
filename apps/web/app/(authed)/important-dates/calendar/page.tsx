@@ -13,6 +13,10 @@ import {
 import { AgendaItemCard } from '@/features/important-dates/components/agenda-item-card';
 import { CalendarGrid } from '@/features/important-dates/components/calendar-grid';
 import { ImportantDateFormModal } from '@/features/important-dates/components/important-date-form-modal';
+import {
+  SearchBox,
+  matchSearchQuery,
+} from '@/features/important-dates/components/search-box';
 import { ViewTabs } from '@/features/important-dates/components/view-tabs';
 import { lunarOf } from '@/features/important-dates/lib/lunar';
 import type {
@@ -45,6 +49,7 @@ export default function CalendarPage() {
   const [view, setView] = useState<YearAgendaView | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ImportantDateView | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   async function reload() {
     setView(null);
@@ -65,12 +70,14 @@ export default function CalendarPage() {
     const map = new Map<string, AgendaItem[]>();
     if (!view) return map;
     for (const item of view.items) {
+      if (!matchSearchQuery(searchQuery, [item.name, item.notes])) continue;
       const existing = map.get(item.occursOn);
       if (existing) existing.push(item);
       else map.set(item.occursOn, [item]);
     }
     return map;
-  }, [view]);
+  }, [view, searchQuery]);
+  const isSearching = searchQuery.trim().length > 0;
 
   const selectedItems = itemsByDate.get(selectedDate) ?? [];
   const selectedDateObj = parseIso(selectedDate);
@@ -180,6 +187,12 @@ export default function CalendarPage() {
         <div className="mx-auto max-w-3xl space-y-5">
           <ViewTabs current="calendar" />
 
+          <SearchBox
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={t('search_placeholder')}
+          />
+
           {view === null ? (
             <Skeleton className="h-[420px] w-full rounded-xl" />
           ) : (
@@ -228,9 +241,9 @@ export default function CalendarPage() {
 
             {selectedItems.length === 0 ? (
               <EmptyState
-                icon="🗓"
-                title={t('no_dates')}
-                description={t('no_dates_desc')}
+                icon={isSearching ? '🔍' : '🗓'}
+                title={isSearching ? t('no_search_results') : t('no_dates')}
+                description={isSearching ? '' : t('no_dates_desc')}
               />
             ) : (
               <div className="space-y-2">
