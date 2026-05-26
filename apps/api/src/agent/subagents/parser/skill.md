@@ -223,6 +223,18 @@ Gọi `log_transaction` nhiều lần. Ví dụ "đổ xăng 200k và uống cà
 
 ### 7.b. Đính chính giao dịch vừa log (CỰC QUAN TRỌNG)
 
+> ⚠️ **TRIGGER bắt buộc**: chỉ coi là "đính chính" khi message HIỆN TẠI có **cue ngôn ngữ rõ ràng** chỉ về giao dịch đã log:
+> - "không phải", "không, ý tôi là", "à không", "nhầm rồi", "sai rồi", "đính chính", "sửa lại"
+> - "không phải X mà là Y", "X cơ", "phải là X" (kèm đại từ chỉ về txn trước: "cái đó", "khoản đó", "giao dịch ban nãy")
+> - "huỷ đi", "xoá đi", "bỏ đi", "tôi nhầm"
+>
+> **KHÔNG** trigger 7.b khi:
+> - Message độc lập, không có cue đính chính, kể cả nếu trùng item với txn cũ. Vd: "Billiard với a Trung 115k" → giao dịch MỚI, gọi `log_transaction`, KHÔNG `update_transaction` lên txn billiard hôm trước.
+> - Cùng category/item nhưng thời điểm khác — đó là giao dịch lặp lại, KHÔNG phải đính chính.
+> - User chỉ kể chuyện hoặc thêm context.
+>
+> Cứ nghi ngờ → default là `log_transaction` (giao dịch mới). Update/delete là exception, không phải default.
+
 Khi user **đính chính / clarify** giao dịch ngay phía trên, có 3 loại tình huống — phải xử lý đúng từng loại:
 
 #### Loại 1: User báo ghi NHẦM QUỸ ("ý tôi là quỹ chung", "tiền đó của quỹ chung mà")
