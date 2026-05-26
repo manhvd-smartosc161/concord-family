@@ -80,10 +80,12 @@ export default function DashboardPage() {
   }, [family?.id]);
 
   useEffect(() => {
+    if (!family) return;
     const now = new Date();
+    const fm = getCurrentFinancialMonth(now, family.financialMonthCutoffDay);
     Promise.all([
       listUpcoming(3),
-      getMonthlyReport(year, month, 'joint'),
+      getMonthlyReport(fm.year, fm.month, 'joint'),
       listGoals(),
       listTasks(getISOWeek(now)),
       getDebtsSummary(jointFundId),
@@ -96,7 +98,7 @@ export default function DashboardPage() {
         setDebtSummary(debtSum);
       })
       .finally(() => setLoading(false));
-  }, [jointFundId]);
+  }, [jointFundId, family?.id]);
 
   useEffect(() => {
     if (!reportInitialized.current) {
@@ -193,7 +195,8 @@ export default function DashboardPage() {
         year={year}
         month={month}
         cutoffDay={cutoffDay}
-        fundId={reportFundId || jointFundId}
+        fundId={reportFundId || undefined}
+        scope={reportFundId ? 'all' : 'joint'}
         funds={funds}
         onClose={() => setOpenCategory(null)}
         onMutated={() => {

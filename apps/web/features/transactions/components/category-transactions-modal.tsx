@@ -21,6 +21,7 @@ interface Props {
   month: number;
   cutoffDay: number;
   fundId: string | undefined;
+  scope?: 'all' | 'joint';
   funds: FundView[];
   onClose: () => void;
   onMutated: () => void;
@@ -35,6 +36,7 @@ export function CategoryTransactionsModal({
   month,
   cutoffDay,
   fundId,
+  scope,
   funds,
   onClose,
   onMutated,
@@ -53,6 +55,7 @@ export function CategoryTransactionsModal({
     try {
       const res = await listTransactions({
         fundId: fundId || undefined,
+        scope: fundId ? undefined : scope,
         categoryId,
         from: start.toISOString(),
         to: apiEnd.toISOString(),
@@ -64,7 +67,7 @@ export function CategoryTransactionsModal({
     } finally {
       setLoading(false);
     }
-  }, [open, categoryId, year, month, cutoffDay, fundId]);
+  }, [open, categoryId, year, month, cutoffDay, fundId, scope]);
 
   useEffect(() => {
     void fetchData();
