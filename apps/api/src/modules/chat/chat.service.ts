@@ -48,6 +48,11 @@ export class ChatService {
       throw new BadRequestException('sessionId is required');
     }
 
+    const hasImages = (dto.images?.length ?? 0) > 0;
+    if (!hasImages && !dto.message?.trim()) {
+      throw new BadRequestException('message hoặc ảnh phải có ít nhất 1');
+    }
+
     const session = await this.sessions.findAccessible(user, dto.sessionId);
     const sessionId = session.id;
     const defaultFundName = await this.resolveDefaultFundName(
@@ -56,17 +61,31 @@ export class ChatService {
     );
     const history = await this.sessions.recentMessages(sessionId, 20);
 
+    const userMsgText = hasImages
+      ? dto.message?.trim() || `📸 (đã gửi ${dto.images!.length} ảnh)`
+      : dto.message;
     const userMsg = await this.sessions.appendMessage(
       sessionId,
       user.id,
       'user',
-      dto.message,
+      userMsgText,
     );
-    await this.sessions.maybeSetTitle(sessionId, dto.message);
+    await this.sessions.maybeSetTitle(sessionId, userMsgText);
 
-    const route = await this.router.classify(dto.message, history);
+    let intent: 'action' | 'question';
+    let routeUsage = { inputTokens: 0, outputTokens: 0 };
+    let routeReason: string | null = null;
+    if (hasImages) {
+      intent = 'action';
+      routeReason = 'has images → parser';
+    } else {
+      const route = await this.router.classify(dto.message, history);
+      intent = route.intent;
+      routeUsage = route.usage;
+      routeReason = route.reason ?? null;
+    }
     this.logger.debug(
-      `router → ${route.intent} (${route.reason ?? 'no reason'}) [session ${sessionId}]`,
+      `router → ${intent} (${routeReason ?? 'no reason'}) [session ${sessionId}]`,
     );
 
     let reply: string;
@@ -74,10 +93,16 @@ export class ChatService {
     let stopReason: string | null = null;
     let usage = { inputTokens: 0, outputTokens: 0 };
 
-    if (route.intent === 'action') {
+    if (intent === 'action') {
       const result = await this.parser.parse(dto.message, user, {
         defaultFundName,
         history,
+        images: hasImages
+          ? dto.images!.map((img) => ({
+              mediaType: img.mediaType,
+              data: img.data,
+            }))
+          : undefined,
       });
       reply = result.reply;
       actions = result.actions;
@@ -97,8 +122,8 @@ export class ChatService {
     }
 
     const totalUsage = {
-      inputTokens: usage.inputTokens + route.usage.inputTokens,
-      outputTokens: usage.outputTokens + route.usage.outputTokens,
+      inputTokens: usage.inputTokens + routeUsage.inputTokens,
+      outputTokens: usage.outputTokens + routeUsage.outputTokens,
     };
 
     const agentMsg = await this.sessions.appendMessage(

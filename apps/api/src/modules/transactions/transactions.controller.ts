@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   ParseUUIDPipe,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { CurrentUser } from '../../shared/auth/decorators/current-user.decorator
 import { FamilyRequiredGuard } from '../../shared/auth/guards/family-required.guard';
 import { JwtAuthGuard } from '../../shared/auth/guards/jwt-auth.guard';
 import { User } from '../users/entities/user.entity';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import {
   TransactionsService,
@@ -64,6 +66,41 @@ export class TransactionsController {
       limit,
       scope: scope === 'joint' ? 'joint' : 'all',
     });
+  }
+
+  /**
+   * POST /api/transactions — confirm a proposal extracted from image upload.
+   * Same shape as agent's log_transaction; routed through createFromAgent so
+   * privacy + balance recompute stay consistent.
+   */
+  @Post()
+  async create(
+    @Body() dto: CreateTransactionDto,
+    @CurrentUser() user: User,
+  ): Promise<TransactionView> {
+    const { txn, fund, category } = await this.txnService.createFromAgent(
+      {
+        fundName: dto.fundName,
+        amount: dto.amount,
+        categoryName: dto.categoryName,
+        note: dto.note,
+        date: dto.date,
+      },
+      user,
+      dto.note ?? '',
+    );
+    return {
+      id: txn.id,
+      date: txn.date.toISOString(),
+      amount: txn.amount,
+      note: txn.note,
+      source: txn.source,
+      fund: { id: fund.id, name: fund.name, type: fund.type },
+      category: category
+        ? { id: category.id, name: category.name, icon: category.icon }
+        : null,
+      loggedBy: { id: user.id, name: user.name },
+    };
   }
 
   /** PATCH /api/transactions/:id — edit fund/amount/category/note, atomic balance recompute. */

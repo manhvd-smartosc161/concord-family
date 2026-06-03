@@ -15,6 +15,7 @@ import {
 } from '@/features/chat/api';
 import type { ChatSessionView, ParseAction } from '@/features/chat/types';
 import { createImportantDate } from '@/features/important-dates/api';
+import { createTransaction } from '@/features/transactions/api';
 import { useAuthedLayout } from '../layout';
 import { MobileDrawer } from '@/components/ui';
 
@@ -26,6 +27,80 @@ interface PendingMessage {
   usage?: { inputTokens: number; outputTokens: number };
   author?: { id: string; name: string };
   error?: boolean;
+  imagePreviews?: string[];
+}
+
+interface PendingImage {
+  id: string;
+  dataUrl: string;
+  mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+  base64: string;
+}
+
+const MAX_IMAGES = 4;
+const MAX_INPUT_BYTES = 25 * 1024 * 1024;
+const RESIZE_MAX_DIMENSION = 1600;
+const JPEG_QUALITY = 0.85;
+
+function loadImageBitmap(blob: Blob): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Không đọc được ảnh (định dạng có thể không hỗ trợ).'));
+    };
+    img.src = url;
+  });
+}
+
+async function readImageFile(file: File): Promise<PendingImage> {
+  if (file.size > MAX_INPUT_BYTES) {
+    throw new Error('Ảnh quá lớn (tối đa 25MB).');
+  }
+  const isGif = file.type === 'image/gif';
+  if (isGif) {
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Không đọc được ảnh.'));
+      reader.readAsDataURL(file);
+    });
+    const base64 = dataUrl.split(',')[1] ?? '';
+    return {
+      id: crypto.randomUUID(),
+      dataUrl,
+      mediaType: 'image/gif',
+      base64,
+    };
+  }
+
+  const img = await loadImageBitmap(file);
+  const { width: srcW, height: srcH } = img;
+  const scale = Math.min(
+    1,
+    RESIZE_MAX_DIMENSION / Math.max(srcW, srcH),
+  );
+  const dstW = Math.round(srcW * scale);
+  const dstH = Math.round(srcH * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = dstW;
+  canvas.height = dstH;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Không xử lý được ảnh trên thiết bị này.');
+  ctx.drawImage(img, 0, 0, dstW, dstH);
+  const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+  const base64 = dataUrl.split(',')[1] ?? '';
+  return {
+    id: crypto.randomUUID(),
+    dataUrl,
+    mediaType: 'image/jpeg',
+    base64,
+  };
 }
 
 const SUGGESTIONS_BY_MODE: Record<'private' | 'public', string[]> = {
@@ -68,7 +143,7 @@ const THEMES: Record<'private' | 'public', Theme> = {
     icon: '🔒',
     bubbleAgent: 'bg-card ring-1 ring-dashed ring-slate-300 dark:ring-slate-700',
     borderStyle: 'border-dashed',
-    composerBorder: 'border-dashed border-slate-300 dark:border-slate-700',
+    composerBorder: 'border-solid border-slate-200 dark:border-slate-800',
     chatBg: '',
   },
   public: {
@@ -121,19 +196,39 @@ function rehydrateAction(
   actIdx: number,
   action: ParseAction,
 ): ParseAction {
-  if (action.kind !== 'important_date_proposed') return action;
-  const state = loadImportantDateState(msgId, actIdx);
-  if (!state) return action;
-  if (state.kind === 'confirmed') {
-    return {
-      kind: 'important_date_logged',
-      id: state.id,
-      name: action.name,
-      date: action.date,
-      type: action.type,
-    };
+  if (action.kind === 'important_date_proposed') {
+    const state = loadImportantDateState(msgId, actIdx);
+    if (!state) return action;
+    if (state.kind === 'confirmed') {
+      return {
+        kind: 'important_date_logged',
+        id: state.id,
+        name: action.name,
+        date: action.date,
+        type: action.type,
+      };
+    }
+    return { kind: 'important_date_dismissed' };
   }
-  return { kind: 'important_date_dismissed' };
+  if (
+    action.kind === 'transaction_proposed' ||
+    action.kind === 'transaction_needs_note'
+  ) {
+    const state = loadTxnProposalState(msgId, actIdx);
+    if (!state) return action;
+    if (state.kind === 'confirmed') {
+      return {
+        kind: 'transaction_proposal_logged',
+        id: state.id,
+        fundName: state.fundName,
+        amount: state.amount,
+        categoryName: state.categoryName,
+        balance: state.balance,
+      };
+    }
+    return { kind: 'transaction_proposal_dismissed' };
+  }
+  return action;
 }
 
 export default function ChatPage() {
@@ -171,8 +266,15 @@ function ChatInner() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounter = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const [activeMode, setActiveMode] = useState<'private' | 'public'>('private');
   const [sessionDrawerOpen, setSessionDrawerOpen] = useState(false);
@@ -258,8 +360,10 @@ function ChatInner() {
   }, [input]);
 
   async function submit(text: string) {
-    if (!text.trim() || isLoading) return;
+    if (isLoading) return;
     const trimmed = text.trim();
+    const imagesToSend = pendingImages;
+    if (!trimmed && imagesToSend.length === 0) return;
 
     let sid = sessionIdFromUrl;
     if (!sid) {
@@ -282,19 +386,34 @@ function ChatInner() {
     }
 
     setInput('');
+    setPendingImages([]);
+    setImageError(null);
     setMessages((m) => [
       ...m,
       {
         id: crypto.randomUUID(),
         role: 'user',
-        text: trimmed,
+        text: trimmed || (imagesToSend.length > 0 ? `📸 ${imagesToSend.length} ảnh` : ''),
         author: { id: user.id, name: user.name },
+        imagePreviews:
+          imagesToSend.length > 0
+            ? imagesToSend.map((img) => img.dataUrl)
+            : undefined,
       },
     ]);
     setIsLoading(true);
 
     try {
-      const res = await sendChat(trimmed, sid);
+      const res = await sendChat(
+        trimmed,
+        sid,
+        imagesToSend.length > 0
+          ? imagesToSend.map((img) => ({
+              mediaType: img.mediaType,
+              data: img.base64,
+            }))
+          : undefined,
+      );
       setMessages((m) => [
         ...m,
         {
@@ -337,6 +456,80 @@ function ChatInner() {
   function handleNewChat() {
     router.replace('/chat');
     setMessages([]);
+  }
+
+  async function handlePickImages(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const slots = MAX_IMAGES - pendingImages.length;
+    if (slots <= 0) {
+      setImageError(`Tối đa ${MAX_IMAGES} ảnh mỗi lần gửi.`);
+      return;
+    }
+    const arr = Array.from(files).slice(0, slots);
+    const next: PendingImage[] = [];
+    setImageError(null);
+    for (const f of arr) {
+      try {
+        next.push(await readImageFile(f));
+      } catch (err) {
+        setImageError((err as Error).message);
+        break;
+      }
+    }
+    if (next.length > 0) setPendingImages((prev) => [...prev, ...next]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function removePendingImage(id: string) {
+    setPendingImages((prev) => prev.filter((p) => p.id !== id));
+    setImageError(null);
+  }
+
+  function hasImageInDrag(e: React.DragEvent): boolean {
+    const types = e.dataTransfer?.types;
+    if (!types) return false;
+    for (let i = 0; i < types.length; i++) {
+      if (types[i] === 'Files') return true;
+    }
+    return false;
+  }
+
+  function handleDragEnter(e: React.DragEvent) {
+    if (!hasImageInDrag(e)) return;
+    e.preventDefault();
+    dragCounter.current += 1;
+    setIsDragging(true);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    if (!hasImageInDrag(e)) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    if (!hasImageInDrag(e)) return;
+    e.preventDefault();
+    dragCounter.current = Math.max(0, dragCounter.current - 1);
+    if (dragCounter.current === 0) setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    dragCounter.current = 0;
+    setIsDragging(false);
+    const files = e.dataTransfer?.files;
+    if (!files || files.length === 0) return;
+    const imageFiles = Array.from(files).filter((f) =>
+      f.type.startsWith('image/'),
+    );
+    if (imageFiles.length === 0) {
+      setImageError('Chỉ chấp nhận file ảnh.');
+      return;
+    }
+    const dt = new DataTransfer();
+    for (const f of imageFiles) dt.items.add(f);
+    void handlePickImages(dt.files);
   }
 
   function handleModeChange(mode: 'private' | 'public') {
@@ -397,7 +590,33 @@ function ChatInner() {
             ? 'var(--chat-private-bg)'
             : 'var(--chat-public-bg)',
         }}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
+        {isDragging && (
+          <div className="pointer-events-none absolute inset-3 z-30 flex items-center justify-center rounded-2xl border-2 border-dashed border-emerald-400 bg-emerald-50/85 backdrop-blur-sm dark:border-emerald-500 dark:bg-emerald-950/70">
+            <div className="flex flex-col items-center gap-2 text-emerald-700 dark:text-emerald-300">
+              <svg
+                className="h-10 w-10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <circle cx="9" cy="11" r="2" />
+                <path d="M21 17l-5-5-9 9" />
+              </svg>
+              <span className="text-sm font-medium">
+                {t('drop_to_upload')}
+              </span>
+            </div>
+          </div>
+        )}
         <ChatHeader
           mode={activeMode}
           session={currentSession}
@@ -453,33 +672,174 @@ function ChatInner() {
         >
           <div className="mx-auto max-w-4xl">
             <div className={`rounded-2xl border bg-muted px-3 py-2 transition-colors focus-within:bg-background sm:px-4 sm:py-3 ${theme.composerBorder} ${theme.ring}`}>
-              <div className="flex items-end gap-2">
-                <textarea
-                  ref={composerRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                      e.preventDefault();
-                      void submit(input);
-                    }
-                  }}
-                  rows={1}
-                  placeholder={t('placeholder')}
-                  className="min-h-[36px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-0 sm:min-h-[44px]"
-                  style={{ maxHeight: '200px' }}
-                  disabled={isLoading || loadingMessages}
-                />
+              {pendingImages.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2">
+                  {pendingImages.map((img) => (
+                    <div
+                      key={img.id}
+                      className="group relative h-16 w-16 overflow-hidden rounded-lg border border-border bg-card"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img.dataUrl}
+                        alt="preview"
+                        className="h-full w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePendingImage(img.id)}
+                        aria-label="Xoá ảnh"
+                        className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-foreground/70 text-[10px] font-bold text-white hover:bg-foreground"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {imageError && (
+                <p className="mb-1 text-[11px] text-rose-600 dark:text-rose-400">
+                  ⚠️ {imageError}
+                </p>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => void handlePickImages(e.target.files)}
+              />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => void handlePickImages(e.target.files)}
+              />
+              <textarea
+                ref={composerRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    void submit(input);
+                  }
+                }}
+                rows={1}
+                placeholder={t('placeholder')}
+                className="block min-h-[24px] w-full resize-none border-0 bg-transparent text-sm leading-6 placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+                style={{ maxHeight: '200px' }}
+                disabled={isLoading || loadingMessages}
+              />
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setPickerOpen((v) => !v)}
+                      disabled={isLoading || pendingImages.length >= MAX_IMAGES}
+                      aria-label={t('attach_image')}
+                      aria-expanded={pickerOpen}
+                      title={t('attach_image')}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-all hover:bg-background hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200/60 dark:focus:ring-emerald-900 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+                    >
+                      <svg
+                        className="h-[18px] w-[18px]"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.8}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                        <circle cx="9" cy="11" r="2" />
+                        <path d="M21 17l-5-5-9 9" />
+                      </svg>
+                    </button>
+                    {pickerOpen && (
+                      <>
+                        <button
+                          type="button"
+                          aria-label="close"
+                          onClick={() => setPickerOpen(false)}
+                          className="fixed inset-0 z-10 cursor-default"
+                        />
+                        <div
+                          role="menu"
+                          className="absolute bottom-full left-0 z-20 mb-2 w-44 overflow-hidden rounded-xl border border-border bg-card shadow-lg"
+                        >
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setPickerOpen(false);
+                              cameraInputRef.current?.click();
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+                          >
+                            <svg
+                              className="h-4 w-4 text-emerald-600"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={1.8}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                              <circle cx="12" cy="13" r="4" />
+                            </svg>
+                            {t('picker_camera')}
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setPickerOpen(false);
+                              fileInputRef.current?.click();
+                            }}
+                            className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+                          >
+                            <svg
+                              className="h-4 w-4 text-emerald-600"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={1.8}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <rect x="3" y="5" width="18" height="14" rx="2" />
+                              <circle cx="9" cy="11" r="2" />
+                              <path d="M21 17l-5-5-9 9" />
+                            </svg>
+                            {t('picker_gallery')}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <span className="hidden text-[11px] text-muted-foreground sm:inline">
+                    {t('shift_enter_newline')}
+                  </span>
+                </div>
                 <button
                   type="submit"
-                  disabled={isLoading || !input.trim()}
+                  disabled={
+                    isLoading ||
+                    (!input.trim() && pendingImages.length === 0)
+                  }
                   aria-label={t('send')}
                   title={`${t('send')} (Enter)`}
-                  className={`flex h-9 shrink-0 items-center justify-center rounded-full px-3 text-white shadow-sm transition-all active:scale-95 sm:px-4 ${theme.accent} hover:brightness-110 disabled:cursor-not-allowed disabled:bg-muted`}
+                  className={`flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full px-3.5 text-sm font-medium text-white shadow-sm transition-all active:scale-95 ${theme.accent} hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-emerald-200/60 dark:focus:ring-emerald-900 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100`}
                 >
-                  <span className="hidden text-sm sm:inline">{t('send')}</span>
+                  <span className="hidden sm:inline">{t('send')}</span>
                   <svg
-                    className="h-4 w-4 sm:hidden"
+                    className="h-3.5 w-3.5"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -491,9 +851,6 @@ function ChatInner() {
                   </svg>
                 </button>
               </div>
-              <span className="mt-1 hidden text-[11px] text-muted-foreground sm:block">
-                {t('shift_enter_newline')}
-              </span>
             </div>
             <p className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <span>{theme.icon}</span>
@@ -1127,6 +1484,28 @@ function MessageBubble({
                 : theme.bubbleAgent + ' text-foreground shadow-sm'
           }`}
         >
+          {msg.imagePreviews && msg.imagePreviews.length > 0 && (
+            <div
+              className={`mb-2 flex flex-wrap gap-1.5 ${msg.text ? '' : 'mb-0'}`}
+            >
+              {msg.imagePreviews.map((src, i) => (
+                <a
+                  key={`${msg.id}-img-${i}`}
+                  href={src}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block h-24 w-24 overflow-hidden rounded-lg ring-1 ring-white/30"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt={`upload-${i}`}
+                    className="h-full w-full object-cover"
+                  />
+                </a>
+              ))}
+            </div>
+          )}
           {msg.text && (
             <div className="whitespace-pre-wrap">
               {msg.role === 'agent' ? renderBold(msg.text) : msg.text}
@@ -1283,6 +1662,60 @@ function ActionCard({
     return (
       <div className="rounded-md border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
         ⊘ {t('action_date_dismissed')}
+      </div>
+    );
+  }
+  if (action.kind === 'transaction_proposed') {
+    return (
+      <TransactionProposedCard
+        action={action}
+        messageId={messageId}
+        actionIndex={actionIndex}
+        onMutate={onMutate}
+      />
+    );
+  }
+  if (action.kind === 'transaction_needs_note') {
+    return (
+      <TransactionNeedsNoteCard
+        action={action}
+        messageId={messageId}
+        actionIndex={actionIndex}
+        onMutate={onMutate}
+      />
+    );
+  }
+  if (action.kind === 'transaction_proposal_logged') {
+    const isExpense = action.amount < 0;
+    return (
+      <div
+        className={`rounded-md border px-3 py-2 text-xs ${
+          isExpense
+            ? 'border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-300'
+            : 'border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300'
+        }`}
+      >
+        <div className="flex items-center gap-1.5 font-semibold">
+          ✅ <span>Đã ghi</span>
+        </div>
+        <div className="mt-0.5 font-mono font-semibold tabular-nums">
+          {formatVND(action.amount, true)}
+        </div>
+        <div className="mt-0.5 text-[11px] opacity-80">
+          {action.fundName}
+          {action.categoryName ? ` • ${action.categoryName}` : ''} ·{' '}
+          {t('action_new_balance')}{' '}
+          <span className="font-mono tabular-nums">
+            {formatVND(action.balance)}
+          </span>
+        </div>
+      </div>
+    );
+  }
+  if (action.kind === 'transaction_proposal_dismissed') {
+    return (
+      <div className="rounded-md border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
+        ⊘ {t('action_proposal_dismissed')}
       </div>
     );
   }
@@ -1555,6 +1988,308 @@ function ImportantDateProposedCard({
           className="rounded-md border border-border bg-card px-3 py-1 text-[11px] text-foreground hover:bg-muted disabled:opacity-50"
         >
           Bỏ qua
+        </button>
+      </div>
+    </div>
+  );
+}
+
+type TransactionProposalState =
+  | {
+      kind: 'confirmed';
+      id: string;
+      fundName: string;
+      amount: number;
+      categoryName: string | null;
+      balance: number;
+    }
+  | { kind: 'dismissed' };
+
+function loadTxnProposalState(
+  msgId: string,
+  actIdx: number,
+): TransactionProposalState | null {
+  if (typeof window === 'undefined') return null;
+  const raw = window.localStorage.getItem(`concord_txn_proposal_${msgId}_${actIdx}`);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as TransactionProposalState;
+  } catch {
+    return null;
+  }
+}
+
+function saveTxnProposalState(
+  msgId: string,
+  actIdx: number,
+  state: TransactionProposalState,
+): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(
+    `concord_txn_proposal_${msgId}_${actIdx}`,
+    JSON.stringify(state),
+  );
+}
+
+function TransactionProposedCard({
+  action,
+  messageId,
+  actionIndex,
+  onMutate,
+}: {
+  action: Extract<ParseAction, { kind: 'transaction_proposed' }>;
+  messageId: string;
+  actionIndex: number;
+  onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
+}) {
+  const t = useTranslations('chat');
+  const tCommon = useTranslations('common');
+  const { reloadFunds } = useAuthedLayout();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isExpense = action.amount < 0;
+
+  async function handleConfirm() {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const view = await createTransaction({
+        fundName: action.fundName,
+        amount: action.amount,
+        categoryName: action.categoryName ?? undefined,
+        note: action.note ?? undefined,
+        date: action.date ?? undefined,
+      });
+      const next: ParseAction = {
+        kind: 'transaction_proposal_logged',
+        id: view.id,
+        fundName: view.fund.name,
+        amount: view.amount,
+        categoryName: view.category?.name ?? null,
+        balance: 0,
+      };
+      saveTxnProposalState(messageId, actionIndex, {
+        kind: 'confirmed',
+        id: view.id,
+        fundName: view.fund.name,
+        amount: view.amount,
+        categoryName: view.category?.name ?? null,
+        balance: 0,
+      });
+      onMutate(messageId, actionIndex, next);
+      void reloadFunds();
+    } catch (err) {
+      const msg =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : 'Lỗi không xác định';
+      setError(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function handleDismiss() {
+    saveTxnProposalState(messageId, actionIndex, { kind: 'dismissed' });
+    onMutate(messageId, actionIndex, { kind: 'transaction_proposal_dismissed' });
+  }
+
+  return (
+    <div
+      className={`rounded-md border px-3 py-2.5 text-xs ${
+        isExpense
+          ? 'border-rose-200 dark:border-rose-900 bg-rose-50/60 dark:bg-rose-950/30'
+          : 'border-emerald-200 dark:border-emerald-900 bg-emerald-50/60 dark:bg-emerald-950/30'
+      } text-foreground`}
+    >
+      <div
+        className={`flex items-center gap-1.5 font-semibold ${
+          isExpense
+            ? 'text-rose-900 dark:text-rose-300'
+            : 'text-emerald-900 dark:text-emerald-300'
+        }`}
+      >
+        📸 <span>Đề xuất giao dịch từ ảnh</span>
+      </div>
+      <div className="mt-1.5 font-mono text-sm font-semibold tabular-nums">
+        {formatVND(action.amount, true)}
+      </div>
+      <div className="mt-0.5 text-[11px] text-muted-foreground">
+        {action.fundName}
+        {action.categoryName ? ` • ${action.categoryName}` : ''}
+        {action.note ? ` • ${action.note}` : ''}
+      </div>
+      {action.sourceHint && (
+        <div className="mt-0.5 text-[10px] italic text-muted-foreground">
+          từ {action.sourceHint}
+        </div>
+      )}
+      {error && (
+        <div className="mt-1.5 text-[11px] text-rose-700">⚠️ {error}</div>
+      )}
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={submitting}
+          className="rounded-md bg-emerald-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+        >
+          {submitting ? tCommon('saving') : t('confirm_log')}
+        </button>
+        <button
+          type="button"
+          onClick={handleDismiss}
+          disabled={submitting}
+          className="rounded-md border border-border bg-card px-3 py-1 text-[11px] text-foreground hover:bg-muted disabled:opacity-50"
+        >
+          {t('dismiss')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TransactionNeedsNoteCard({
+  action,
+  messageId,
+  actionIndex,
+  onMutate,
+}: {
+  action: Extract<ParseAction, { kind: 'transaction_needs_note' }>;
+  messageId: string;
+  actionIndex: number;
+  onMutate: (msgId: string, actIdx: number, next: ParseAction) => void;
+}) {
+  const t = useTranslations('chat');
+  const tCommon = useTranslations('common');
+  const { reloadFunds } = useAuthedLayout();
+  const [note, setNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isExpense = action.amount < 0;
+  const suggestions = isExpense
+    ? ['Ăn trưa', 'Cà phê', 'Gửi xe', 'Đi chợ', 'Xăng']
+    : ['Lương', 'Thưởng', 'Hoàn tiền'];
+
+  async function handleConfirm() {
+    const trimmed = note.trim();
+    if (!trimmed) {
+      setError(t('note_required'));
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      const finalNote = action.counterparty
+        ? `${trimmed} (${action.counterparty})`
+        : trimmed;
+      const view = await createTransaction({
+        fundName: action.fundName,
+        amount: action.amount,
+        categoryName: action.categoryName ?? undefined,
+        note: finalNote,
+        date: action.date ?? undefined,
+      });
+      const next: ParseAction = {
+        kind: 'transaction_proposal_logged',
+        id: view.id,
+        fundName: view.fund.name,
+        amount: view.amount,
+        categoryName: view.category?.name ?? null,
+        balance: 0,
+      };
+      saveTxnProposalState(messageId, actionIndex, {
+        kind: 'confirmed',
+        id: view.id,
+        fundName: view.fund.name,
+        amount: view.amount,
+        categoryName: view.category?.name ?? null,
+        balance: 0,
+      });
+      onMutate(messageId, actionIndex, next);
+      void reloadFunds();
+    } catch (err) {
+      const msg =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : 'Lỗi không xác định';
+      setError(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function handleDismiss() {
+    saveTxnProposalState(messageId, actionIndex, { kind: 'dismissed' });
+    onMutate(messageId, actionIndex, { kind: 'transaction_proposal_dismissed' });
+  }
+
+  return (
+    <div className="rounded-md border border-amber-200 dark:border-amber-900 bg-amber-50/70 dark:bg-amber-950/30 px-3 py-2.5 text-xs text-foreground">
+      <div className="flex items-center gap-1.5 font-semibold text-amber-900 dark:text-amber-300">
+        ❓ <span>{t('needs_note_title')}</span>
+      </div>
+      <div className="mt-1.5 font-mono text-sm font-semibold tabular-nums">
+        {formatVND(action.amount, true)}
+      </div>
+      <div className="mt-0.5 text-[11px] text-muted-foreground">
+        {action.fundName}
+        {action.counterparty ? ` • với ${action.counterparty}` : ''}
+        {action.sourceHint ? ` • ${action.sourceHint}` : ''}
+      </div>
+      <div className="mt-2">
+        <input
+          type="text"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+              e.preventDefault();
+              void handleConfirm();
+            }
+          }}
+          placeholder={t('needs_note_placeholder')}
+          disabled={submitting}
+          autoFocus
+          className="w-full rounded-md border border-amber-200 dark:border-amber-800 bg-card px-2.5 py-1.5 text-[12px] text-foreground placeholder:text-muted-foreground focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-300/60 dark:focus:ring-amber-700 disabled:opacity-60"
+        />
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setNote(s)}
+              disabled={submitting}
+              className="rounded-full border border-amber-200 dark:border-amber-800 bg-card px-2 py-0.5 text-[10px] text-amber-900 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 disabled:opacity-50"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+      {error && (
+        <div className="mt-1.5 text-[11px] text-rose-700">⚠️ {error}</div>
+      )}
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={submitting || !note.trim()}
+          className="rounded-md bg-emerald-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {submitting ? tCommon('saving') : t('confirm_log')}
+        </button>
+        <button
+          type="button"
+          onClick={handleDismiss}
+          disabled={submitting}
+          className="rounded-md border border-border bg-card px-3 py-1 text-[11px] text-foreground hover:bg-muted disabled:opacity-50"
+        >
+          {t('dismiss')}
         </button>
       </div>
     </div>

@@ -1,21 +1,39 @@
+import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsIn,
-  IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
 import type { ParseAction } from '../../agent/subagents/parser/parser.subagent';
 
+export class ChatImageDto {
+  @IsIn(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+  mediaType!: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+
+  @IsString()
+  @MaxLength(7_500_000)
+  data!: string;
+}
+
 export class ChatRequestDto {
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(1000)
+  @MaxLength(2000)
   message!: string;
 
   @IsUUID()
   sessionId!: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(4)
+  @ValidateNested({ each: true })
+  @Type(() => ChatImageDto)
+  images?: ChatImageDto[];
 }
 
 export interface ChatResponseDto {

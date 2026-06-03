@@ -41,6 +41,33 @@ export type ParseAction =
     }
   | { kind: 'important_date_dismissed' }
   | {
+      kind: 'transaction_proposed';
+      fundName: string;
+      amount: number;
+      categoryName: string | null;
+      note: string | null;
+      date: string | null;
+      sourceHint: string | null;
+    }
+  | {
+      kind: 'transaction_proposal_logged';
+      id: string;
+      fundName: string;
+      amount: number;
+      categoryName: string | null;
+      balance: number;
+    }
+  | { kind: 'transaction_proposal_dismissed' }
+  | {
+      kind: 'transaction_needs_note';
+      fundName: string;
+      amount: number;
+      counterparty: string | null;
+      sourceHint: string | null;
+      categoryName: string | null;
+      date: string | null;
+    }
+  | {
       kind: 'debt_opened';
       id: string;
       direction: 'lent' | 'borrowed';

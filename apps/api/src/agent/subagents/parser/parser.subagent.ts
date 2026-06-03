@@ -20,10 +20,16 @@ import {
   LogTransactionInput,
   OpenDebtInput,
   ProposeImportantDateInput,
+  ProposeTransactionInput,
   RecordDebtPaymentInput,
   UpdateTransactionInput,
   parserTools,
 } from './parser.tools';
+
+export type ImageAttachment = {
+  mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+  data: string;
+};
 
 export type ParseAction =
   | {
@@ -58,6 +64,33 @@ export type ParseAction =
       isLunar: boolean;
       remindDaysBefore: number[];
       notes: string | null;
+    }
+  | {
+      kind: 'transaction_proposed';
+      fundName: string;
+      amount: number;
+      categoryName: string | null;
+      note: string | null;
+      date: string | null;
+      sourceHint: string | null;
+    }
+  | {
+      kind: 'transaction_proposal_logged';
+      id: string;
+      fundName: string;
+      amount: number;
+      categoryName: string | null;
+      balance: number;
+    }
+  | { kind: 'transaction_proposal_dismissed' }
+  | {
+      kind: 'transaction_needs_note';
+      fundName: string;
+      amount: number;
+      counterparty: string | null;
+      sourceHint: string | null;
+      categoryName: string | null;
+      date: string | null;
     }
   | {
       kind: 'debt_opened';
@@ -114,10 +147,15 @@ export class ParserSubagent {
     options?: {
       defaultFundName?: string;
       history?: Array<{ role: 'user' | 'agent'; text: string }>;
+      images?: ImageAttachment[];
     },
   ): Promise<ParseResult> {
     const context = await this.buildContext(user, options?.defaultFundName);
-    const messages = buildMessages(options?.history ?? [], message);
+    const messages = buildMessages(
+      options?.history ?? [],
+      message,
+      options?.images,
+    );
 
     const response = await this.anthropic.client.messages.create({
       model: this.anthropic.fastModel,
@@ -471,6 +509,43 @@ export class ParserSubagent {
             this.logger.warn(`record_debt_payment failed: ${msg}`);
             actions.push({ kind: 'tool_error', toolName: 'record_debt_payment', message: msg });
           }
+        } else if (block.name === 'propose_transaction') {
+          try {
+            const input = block.input as ProposeTransactionInput;
+            if (!input?.fundName || typeof input.amount !== 'number') {
+              throw new Error('thiếu fundName hoặc amount');
+            }
+            const note = input.note?.trim() || null;
+            if (isVagueProposalNote(note)) {
+              actions.push({
+                kind: 'transaction_needs_note',
+                fundName: input.fundName,
+                amount: input.amount,
+                counterparty: extractCounterparty(note),
+                sourceHint: input.sourceHint?.trim() || null,
+                categoryName: input.categoryName?.trim() || null,
+                date: input.date?.trim() || null,
+              });
+            } else {
+              actions.push({
+                kind: 'transaction_proposed',
+                fundName: input.fundName,
+                amount: input.amount,
+                categoryName: input.categoryName?.trim() || null,
+                note,
+                date: input.date?.trim() || null,
+                sourceHint: input.sourceHint?.trim() || null,
+              });
+            }
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`propose_transaction failed: ${msg}`);
+            actions.push({
+              kind: 'tool_error',
+              toolName: 'propose_transaction',
+              message: msg,
+            });
+          }
         } else if (block.name === 'propose_important_date') {
           try {
             const input = block.input as ProposeImportantDateInput;
@@ -537,25 +612,61 @@ export class ParserSubagent {
  * current message append thêm vào cuối — nhưng chuẩn flow là history luôn
  * end ở agent vì current user message chưa được append vào history khi gọi.
  */
+type MessageBlock =
+  | { type: 'text'; text: string }
+  | {
+      type: 'image';
+      source: {
+        type: 'base64';
+        media_type: ImageAttachment['mediaType'];
+        data: string;
+      };
+    };
+
 function buildMessages(
   history: Array<{ role: 'user' | 'agent'; text: string }>,
   currentMessage: string,
-): Array<{ role: 'user' | 'assistant'; content: string }> {
-  const out: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+  images?: ImageAttachment[],
+): Array<{ role: 'user' | 'assistant'; content: string | MessageBlock[] }> {
+  const out: Array<{
+    role: 'user' | 'assistant';
+    content: string | MessageBlock[];
+  }> = [];
   for (const h of history) {
     const text = h.text?.trim();
     if (!text) continue;
     const role = h.role === 'agent' ? 'assistant' : 'user';
-    if (out.length > 0 && out[out.length - 1].role === role) {
-      out[out.length - 1].content += '\n\n' + text;
+    const last = out[out.length - 1];
+    if (last && last.role === role && typeof last.content === 'string') {
+      last.content += '\n\n' + text;
     } else {
       out.push({ role, content: text });
     }
   }
-  if (out.length > 0 && out[out.length - 1].role === 'user') {
-    out[out.length - 1].content += '\n\n' + currentMessage;
+  const hasImages = images && images.length > 0;
+  if (hasImages) {
+    const blocks: MessageBlock[] = images!.map((img) => ({
+      type: 'image' as const,
+      source: {
+        type: 'base64' as const,
+        media_type: img.mediaType,
+        data: img.data,
+      },
+    }));
+    blocks.push({
+      type: 'text',
+      text:
+        currentMessage.trim() ||
+        'Đọc ảnh và đề xuất các giao dịch tìm thấy (dùng propose_transaction).',
+    });
+    out.push({ role: 'user', content: blocks });
   } else {
-    out.push({ role: 'user', content: currentMessage });
+    const last = out[out.length - 1];
+    if (last && last.role === 'user' && typeof last.content === 'string') {
+      last.content += '\n\n' + currentMessage;
+    } else {
+      out.push({ role: 'user', content: currentMessage });
+    }
   }
   return out;
 }
@@ -612,6 +723,34 @@ function synthesizeReply(actions: ParseAction[]): string {
   }
   if (clarifies.length > 0) {
     parts.push(...clarifies.map((c) => `❓ ${c.question}`));
+  }
+  const proposedTxn = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'transaction_proposed' }> =>
+      a.kind === 'transaction_proposed',
+  );
+  const needsNote = actions.filter(
+    (a): a is Extract<ParseAction, { kind: 'transaction_needs_note' }> =>
+      a.kind === 'transaction_needs_note',
+  );
+  if (proposedTxn.length > 0 || needsNote.length > 0) {
+    const total = proposedTxn.length + needsNote.length;
+    if (needsNote.length === 0) {
+      parts.push(
+        total === 1
+          ? '📸 Đã đọc ảnh — xác nhận giao dịch bên dưới nhé.'
+          : `📸 Đã đọc ảnh — tìm thấy ${total} giao dịch, xác nhận bên dưới nhé.`,
+      );
+    } else if (proposedTxn.length === 0) {
+      parts.push(
+        needsNote.length === 1
+          ? '📸 Đã đọc ảnh — giao dịch chưa rõ nội dung, bạn gõ nội dung vào ô bên dưới nhé.'
+          : `📸 Đã đọc ảnh — ${needsNote.length} giao dịch chưa rõ nội dung, bạn điền nội dung bên dưới nhé.`,
+      );
+    } else {
+      parts.push(
+        `📸 Đã đọc ảnh — ${total} giao dịch (${needsNote.length} cần điền nội dung). Xem bên dưới nhé.`,
+      );
+    }
   }
   if (categoryCreated.length > 0) {
     for (const c of categoryCreated) {
@@ -680,4 +819,97 @@ function formatVND(n: number, withSign = false): string {
   if (n < 0) return `−${formatted}đ`;
   if (n === 0 || !withSign) return `${formatted}đ`;
   return `+${formatted}đ`;
+}
+
+function formatVNDForPrompt(n: number): string {
+  const abs = Math.abs(n).toLocaleString('vi-VN');
+  return n < 0 ? `chi ${abs}đ` : `nhận ${abs}đ`;
+}
+
+const VAGUE_NOTE_PATTERNS: RegExp[] = [
+  /^\s*$/,
+  /^chuyển\s*(khoản|tiền)\b/i,
+  /^thanh\s*toán\s*$/i,
+  /^transfer\b/i,
+  /^transaction\b/i,
+  /^giao\s*dịch\b/i,
+  /^mb\s*bank\s*(transfer|chuyển)?\s*$/i,
+  /^vcb\s*(transfer|chuyển)?\s*$/i,
+  /^techcom(bank)?\s*(transfer|chuyển)?\s*$/i,
+  /^napas\b/i,
+  /chuyển\s*tiền\s*$/i,
+];
+
+function isVagueProposalNote(note: string | null): boolean {
+  if (!note) return true;
+  const trimmed = note.trim();
+  if (trimmed.length === 0) return true;
+  for (const p of VAGUE_NOTE_PATTERNS) {
+    if (p.test(trimmed)) return true;
+  }
+  const hasMerchantKeyword =
+    /(circle k|grab|shopee|lazada|highland|starbucks|the coffee|momo|zalopay|viettel|vnpt|fpt|lotteria|kfc|mcdonald|uber|be|gojek|aha|aeon|coopmart|winmart|vinmart|big c|bach hoa|bhx)/i.test(
+      trimmed,
+    );
+  const hasServiceWord =
+    /(ăn|cà phê|cafe|xăng|điện|nước|net|wifi|grab|gửi xe|đỗ xe|gym|lương|thưởng|học phí|sữa|bỉm|đồ ăn|bữa|trưa|tối|sáng|đi chợ|siêu thị|nhậu|bia|cơm|phở|bún|trà sữa|chợ|quà|tặng)/i.test(
+      trimmed,
+    );
+  if (hasMerchantKeyword || hasServiceWord) return false;
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  const upperRatio =
+    (trimmed.match(/[A-ZĐ]/g)?.length ?? 0) /
+    Math.max(1, trimmed.replace(/[^A-Za-zĐđ]/g, '').length);
+  if (upperRatio > 0.7 && words.length <= 5) {
+    return true;
+  }
+  if (/chuyển\s*tiền|chuyen\s*tien/i.test(trimmed)) {
+    return true;
+  }
+  const isPersonName =
+    words.length >= 1 &&
+    words.length <= 4 &&
+    words.every((w) => /^[A-ZĐ]\p{L}*$/u.test(w)) &&
+    !/\d/.test(trimmed);
+  if (isPersonName) return true;
+  return false;
+}
+
+const BANK_BLOCKLIST = new Set([
+  'mb bank',
+  'mb',
+  'vcb',
+  'vietcombank',
+  'techcombank',
+  'techcom',
+  'tpbank',
+  'tp bank',
+  'acb',
+  'bidv',
+  'agribank',
+  'sacombank',
+  'momo',
+  'zalopay',
+  'napas',
+  'shopee pay',
+  'shopeepay',
+]);
+
+function extractCounterparty(note: string | null): string | null {
+  if (!note) return null;
+  const cleaned = note
+    .replace(/-\s*chuy[eể]n\s*ti[eề]n.*$/i, '')
+    .replace(/chuy[eể]n\s*kho[aả]n.*$/i, '')
+    .replace(/\s+chuy[eể]n\s*ti[eề]n.*$/i, '')
+    .replace(/\btransfer\b/i, '')
+    .trim();
+  const nameMatch = cleaned.match(/[A-ZĐ]\p{L}+(?:\s+[A-ZĐ]\p{L}+){0,3}/u);
+  if (!nameMatch) return null;
+  const raw = nameMatch[0].trim();
+  if (BANK_BLOCKLIST.has(raw.toLowerCase())) return null;
+  const titled = raw
+    .split(/\s+/)
+    .map((w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+  return titled;
 }

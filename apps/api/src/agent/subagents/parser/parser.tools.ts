@@ -146,6 +146,49 @@ export const createCategoryTool: Anthropic.Tool = {
   },
 };
 
+export const proposeTransactionTool: Anthropic.Tool = {
+  name: 'propose_transaction',
+  description:
+    'Đề xuất 1 giao dịch để user xác nhận trước khi ghi. Dùng KHI và CHỈ KHI ' +
+    'input có ảnh (image block trong message hiện tại) — extract số tiền/nội dung ' +
+    'từ ảnh. Đây là PROPOSAL — chưa lưu DB. User sẽ confirm/dismiss ở FE. Nếu ảnh ' +
+    'chứa nhiều giao dịch, gọi tool NHIỀU LẦN, mỗi lần 1 giao dịch.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      fundName: {
+        type: 'string',
+        description:
+          'Tên quỹ EXACT từ context. Nếu ảnh không nói rõ quỹ, dùng default fund của session.',
+      },
+      amount: {
+        type: 'number',
+        description: 'Số VND. ÂM = chi, DƯƠNG = thu.',
+      },
+      categoryName: {
+        type: 'string',
+        description: 'Category sát nhất, từ context.',
+      },
+      note: {
+        type: 'string',
+        description:
+          'Note ngắn (≤80 chars). Vd "Circle K Trần Duy Hưng", "Lương VCB".',
+      },
+      date: {
+        type: 'string',
+        description:
+          'ISO 8601 datetime (vd "2026-05-06T14:30:00+07:00"). Bỏ trống = dùng now. Nếu ảnh ghi rõ ngày giờ → đặt vào đây.',
+      },
+      sourceHint: {
+        type: 'string',
+        description:
+          'Ghi ngắn về NGUỒN ảnh (vd "MB Bank SMS", "Hoá đơn Circle K", "Lịch sử Momo"). Giúp user nhận diện.',
+      },
+    },
+    required: ['fundName', 'amount'],
+  },
+};
+
 export const proposeImportantDateTool: Anthropic.Tool = {
   name: 'propose_important_date',
   description:
@@ -242,6 +285,7 @@ export const parserTools: Anthropic.Tool[] = [
   deleteTransactionTool,
   createCategoryTool,
   proposeImportantDateTool,
+  proposeTransactionTool,
   openDebtTool,
   recordDebtPaymentTool,
 ];
@@ -277,6 +321,15 @@ export interface CreateCategoryInput {
   icon?: string;
   isEssential: boolean;
   parentName?: string;
+}
+
+export interface ProposeTransactionInput {
+  fundName: string;
+  amount: number;
+  categoryName?: string;
+  note?: string;
+  date?: string;
+  sourceHint?: string;
 }
 
 export interface ProposeImportantDateInput {

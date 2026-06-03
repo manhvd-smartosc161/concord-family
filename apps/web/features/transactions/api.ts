@@ -6,6 +6,23 @@ import type {
   UpdateTransactionPayload,
 } from './types';
 
+export interface CreateTransactionPayload {
+  fundName: string;
+  amount: number;
+  categoryName?: string;
+  note?: string;
+  date?: string;
+}
+
+export function createTransaction(
+  payload: CreateTransactionPayload,
+): Promise<TransactionView> {
+  return apiFetch<TransactionView>('/api/transactions', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export function listRecentTransactions(limit = 20): Promise<TransactionView[]> {
   return apiFetch<TransactionView[]>(`/api/transactions/recent?limit=${limit}`);
 }

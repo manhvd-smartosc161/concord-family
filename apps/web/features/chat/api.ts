@@ -5,13 +5,21 @@ import type {
   ChatSessionView,
 } from './types';
 
+export type ChatImagePayload = {
+  mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+  data: string;
+};
+
 export function sendChat(
   message: string,
   sessionId: string,
+  images?: ChatImagePayload[],
 ): Promise<ChatResponse> {
+  const body: Record<string, unknown> = { message, sessionId };
+  if (images && images.length > 0) body.images = images;
   return apiFetch<ChatResponse>('/api/chat', {
     method: 'POST',
-    body: JSON.stringify({ message, sessionId }),
+    body: JSON.stringify(body),
   });
 }
 
