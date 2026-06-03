@@ -32,7 +32,7 @@ function LoginInner() {
 
   useEffect(() => {
     if (auth.status === 'authed') {
-      router.replace(next ?? (auth.user.familyId ? '/dashboard' : '/family/setup'));
+      router.replace(next ?? (auth.user.familyId ? '/chat' : '/family/setup'));
     }
   }, [auth, next, router]);
 
@@ -48,7 +48,7 @@ function LoginInner() {
       } else if (!res.user.familyId) {
         router.replace('/family/setup');
       } else {
-        router.replace('/dashboard');
+        router.replace('/chat');
       }
     } catch (err) {
       const msg =

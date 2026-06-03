@@ -10,7 +10,7 @@ export default function Home() {
 
   useEffect(() => {
     if (auth.status === 'loading') return;
-    router.replace(auth.status === 'authed' ? '/dashboard' : '/login');
+    router.replace(auth.status === 'authed' ? '/chat' : '/login');
   }, [auth.status, router]);
 
   return (
