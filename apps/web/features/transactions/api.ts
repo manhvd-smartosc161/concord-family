@@ -16,11 +16,14 @@ export interface CreateTransactionPayload {
 
 export function createTransaction(
   payload: CreateTransactionPayload,
-): Promise<TransactionView> {
-  return apiFetch<TransactionView>('/api/transactions', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
+): Promise<TransactionView & { fundBalance: number }> {
+  return apiFetch<TransactionView & { fundBalance: number }>(
+    '/api/transactions',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export function listRecentTransactions(limit = 20): Promise<TransactionView[]> {

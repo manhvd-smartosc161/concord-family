@@ -2066,7 +2066,7 @@ function TransactionProposedCard({
         fundName: view.fund.name,
         amount: view.amount,
         categoryName: view.category?.name ?? null,
-        balance: 0,
+        balance: view.fundBalance,
       };
       saveTxnProposalState(messageId, actionIndex, {
         kind: 'confirmed',
@@ -2074,7 +2074,7 @@ function TransactionProposedCard({
         fundName: view.fund.name,
         amount: view.amount,
         categoryName: view.category?.name ?? null,
-        balance: 0,
+        balance: view.fundBalance,
       });
       onMutate(messageId, actionIndex, next);
       void reloadFunds();
@@ -2198,7 +2198,7 @@ function TransactionNeedsNoteCard({
         fundName: view.fund.name,
         amount: view.amount,
         categoryName: view.category?.name ?? null,
-        balance: 0,
+        balance: view.fundBalance,
       };
       saveTxnProposalState(messageId, actionIndex, {
         kind: 'confirmed',
@@ -2206,7 +2206,7 @@ function TransactionNeedsNoteCard({
         fundName: view.fund.name,
         amount: view.amount,
         categoryName: view.category?.name ?? null,
-        balance: 0,
+        balance: view.fundBalance,
       });
       onMutate(messageId, actionIndex, next);
       void reloadFunds();

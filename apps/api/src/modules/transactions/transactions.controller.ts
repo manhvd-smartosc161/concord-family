@@ -77,7 +77,7 @@ export class TransactionsController {
   async create(
     @Body() dto: CreateTransactionDto,
     @CurrentUser() user: User,
-  ): Promise<TransactionView> {
+  ): Promise<TransactionView & { fundBalance: number }> {
     const { txn, fund, category } = await this.txnService.createFromAgent(
       {
         fundName: dto.fundName,
@@ -96,6 +96,7 @@ export class TransactionsController {
       note: txn.note,
       source: txn.source,
       fund: { id: fund.id, name: fund.name, type: fund.type },
+      fundBalance: fund.balance,
       category: category
         ? { id: category.id, name: category.name, icon: category.icon }
         : null,
